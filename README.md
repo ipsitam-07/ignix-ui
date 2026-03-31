@@ -9,10 +9,10 @@ Whether prototyping or scaling a large app, Ignix UI gives a polished foundation
 ## Why Ignix UI
 
 - **Built for Speed**  
-  Opinionateddefaults,smartAPIs,andaccessible-by-defaultcomponentsthatacceleratedevelopment
+  Opinionateddefaults,smartAPIsandaccessible-by-defaultcomponentsthatacceleratedevelopment
 
 - **Design System Ready**  
-  Consistentdesigntokens,themes,andpatternsthatscalewithyourteam'sneeds
+  Consistentdesigntokens,themesandpatternsthatscalewithyourteam'sneeds
 
 - **Built-in Animations**  
   Fluidinteractionswithabuilt-inmotionlayer—noextrasetuprequired
