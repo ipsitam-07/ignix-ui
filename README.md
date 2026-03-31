@@ -8,20 +8,20 @@ Whether prototyping or scaling a large app, Ignix UI gives a polished foundation
 
 ## Why Ignix UI
 
-- **Built for Speed**  
-  Opinionateddefaults,smartAPIsandaccessible-by-defaultcomponentsthatacceleratedevelopment
+- **Built for Speed**
+  Opinionated defaults, smart APIs and accessible-by-default components that accelerate development
 
-- **Design System Ready**  
-  Consistentdesigntokens,themesandpatternsthatscalewithyourteam'sneeds
+- **Design System Ready**
+  Consistent design tokens, themes and patterns that scale with your team's needs
 
-- **Built-in Animations**  
-  Fluidinteractionswithabuilt-inmotionlayer—noextrasetuprequired
+- **Built-in Animations**
+  Fluid interactions with a built-in motion layer—no extra setup required
 
-- **Type-Safe**  
-  BuiltwithTypeScriptforrich,discoverablepropsandbetterIntelliSensesupport
+- **Type-Safe**
+  Built with TypeScript for rich, discoverable props and better IntelliSense support
 
-- **Tailwind-Native**  
-  SeamlessintegrationwithTailwindCSS,featuringsmartclassmergingthatrespectscustomstyles
+- **Tailwind-Native**
+  Seamless integration with Tailwind CSS, featuring smart class merging that respects custom styles
 
 ## Installation
 
@@ -46,7 +46,7 @@ pnpm add @mindfiredigital/ignix-ui
 npx @mindfiredigital/ignix-ui init
 ```
 
-2. Add any components you need to your app.
+2. Add any components you need to your app:
 
 ```bash
 npx @mindfiredigital/ignix-ui add <component-name>
@@ -58,7 +58,7 @@ For full documentation, visit [mindfiredigital.github.io/ignix-ui](https://mindf
 
 ## Component Generator (For Contributors)
 
-Ignix UI includes a **scaffolding script** that helps contributors quickly create new components with all the necessary boilerplate files.  
+Ignix UI includes a **scaffolding script** that helps contributors quickly create new components with all the necessary boilerplate files.
 This ensures consistency, speeds up development, and keeps the project structure clean.
 
 ### Usage
@@ -71,13 +71,13 @@ pnpm run generate-component --name=componentName
 
 ### What the Script Does
 
-- Creates a new folder for your component.
+- Creates a new folder for your component
 
-- Adds base files (like .tsx, .test.tsx, index.tsx,).
+- Adds base files (like `.tsx`, `.test.tsx`, `index.tsx`)
 
-- update registry.json.
+- Updates `registry.json`
 
-- Ensures naming consistency.
+- Ensures naming consistency
 
 ## Contributing
 
