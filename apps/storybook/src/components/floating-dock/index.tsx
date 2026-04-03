@@ -40,7 +40,7 @@ const iconVariants = cva(
                     "border border-dock-outlined-border text-foreground hover:bg-dock-icon-bg/20",
                 glass:
                     "bg-dock-icon-bg/50 backdrop-blur-sm hover:bg-dock-icon-hover/60 text-dock-solid-foreground",
-                neon: "bg-dock-neon-bg text-[hsl(var(--dock-neon-glow))] border border-dock-neon-glow/20 hover:border-dock-neon-glow/60 hover:shadow-[0_0_12px_-2px_hsl(var(--dock-neon-glow)/0.5)]",
+                neon: "bg-dock-neon-bg text-[hsl(var(--dock-neon-glow))] border border-dock-neon-glow/20 [filter:drop-shadow(0_0_5px_hsl(var(--dock-neon-glow)/0.3))] hover:border-dock-neon-glow/60 hover:shadow-[0_0_12px_-2px_hsl(var(--dock-neon-glow)/0.5)]",
             },
         },
         defaultVariants: { variant: "solid" },
@@ -77,7 +77,7 @@ function DockSeparator({
     variant: Variant;
 }) {
     const colourClass =
-        variant === "neon" ? "bg-dock-neon-glow/30" : "bg-dock-separator/60";
+        variant === "neon" ? "bg-dock-outlined-border shadow-[0_0_8px_hsl(var(--dock-neon-glow)/0.8)]" : "bg-dock-separator/60";
 
     return orientation === "horizontal" ? (
         <div
@@ -210,15 +210,15 @@ function DockIconInner({
 
     const colorStyle: React.CSSProperties | undefined = item.color
         ? {
-            backgroundColor: `hsl(${item.color} / 0.25)`,
-            borderColor: `hsl(${item.color} / 0.5)`,
+            backgroundColor: `color-mix(in srgb, ${item.color}, transparent 0%)`,
+            borderColor: `color-mix(in srgb, ${item.color}, transparent 10%)`,
         }
         : undefined;
 
     const activeRingClass = item.active
         ? variant === "neon"
-            ? "ring-1 ring-dock-neon-glow/50 bg-dock-neon-bg"
-            : "ring-1 ring-dock-solid-foreground/20 bg-dock-icon-hover"
+            ? "ring-3 ring-dock-neon-glow/50 bg-dock-neon-bg shadow-[0_0_8px_hsl(var(--dock-neon-glow)/0.4)]"
+            : "ring-1 ring-dock-solid-foreground/10 bg-dock-icon-hover"
         : "";
 
     const iconEl = (
@@ -514,7 +514,7 @@ export function FloatingDock({
 
     const handleMouseMove = useCallback(
         (e: React.MouseEvent) => {
-            mousePos.set(o === "horizontal" ? e.pageX : e.pageY);
+            mousePos.set(o === "horizontal" ? e.clientX : e.clientY);
         },
         [mousePos, o]
     );
