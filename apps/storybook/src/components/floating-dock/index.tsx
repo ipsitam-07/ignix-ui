@@ -37,7 +37,7 @@ const iconVariants = cva(
                 solid:
                     "bg-dock-icon-bg hover:bg-dock-icon-hover text-dock-solid-foreground",
                 outlined:
-                    "border border-dock-outlined-border text-dock-solid-foreground hover:bg-dock-icon-bg/50",
+                    "border border-dock-outlined-border text-foreground hover:bg-dock-icon-bg/20",
                 glass:
                     "bg-dock-icon-bg/50 backdrop-blur-sm hover:bg-dock-icon-hover/60 text-dock-solid-foreground",
                 neon: "bg-dock-neon-bg text-[hsl(var(--dock-neon-glow))] border border-dock-neon-glow/20 hover:border-dock-neon-glow/60 hover:shadow-[0_0_12px_-2px_hsl(var(--dock-neon-glow)/0.5)]",
@@ -134,7 +134,7 @@ function DockTooltip({
 function DockBadge({ count }: { count: number }) {
     const display = count > 99 ? "99+" : String(count);
     return (
-        <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold leading-none px-1 ring-2 ring-dock-solid pointer-events-none z-10">
+        <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold leading-none px-1 pointer-events-none z-10">
             {display}
         </span>
     );
@@ -148,10 +148,14 @@ function ActiveDot({
     orientation: Orientation;
     variant: Variant;
 }) {
-    const dotColor =
-        variant === "neon"
-            ? "bg-dock-neon-glow shadow-[0_0_6px_hsl(var(--dock-neon-glow)/0.6)]"
-            : "bg-dock-solid-foreground/60";
+    const dotStyles = {
+        solid: "bg-dock-solid-foreground/70",
+        glass: "bg-dock-icon-hover shadow-[0_0_8px_rgba(255,255,255,0.4)]",
+        outlined: "bg-dock-icon-hover",
+        neon: "bg-dock-outlined-border shadow-[0_0_8px_hsl(var(--dock-neon-glow)/0.8)]",
+    };
+
+    const dotColor = dotStyles[variant];
 
     return (
         <span
@@ -160,7 +164,7 @@ function ActiveDot({
                 dotColor,
                 orientation === "horizontal"
                     ? "-bottom-2 left-1/2 -translate-x-1/2"
-                    : "-right-2 top-1/2 -translate-y-1/2"
+                    : "-left-2 top-1/2 -translate-y-1/2"
             )}
         />
     );
@@ -168,7 +172,7 @@ function ActiveDot({
 
 // DockIconInner
 const BASE_ICON_SIZE = 48;
-const MAX_ICON_SIZE = 80;
+const MAX_ICON_SIZE = 90;
 
 function DockIconInner({
     item,
@@ -197,25 +201,23 @@ function DockIconInner({
             : val - bounds.y - bounds.height / 2;
     });
 
-    // Animate the slot size along the dock axis so icons push apart (no overlap)
     const slotSize = useSpring(
         useTransform(distance, [-150, 0, 150], [BASE_ICON_SIZE, MAX_ICON_SIZE, BASE_ICON_SIZE]),
         { mass: 0.15, stiffness: 150, damping: 25 }
     );
 
-    // Derive visual scale from slotSize so they stay perfectly in sync
     const iconScale = useTransform(slotSize, (s) => s / BASE_ICON_SIZE);
 
     const colorStyle: React.CSSProperties | undefined = item.color
         ? {
-            backgroundColor: `hsl(${item.color} / 0.15)`,
-            borderColor: `hsl(${item.color} / 0.35)`,
+            backgroundColor: `hsl(${item.color} / 0.25)`,
+            borderColor: `hsl(${item.color} / 0.5)`,
         }
         : undefined;
 
     const activeRingClass = item.active
         ? variant === "neon"
-            ? "ring-1 ring-dock-neon-glow/50 bg-dock-neon-glow/10"
+            ? "ring-1 ring-dock-neon-glow/50 bg-dock-neon-bg"
             : "ring-1 ring-dock-solid-foreground/20 bg-dock-icon-hover"
         : "";
 
@@ -223,12 +225,12 @@ function DockIconInner({
         <motion.div
             ref={ref}
             style={{
-                // Animate size along dock axis for spacing; cross-axis stays fixed
                 width: orientation === "horizontal" ? slotSize : BASE_ICON_SIZE,
                 height: orientation === "vertical" ? slotSize : BASE_ICON_SIZE,
             }}
             className={cn(
-                "relative flex items-end justify-center outline-none focus-visible:ring-2 focus-visible:ring-dock-neon-glow/60",
+                "relative flex justify-center outline-none focus-visible:ring-2 focus-visible:ring-dock-neon-glow/60",
+                orientation === "horizontal" ? "items-end" : "items-center",
                 isDragging && "z-50"
             )}
             onClick={item.onClick}
@@ -249,7 +251,7 @@ function DockIconInner({
                     width: BASE_ICON_SIZE,
                     height: BASE_ICON_SIZE,
                     scale: iconScale,
-                    transformOrigin: orientation === "horizontal" ? "bottom" : "left",
+                    transformOrigin: orientation === "horizontal" ? "bottom" : "center",
                     ...colorStyle,
                 }}
                 className={cn(iconVariants({ variant }), activeRingClass)}
