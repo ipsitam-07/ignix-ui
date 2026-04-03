@@ -5,6 +5,7 @@ import {
     useTransform,
     AnimatePresence,
     Reorder,
+    type MotionValue,
 } from "framer-motion";
 import { useRef, useState, useCallback, useEffect, useMemo } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -144,9 +145,11 @@ function DockBadge({ count }: { count: number }) {
 function ActiveDot({
     orientation,
     variant,
+    iconScale,
 }: {
     orientation: Orientation;
     variant: Variant;
+    iconScale: MotionValue<number>;
 }) {
     const dotStyles = {
         solid: "bg-dock-solid-foreground/70",
@@ -157,14 +160,22 @@ function ActiveDot({
 
     const dotColor = dotStyles[variant];
 
+    const dynamicOffset = useTransform(iconScale, (s: number) => {
+        if (orientation === "horizontal") return 0;
+        const halfWidth = 24 * s;
+        return (halfWidth + 32);
+    });
+
     return (
-        <span
+        <motion.span
+            style={{
+                left: orientation === "horizontal" ? "50%" : dynamicOffset,
+                x: orientation === "horizontal" ? "-50%" : 0,
+            }}
             className={cn(
-                "absolute rounded-full w-1 h-1 pointer-events-none",
+                "absolute rounded-full w-1.5 h-1.5 pointer-events-none",
                 dotColor,
-                orientation === "horizontal"
-                    ? "-bottom-2 left-1/2 -translate-x-1/2"
-                    : "-left-2 top-1/2 -translate-y-1/2"
+                orientation === "horizontal" ? "-bottom-3" : "top-1/2 -translate-y-1/2"
             )}
         />
     );
@@ -262,7 +273,13 @@ function DockIconInner({
                 )}
             </motion.div>
 
-            {item.active && <ActiveDot orientation={orientation} variant={variant} />}
+            {item.active && (
+                <ActiveDot
+                    orientation={orientation}
+                    variant={variant}
+                    iconScale={iconScale}
+                />
+            )}
         </motion.div>
     );
 
