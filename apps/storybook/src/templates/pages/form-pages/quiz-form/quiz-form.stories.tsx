@@ -24,7 +24,7 @@ const meta: Meta<typeof QuizForm> = {
   argTypes: {
     cardVariant: {
       control: 'select',
-      options: ['default', 'gradient', 'bordered'],
+      options: ['default', 'gradient', 'bordered', 'dark'],
       description: 'Visual style of the question card',
       table: { defaultValue: { summary: 'default' } },
     },
