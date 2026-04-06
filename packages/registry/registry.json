@@ -1450,6 +1450,21 @@
           "type": "template"
         }
       }
+    },
+    "quiz-form": {
+      "name": "quiz-form",
+      "description": "The QuizForm component provides a fully animated, multi-step survey and onboarding form interface. It supports single-choice, multiple-choice, and star/numeric rating questions",
+      "dependencies": [
+        "@radix-ui/react-icons",
+        "framer-motion",
+        "class-variance-authority"
+      ],
+      "files": {
+        "main": {
+          "path": "templates/pages/quiz-form/index.tsx",
+          "type": "template"
+        }
+      }
     }
   } 
 }
