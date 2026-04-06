@@ -839,7 +839,7 @@ export const QuizForm: React.FC<QuizFormProps> & {
       <div className="p-8">
         {!submitted && <ProgressBar />}
         <AnimatePresence mode="wait">
-          {submitted ? (
+          {submitted && showResult  ? (
             <ResultPage key="result" />
           ) : (
             <motion.div key={`step-${step}`}>
