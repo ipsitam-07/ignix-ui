@@ -158,8 +158,8 @@ const LIGHT : VariantTokens = {
   summaryValue:         'text-slate-700',
   stepActive:           'bg-primary',
   stepInactive:         'bg-slate-200',
-  stepLabelActive:      'text-primary/500',
-  stepLabelCompleted:   'text-primary/300',
+  stepLabelActive:      'text-primary',
+  stepLabelCompleted:   'text-primary',
   stepLabelInactive:    'text-slate-300',
 };
 
@@ -379,6 +379,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({ question, className }) =
         const selected = value === opt;
         return (
           <motion.button
+            type="button"
             key={opt}
             role="radio"
             aria-checked={selected}
@@ -441,6 +442,7 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({ question, classNam
         const checked = value.includes(opt);
         return (
           <motion.button
+            type="button"
             key={opt}
             role="checkbox"
             aria-checked={checked}
@@ -503,6 +505,7 @@ export const RatingScale: React.FC<RatingScaleProps> = ({ question, className })
           const active = (hovered ?? value ?? 0) >= n;
           return (
             <motion.button
+              type="button"
               key={n}
               aria-label={`${n} star${n > 1 ? 's' : ''}`}
               aria-pressed={value === n}
@@ -543,6 +546,7 @@ export const RatingScale: React.FC<RatingScaleProps> = ({ question, className })
 
           return (
             <motion.button
+              type="button"
               key={n}
               aria-label={`Score ${n}`}
               aria-pressed={selected}
@@ -631,6 +635,7 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ className 
   return (
     <div className={cn('flex gap-3 mt-8', className)}>
       <motion.button
+        type="button"
         whileHover={step > 0 ? { scale: 1.03 } : {}}
         whileTap={step > 0 ? { scale: 0.97 } : {}}
         disabled={step === 0}
@@ -648,6 +653,7 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ className 
 
       {isLast ? (
         <motion.button
+          type="button"
           whileHover={canProceed ? { scale: 1.03 } : {}}
           whileTap={canProceed ? { scale: 0.97 } : {}}
           disabled={!canProceed}
@@ -660,6 +666,7 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ className 
         </motion.button>
       ) : (
         <motion.button
+          type="button"
           whileHover={canProceed ? { scale: 1.03 } : {}}
           whileTap={canProceed ? { scale: 0.97 } : {}}
           disabled={!canProceed}
@@ -689,7 +696,7 @@ export const ResultPage: React.FC<ResultPageProps> = ({ className }) => {
     const a = answers[q.id];
     if (a === undefined || a === null) return '—';
     if (Array.isArray(a)) return a.length > 0 ? a.join(', ') : '—';
-    if (q.type === 'rating') return `${a} / ${q.scale}`;
+    if (q.type === 'rating') return `${a} / ${q.scale ?? 5}`;
     return String(a);
   };
 
@@ -718,6 +725,7 @@ export const ResultPage: React.FC<ResultPageProps> = ({ className }) => {
         ))}
       </div>
       <motion.button
+        type="button"
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
         onClick={reset}
