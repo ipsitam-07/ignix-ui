@@ -27,6 +27,7 @@ const sidebars: SidebarsConfig = {
         'components/switch',
         'components/tab',
         'components/table',
+        'components/floating-dock',
         'components/textarea',
         'components/toast',
         'components/tooltip',
