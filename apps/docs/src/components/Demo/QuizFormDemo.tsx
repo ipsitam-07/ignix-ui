@@ -33,7 +33,7 @@ export const QuizFormDemo = () => {
 
     useEffect(() => {
         setTheme(colorMode === 'dark' ? 'dark' : 'light');
-    }, [colorMode]);
+    }, [cardVariant, colorMode]);
 
     const isCardVariant = (v: string): v is CardVariantType => {
         return cardVariants.includes(v as CardVariantType);
