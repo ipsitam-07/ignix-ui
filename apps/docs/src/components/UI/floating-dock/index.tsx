@@ -3,7 +3,6 @@ import {
     useMotionValue,
     useSpring,
     useTransform,
-    AnimatePresence,
     Reorder,
     type MotionValue,
 } from "framer-motion";
@@ -11,7 +10,7 @@ import { useRef, useState, useCallback, useEffect, useMemo } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { cn } from "../../../utils/cn";
-import { useIsMobile } from "./use-mobile";
+
 
 const dockVariants = cva("flex mx-auto w-fit", {
     variants: {
@@ -23,8 +22,8 @@ const dockVariants = cva("flex mx-auto w-fit", {
             neon: "bg-dock-neon-bg border border-dock-neon-glow/30 shadow-[0_0_30px_-5px_hsl(var(--dock-neon-glow)/0.4),inset_0_1px_0_0_hsl(var(--dock-neon-glow)/0.1)]",
         },
         orientation: {
-            horizontal: "flex-row items-end gap-3 px-5 pb-3 pt-4 rounded-2xl",
-            vertical: "flex-col items-center gap-3 py-5 pl-3 pr-4 rounded-2xl",
+            horizontal: "flex-row items-end gap-2 md:gap-3 px-3 md:px-5 pb-2 md:pb-3 pt-3 md:pt-4 rounded-2xl",
+            vertical: "flex-col items-center gap-2 md:gap-3 py-3 md:py-5 pl-2 md:pl-3 pr-3 md:pr-4 rounded-2xl",
         },
     },
     defaultVariants: { variant: "solid", orientation: "horizontal" },
@@ -146,10 +145,12 @@ function ActiveDot({
     orientation,
     variant,
     iconScale,
+    baseIconSize,
 }: {
     orientation: Orientation;
     variant: Variant;
     iconScale: MotionValue<number>;
+    baseIconSize: number;
 }) {
     const dotStyles = {
         solid: "bg-dock-solid-foreground/70",
@@ -162,8 +163,8 @@ function ActiveDot({
 
     const dynamicOffset = useTransform(iconScale, (s: number) => {
         if (orientation === "horizontal") return 0;
-        const halfWidth = 24 * s;
-        return (halfWidth + 32);
+        const halfWidth = (baseIconSize / 2) * s;
+        return halfWidth + (baseIconSize / 2) + 8;
     });
 
     return (
@@ -182,8 +183,6 @@ function ActiveDot({
 }
 
 // DockIconInner
-const BASE_ICON_SIZE = 48;
-const MAX_ICON_SIZE = 90;
 
 function DockIconInner({
     item,
@@ -191,12 +190,16 @@ function DockIconInner({
     orientation,
     mousePos,
     isDragging,
+    baseIconSize,
+    maxIconSize,
 }: {
     item: DockItem;
     variant: Variant;
     orientation: Orientation;
     mousePos: ReturnType<typeof useMotionValue<number>>;
     isDragging: boolean;
+    baseIconSize: number;
+    maxIconSize: number;
 }) {
     const ref = useRef<HTMLDivElement>(null);
 
@@ -213,11 +216,11 @@ function DockIconInner({
     });
 
     const slotSize = useSpring(
-        useTransform(distance, [-150, 0, 150], [BASE_ICON_SIZE, MAX_ICON_SIZE, BASE_ICON_SIZE]),
+        useTransform(distance, [-150, 0, 150], [baseIconSize, maxIconSize, baseIconSize]),
         { mass: 0.15, stiffness: 150, damping: 25 }
     );
 
-    const iconScale = useTransform(slotSize, (s) => s / BASE_ICON_SIZE);
+    const iconScale = useTransform(slotSize, (s) => s / baseIconSize);
 
     const colorStyle: React.CSSProperties | undefined = item.color
         ? {
@@ -236,8 +239,8 @@ function DockIconInner({
         <motion.div
             ref={ref}
             style={{
-                width: orientation === "horizontal" ? slotSize : BASE_ICON_SIZE,
-                height: orientation === "vertical" ? slotSize : BASE_ICON_SIZE,
+                width: orientation === "horizontal" ? slotSize : baseIconSize,
+                height: orientation === "vertical" ? slotSize : baseIconSize,
             }}
             className={cn(
                 "relative flex justify-center outline-none focus-visible:ring-2 focus-visible:ring-dock-neon-glow/60",
@@ -259,8 +262,8 @@ function DockIconInner({
         >
             <motion.div
                 style={{
-                    width: BASE_ICON_SIZE,
-                    height: BASE_ICON_SIZE,
+                    width: baseIconSize,
+                    height: baseIconSize,
                     scale: iconScale,
                     transformOrigin: orientation === "horizontal" ? "bottom" : "center",
                     ...colorStyle,
@@ -278,6 +281,7 @@ function DockIconInner({
                     orientation={orientation}
                     variant={variant}
                     iconScale={iconScale}
+                    baseIconSize={baseIconSize}
                 />
             )}
         </motion.div>
@@ -299,11 +303,15 @@ function ReorderableItem({
     variant,
     orientation,
     mousePos,
+    baseIconSize,
+    maxIconSize,
 }: {
     item: DockItem;
     variant: Variant;
     orientation: Orientation;
     mousePos: ReturnType<typeof useMotionValue<number>>;
+    baseIconSize: number;
+    maxIconSize: number;
 }) {
     const [isDragging, setIsDragging] = useState(false);
     const itemId = item.id ?? item.label;
@@ -314,6 +322,7 @@ function ReorderableItem({
                 <DockSeparator orientation={orientation} variant={variant} />
             )}
             <Reorder.Item
+                as="div"
                 value={itemId}
                 onDragStart={() => setIsDragging(true)}
                 onDragEnd={() => setIsDragging(false)}
@@ -328,6 +337,8 @@ function ReorderableItem({
                     orientation={orientation}
                     mousePos={mousePos}
                     isDragging={isDragging}
+                    baseIconSize={baseIconSize}
+                    maxIconSize={maxIconSize}
                 />
             </Reorder.Item>
         </>
@@ -340,166 +351,35 @@ function StaticItem({
     variant,
     orientation,
     mousePos,
+    baseIconSize,
+    maxIconSize,
 }: {
     item: DockItem;
     variant: Variant;
     orientation: Orientation;
     mousePos: ReturnType<typeof useMotionValue<number>>;
+    baseIconSize: number;
+    maxIconSize: number;
 }) {
     return (
         <>
             {item.separator && (
                 <DockSeparator orientation={orientation} variant={variant} />
             )}
-            <li style={{ listStyle: "none" }} className="relative">
+            <div style={{ listStyle: "none" }} className="relative shrink-0">
                 <DockIconInner
                     item={item}
                     variant={variant}
                     orientation={orientation}
                     mousePos={mousePos}
                     isDragging={false}
+                    baseIconSize={baseIconSize}
+                    maxIconSize={maxIconSize}
                 />
-            </li>
+            </div>
         </>
     );
 }
-
-// MobileDock
-
-function MobileDock({
-    items: initialItems,
-    variant,
-    reorderable,
-    className,
-    onReorder,
-}: {
-    items: DockItem[];
-    variant: Variant;
-    reorderable: boolean;
-    className?: string;
-    onReorder?: (items: DockItem[]) => void;
-}) {
-    const [open, setOpen] = useState(false);
-    const mousePos = useMotionValue(Infinity);
-
-    const itemMap = useMemo(
-        () => new Map(initialItems.map((it) => [it.id ?? it.label, it])),
-        [initialItems]
-    );
-
-    const [orderedIds, setOrderedIds] = useState(() =>
-        initialItems.map((it) => it.id ?? it.label)
-    );
-
-    useEffect(() => {
-        setOrderedIds(initialItems.map((it) => it.id ?? it.label));
-    }, [initialItems]);
-
-    const handleReorder = (newIds: string[]) => {
-        setOrderedIds(newIds);
-        const reordered = newIds.map((id) => itemMap.get(id)!).filter(Boolean);
-        onReorder?.(reordered);
-    };
-
-    const dockClass = cn(
-        dockVariants({ variant, orientation: "vertical" }),
-        "list-none p-0 m-0"
-    );
-
-    return (
-        <div
-            className={cn(
-                "fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3",
-                className
-            )}
-        >
-            <AnimatePresence>
-                {open && (
-                    <>
-                        {reorderable ? (
-                            <Reorder.Group
-                                axis="y"
-                                values={orderedIds}
-                                onReorder={handleReorder}
-                                as="ul"
-                                initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                                transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                                className={dockClass}
-                                role="toolbar"
-                                aria-label="Dock"
-                            >
-                                {orderedIds.map((id) => {
-                                    const item = itemMap.get(id);
-                                    if (!item) return null;
-                                    return (
-                                        <ReorderableItem
-                                            key={id}
-                                            item={item}
-                                            variant={variant}
-                                            orientation="vertical"
-                                            mousePos={mousePos}
-                                        />
-                                    );
-                                })}
-                            </Reorder.Group>
-                        ) : (
-                            <motion.ul
-                                initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                                transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                                className={dockClass}
-                                role="toolbar"
-                                aria-label="Dock"
-                            >
-                                {initialItems.map((item) => (
-                                    <StaticItem
-                                        key={item.id ?? item.label}
-                                        item={item}
-                                        variant={variant}
-                                        orientation="vertical"
-                                        mousePos={mousePos}
-                                    />
-                                ))}
-                            </motion.ul>
-                        )}
-                    </>
-                )}
-            </AnimatePresence>
-
-            <button
-                onClick={() => setOpen((o) => !o)}
-                aria-expanded={open}
-                aria-label={open ? "Close dock" : "Open dock"}
-                className={cn(
-                    "w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-transform duration-200",
-                    open && "rotate-45",
-                    variant === "neon"
-                        ? "bg-dock-neon-bg border border-dock-neon-glow/40 text-[hsl(var(--dock-neon-glow))]"
-                        : "bg-dock-solid text-dock-solid-foreground"
-                )}
-            >
-                <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                >
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-            </button>
-        </div>
-    );
-}
-
-// Main export
 
 export function FloatingDock({
     items: initialItems,
@@ -509,12 +389,26 @@ export function FloatingDock({
     className,
     onReorder,
 }: FloatingDockProps) {
-    const isMobile = useIsMobile();
-
     const v = variant!;
     const o = orientation!;
 
     const mousePos = useMotionValue(Infinity);
+
+    const [iconSizes, setIconSizes] = useState({ base: 48, max: 90 });
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 768) {
+                setIconSizes({ base: 38, max: 65 });
+            } else {
+                setIconSizes({ base: 48, max: 90 });
+            }
+        };
+
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     const itemMap = useMemo(
         () => new Map(initialItems.map((it) => [it.id ?? it.label, it])),
@@ -536,23 +430,21 @@ export function FloatingDock({
         [mousePos, o]
     );
 
+    const handleTouchMove = useCallback(
+        (e: React.TouchEvent) => {
+            const touch = e.touches?.[0];
+            if (touch) {
+                mousePos.set(o === "horizontal" ? touch.clientX : touch.clientY);
+            }
+        },
+        [mousePos, o]
+    );
+
     const handleReorder = (newIds: string[]) => {
         setOrderedIds(newIds);
         const reordered = newIds.map((id) => itemMap.get(id)!).filter(Boolean);
         onReorder?.(reordered);
     };
-
-    if (isMobile) {
-        return (
-            <MobileDock
-                items={initialItems}
-                variant={v}
-                reorderable={reorderable}
-                className={className}
-                onReorder={onReorder}
-            />
-        );
-    }
 
     const listClass = cn(
         dockVariants({ variant: v, orientation: o }),
@@ -564,9 +456,11 @@ export function FloatingDock({
 
     if (!reorderable) {
         return (
-            <ul
+            <div
                 onMouseMove={handleMouseMove}
+                onTouchMove={handleTouchMove}
                 onMouseLeave={handleMouseLeave}
+                onTouchEnd={handleMouseLeave}
                 className={listClass}
                 role="toolbar"
                 aria-label="Dock"
@@ -579,9 +473,11 @@ export function FloatingDock({
                         variant={v}
                         orientation={o}
                         mousePos={mousePos}
+                        baseIconSize={iconSizes.base}
+                        maxIconSize={iconSizes.max}
                     />
                 ))}
-            </ul>
+            </div>
         );
     }
 
@@ -590,9 +486,11 @@ export function FloatingDock({
             axis={o === "horizontal" ? "x" : "y"}
             values={orderedIds}
             onReorder={handleReorder}
-            as="ul"
+            as="div"
             onMouseMove={handleMouseMove}
+            onTouchMove={handleTouchMove}
             onMouseLeave={handleMouseLeave}
+            onTouchEnd={handleMouseLeave}
             className={listClass}
             role="toolbar"
             aria-label="Dock"
@@ -608,6 +506,8 @@ export function FloatingDock({
                         variant={v}
                         orientation={o}
                         mousePos={mousePos}
+                        baseIconSize={iconSizes.base}
+                        maxIconSize={iconSizes.max}
                     />
                 );
             })}
