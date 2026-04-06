@@ -66,6 +66,7 @@ interface FloatingDockProps extends VariantProps<typeof dockVariants> {
     className?: string;
     reorderable?: boolean;
     onReorder?: (items: DockItem[]) => void;
+    storageKey?: string;
 }
 
 // DockSeparator
@@ -388,6 +389,7 @@ export function FloatingDock({
     reorderable = false,
     className,
     onReorder,
+    storageKey,
 }: FloatingDockProps) {
     const v = variant!;
     const o = orientation!;
@@ -419,9 +421,45 @@ export function FloatingDock({
         initialItems.map((it) => it.id ?? it.label)
     );
 
+    const hasLoadedStorage = useRef(false);
+
     useEffect(() => {
-        setOrderedIds(initialItems.map((it) => it.id ?? it.label));
-    }, [initialItems]);
+        setOrderedIds((prev) => {
+            let workingPrev = prev;
+
+            // Load from localStorage only once on client-side mount
+            if (storageKey && !hasLoadedStorage.current) {
+                hasLoadedStorage.current = true;
+                try {
+                    const saved = localStorage.getItem(storageKey);
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            workingPrev = parsed;
+                        }
+                    }
+                } catch (e) {
+                    console.warn("Could not load dock order from storage");
+                }
+            }
+
+            const newIds = initialItems.map((it) => it.id ?? it.label);
+            const prevSet = new Set(workingPrev);
+            const newSet = new Set(newIds);
+
+            if (prevSet.size === newSet.size && [...prevSet].every((id) => newSet.has(id))) {
+                return workingPrev;
+            }
+
+            const nextIds = workingPrev.filter((id) => newSet.has(id));
+            for (const id of newIds) {
+                if (!prevSet.has(id)) {
+                    nextIds.push(id);
+                }
+            }
+            return nextIds;
+        });
+    }, [initialItems, storageKey]);
 
     const handleMouseMove = useCallback(
         (e: React.MouseEvent) => {
@@ -442,6 +480,13 @@ export function FloatingDock({
 
     const handleReorder = (newIds: string[]) => {
         setOrderedIds(newIds);
+        if (storageKey) {
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(newIds));
+            } catch (e) {
+                console.warn("Could not save dock order to storage");
+            }
+        }
         const reordered = newIds.map((id) => itemMap.get(id)!).filter(Boolean);
         onReorder?.(reordered);
     };

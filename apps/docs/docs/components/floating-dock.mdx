@@ -56,6 +56,7 @@ function MyDock() {
 - **Separators**: Group related items using visual dividers.
 - **Reorderable**: Enable drag-to-reorder for a customizable user experience.
 - **Per-icon Colors**: Custom background and border tinting for each individual icon.
+- **Persistent Ordering**: Automatically saves user-dragged ordering directly to `localStorage` utilizing the `storageKey` prop.
 
 ## Props
 
@@ -67,6 +68,7 @@ function MyDock() {
 | `reorderable` | `boolean` | `false` | Enables drag-to-reorder (requires Framer Motion `Reorder`). |
 | `onReorder` | `(items: DockItem[]) => void` | - | Callback triggered when items are reordered. |
 | `className` | `string` | - | Additional CSS classes for the dock container. |
+| `storageKey` | `string` | - | A unique key string. If provided, reordered item states are automatically stored and restored from `localStorage`. |
 
 ### DockItem Props
 
