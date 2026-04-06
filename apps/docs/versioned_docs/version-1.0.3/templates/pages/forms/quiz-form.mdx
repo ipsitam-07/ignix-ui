@@ -1,0 +1,135 @@
+---
+sidebar_position: 11
+title: Quiz Form
+description: A composable multi-step quiz and survey form with animated transitions, three question types (single choice, multiple choice, rating), progress tracking, and a scalable token-based variant system.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import { QuizFormDemo, CompoundDemo } from '@site/src/components/Demo/QuizFormDemo';
+import CodeBlock from '@theme/CodeBlock';
+
+The **QuizForm** component provides a fully animated, multi-step survey and onboarding form interface. It supports single-choice, multiple-choice, and star/numeric rating questions, with a token-based variant system that makes adding new visual styles a zero-logic-change operation.
+
+<QuizFormDemo />
+
+## Installation
+
+<Tabs>
+<TabItem value="cli" label="CLI" default>
+    ```bash
+    ignix add component quiz-form
+    ```
+</TabItem>
+<TabItem value="manual" label="Manual">
+    ```tsx
+    // Dependencies: framer-motion, class-variance-authority, lucide-react
+    // Copy index.tsx to your components directory and adjust the cn import path.
+    ```
+</TabItem>
+</Tabs>
+
+## Props
+
+### `<QuizForm>`
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `questions` | `Question[]` | — | **Required.** Array of question objects to render. |
+| `onSubmit` | `(answers: QuizAnswers) => void` | — | **Required.** Called with all answers when the user submits. |
+| `onStepChange` | `(step: number, total: number) => void` | `undefined` | Fires on every navigation step change. |
+| `initialAnswers` | `QuizAnswers` | `{}` | Pre-populate answers (e.g. editing a previous submission). |
+| `cardVariant` | `'default' \| 'gradient' \| 'bordered'` | `'default'` | Visual style of the question card. |
+| `showResult` | `boolean` | `true` | Show a results summary page after submission. |
+| `stepLabels` | `string[]` | `undefined` | Short labels rendered as pill-progress above the bar (onboarding mode). |
+| `submitLabel` | `string` | `'Submit'` | Label for the submit button on the last question. |
+| `nextLabel` | `string` | `'Continue'` | Label for the next/continue button. |
+| `backLabel` | `string` | `'Back'` | Label for the back button. |
+| `className` | `string` | `undefined` | Extra classes applied to the outer page wrapper. |
+| `children` | `React.ReactNode` | `undefined` | Pass sub-components directly for compound usage. |
+
+### `Question` object
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | `string` | ✓ | Unique identifier; used as the key in the answers map. |
+| `type` | `'single' \| 'multiple' \| 'rating'` | ✓ | Determines which input control is rendered. |
+| `question` | `string` | ✓ | The question text displayed to the user. |
+| `hint` | `string` | | Secondary helper text shown below the question. |
+| `options` | `string[]` | For `single` / `multiple` | Answer options for choice questions. |
+| `scale` | `number` | For `rating` | Number of steps — `≤ 5` renders stars, `> 5` renders a numeric NPS row. |
+| `required` | `boolean` | | Defaults to `true`. Set to `false` to allow skipping. |
+
+## Sub-components
+
+All sub-components consume `QuizFormContext` internally — they must be rendered inside a `<QuizForm>` provider.
+
+| Component | Description |
+|-----------|-------------|
+| `QuizForm.ProgressBar` | Animated progress bar with optional step-label pills. |
+| `QuizForm.QuestionCard` | Renders the current question with a slide transition. |
+| `QuizForm.RadioGroup` | Single-choice radio button group. |
+| `QuizForm.CheckboxGroup` | Multiple-choice 2-column checkbox grid. |
+| `QuizForm.RatingScale` | Star rating (scale ≤ 5) or numeric NPS row (scale > 5). |
+| `QuizForm.NavigationButtons` | Back + Next/Submit buttons with disabled state handling. |
+| `QuizForm.ResultPage` | Submission confirmation with per-question answer summary. |
+| `QuizForm.AccentBar` | 1 px decorative gradient bar (violet → fuchsia → pink). |
+
+
+## `useQuizForm` hook
+
+Access the full form context from any custom sub-component:
+
+```tsx
+import { useQuizForm } from '@ignix-ui/quizform';
+
+function MyCustomControl() {
+const { step, total, answers, goNext, cardVariant } = useQuizForm();
+return <span>{step + 1} / {total}</span>;
+}
+```
+
+The hook throws if called outside a `<QuizForm>` provider.
+
+## Examples
+
+### Feedback survey
+
+```tsx
+import { QuizForm } from '@ignix-ui/quizform';
+
+<QuizForm
+questions={questions}
+onSubmit={(answers) => console.log(answers)}
+cardVariant="default"
+showResult={true}
+/>
+```
+
+### Onboarding flow with step labels
+
+```tsx
+<QuizForm
+questions={onboardingQuestions}
+onSubmit={handleSubmit}
+stepLabels={['Role', 'Team', 'Goals', 'Experience']}
+submitLabel="Finish Setup"
+nextLabel="Next Step"
+/>
+```
+
+### Gradient variant
+
+```tsx
+<QuizForm questions={questions} onSubmit={handleSubmit} cardVariant="gradient" />
+```
+
+### Pre-filled answers
+
+```tsx
+<QuizForm
+questions={questions}
+onSubmit={handleSubmit}
+initialAnswers={{ q1: 'Social Media', q3: 4 }}
+/>
+```

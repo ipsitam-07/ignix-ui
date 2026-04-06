@@ -1,0 +1,870 @@
+import React, { useState, useCallback, createContext, useContext } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cva } from 'class-variance-authority';
+import {
+  CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  StarIcon,
+  PaperPlaneIcon,
+  ReloadIcon,
+} from "@radix-ui/react-icons";
+import { cn } from '@site/src/utils/cn';
+
+/* ============================================
+  TYPES & INTERFACES
+============================================ */
+
+export type QuestionType = 'single' | 'multiple' | 'rating';
+export type QuizAnswers = Record<string, any>;
+export type CardVariantType = 'default' | 'gradient' | 'bordered' | 'dark';
+export type ThemeVariant = 'dark' | 'light';
+export type ThemeType = 'light' | 'dark';
+
+export interface Question {
+  id: string;
+  type: QuestionType;
+  question: string;
+  hint?: string;
+  options?: string[];
+  /** For rating type — number of steps (e.g. 5 for stars, 10 for NPS score) */
+  scale?: number;
+  required?: boolean;
+}
+
+export interface QuizFormProps {
+  questions: Question[];
+  onSubmit: (answers: QuizAnswers) => void;
+  onStepChange?: (step: number, total: number) => void;
+  /** Initial answer values (e.g. for editing a previous submission) */
+  initialAnswers?: QuizAnswers;
+  /** Card visual style */
+  cardVariant?: CardVariantType;
+  /** Show a summary page after submit */
+  showResult?: boolean;
+  /** Optional short labels shown as step pills above the progress bar */
+  stepLabels?: string[];
+  /** Label for the submit button */
+  submitLabel?: string;
+  /** Label for the next/continue button */
+  nextLabel?: string;
+  /** Label for the back button */
+  backLabel?: string;
+  className?: string;
+  children?: React.ReactNode;
+  theme?: ThemeType;
+}
+
+/* ============================================
+   CONTEXT
+============================================ */
+
+interface QuizFormContextType {
+  questions: Question[];
+  answers: QuizAnswers;
+  step: number;
+  total: number;
+  direction: number;
+  submitted: boolean;
+  cardVariant: CardVariantType;
+  stepLabels?: string[];
+  setAnswer: (id: string, value: any) => void;
+  goNext: () => void;
+  goPrev: () => void;
+  handleSubmit: () => void;
+  reset: () => void;
+  hasAnswer: (q: Question) => boolean;
+  submitLabel: string;
+  nextLabel: string;
+  backLabel: string;
+  theme: ThemeType;
+}
+
+const QuizFormContext = createContext<QuizFormContextType | undefined>(undefined);
+
+export const useQuizForm = (): QuizFormContextType => {
+  const ctx = useContext(QuizFormContext);
+  if (!ctx) throw new Error('QuizForm components must be used within <QuizForm>');
+  return ctx;
+};
+
+/* ============================================
+   VARIANT TOKEN OBJECTS
+   ─────────────────────────────────────────
+   To add a new variant:
+     1. Extend CardVariantType union
+     2. Create a token object below (copy L as a template)
+     3. Register it in VARIANT_TOKENS
+     4. Add a card-level class to CardVariants (cva)
+   No conditional logic anywhere else needs to change.
+============================================ */
+
+type VariantTokens = {
+  pageBg: string;
+  progressLabel: string;
+  progressBg: string;
+  badge: string;
+  questionText: string;
+  hintText: string;
+  optionDefault: string;
+  optionSelected: string;
+  labelDefault: string;
+  labelSelected: string;
+  radioSelected: string;
+  checkboxSelected: string;
+  controlDefault: string;
+  starInactive: string;
+  scoreDefault: string;
+  scoreHover: string;
+  scaleLabel: string;
+  btnBack: string;
+  btnBackDisabled: string;
+  btnPrimary: string;
+  btnDisabled: string;
+  summaryCard: string;
+  summaryLabel: string;
+  summaryValue: string;
+  stepActive: string;
+  stepInactive: string;
+  stepLabelActive: string;
+  stepLabelCompleted: string;
+  stepLabelInactive: string;
+};
+
+const LIGHT : VariantTokens = {
+  pageBg:               'bg-slate-100',
+  progressLabel:        'text-primary-500',
+  progressBg:           'bg-slate-200',
+  badge:                'bg-primary/10 border border-primary/20 text-primary',
+  questionText:         'text-slate-800',
+  hintText:             'text-slate-400',
+  optionDefault:        'bg-slate-50 border-slate-200 hover:border-primary/100 hover:bg-violet-50/50',
+  optionSelected:       'bg-primary/20 border-primary/50 shadow-primary/50',
+  labelDefault:         'text-slate-500',
+  labelSelected:        'text-primary-700',
+  radioSelected:        'bg-primary border-primary',
+  checkboxSelected:     'bg-primary border-primary',
+  controlDefault:       'border-slate-300',
+  starInactive:         'text-slate-200',
+  scoreDefault:         'bg-slate-50 border-slate-200 text-slate-400 shadow-sm',
+  scoreHover:           'bg-primary/10 border-primary/40 text-primary',
+  scaleLabel:           'text-slate-400',
+  btnBack:              'border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600 hover:bg-slate-50 cursor-pointer',
+  btnBackDisabled:      'border-slate-100 text-slate-400',
+  btnPrimary:           'bg-primary text-white shadow-lg shadow-primary/25 hover:shadow-primary/40 cursor-pointer',
+  btnDisabled:          'bg-slate-100 text-slate-400 cursor-not-allowed',
+  summaryCard:          'bg-slate-50 border border-slate-200 shadow-sm',
+  summaryLabel:         'text-slate-400',
+  summaryValue:         'text-slate-700',
+  stepActive:           'bg-primary',
+  stepInactive:         'bg-slate-200',
+  stepLabelActive:      'text-primary/500',
+  stepLabelCompleted:   'text-primary/300',
+  stepLabelInactive:    'text-slate-300',
+};
+
+/** Gradient - Consumer must provide a colourful background. */
+const GRADIENT : VariantTokens = {
+  pageBg:               'bg-gradient-to-br from-violet-600 via-purple-600 to-pink-500',
+  progressLabel:        'text-white/80',
+  progressBg:           'bg-white/20',
+  badge:                'bg-white/15 border border-white/30 text-white/90',
+  questionText:         'text-white',
+  hintText:             'text-white/65',
+  optionDefault:        'bg-white/10 border-white/20 hover:border-white/50 hover:bg-white/20',
+  optionSelected:       'bg-white/25 border-white/60 shadow-white/10',
+  labelDefault:         'text-white/70',
+  labelSelected:        'text-white',
+  radioSelected:        'bg-violet-400/80 border-violet-300',
+  checkboxSelected:     'bg-fuchsia-400/80 border-fuchsia-300',
+  controlDefault:       'border-white/30',
+  starInactive:         'text-white/25',
+  scoreDefault:         'bg-white/10 border-white/20 text-white/60',
+  scoreHover:           'bg-white/25 border-white/50 text-white',
+  scaleLabel:           'text-white/50',
+  btnBack:              'border-white/25 text-white/60 hover:border-white/50 hover:text-white hover:bg-white/10',
+  btnBackDisabled:      'border-white/10 text-white/25',
+  btnPrimary:           'bg-white/90 text-violet-700 font-bold shadow-lg shadow-black/20 hover:bg-white cursor-pointer',
+  btnDisabled:          'bg-white/10 text-white/25 cursor-not-allowed',
+  summaryCard:          'bg-white/10 border border-white/20',
+  summaryLabel:         'text-white/55',
+  summaryValue:         'text-white',
+  stepActive:           'bg-white/80',
+  stepInactive:         'bg-white/20',
+  stepLabelActive:      'text-white',
+  stepLabelCompleted:   'text-white/50',
+  stepLabelInactive:    'text-white/30',
+};
+
+const DARK : VariantTokens = {
+    pageBg:               'border bg-slate-950',
+    progressLabel:        'text-slate-300',
+    progressBg:           'bg-slate-800',
+    badge:                'bg-primary/20 border border-primary/30 text-primary',
+    questionText:         'text-slate-100',
+    hintText:             'text-slate-400',
+    optionDefault:        'bg-slate-900 border-slate-700 hover:border-primary hover:bg-slate-800',
+    optionSelected:       'bg-primary/30 border-primary shadow-primary/40',
+    labelDefault:         'text-slate-400',
+    labelSelected:        'text-primary-300',
+    radioSelected:        'bg-primary border-primary',
+    checkboxSelected:     'bg-primary border-primary',
+    controlDefault:       'border-slate-600',
+    starInactive:         'text-slate-600',
+    scoreDefault:         'bg-slate-900 border-slate-700 text-slate-400',
+    scoreHover:           'bg-primary/20 border-primary text-primary',
+    scaleLabel:           'text-slate-500',
+    btnBack:              'border-slate-700 text-slate-400 hover:bg-slate-800',
+    btnBackDisabled:      'border-slate-800 text-slate-500',
+    btnPrimary:           'bg-primary text-white shadow-lg shadow-primary/20',
+    btnDisabled:          'bg-slate-800 text-slate-500',
+    summaryCard:          'bg-slate-900 border border-slate-700',
+    summaryLabel:         'text-slate-500',
+    summaryValue:         'text-slate-200',
+    stepActive:           'bg-primary',
+    stepInactive:         'bg-slate-700',
+    stepLabelActive:      'text-primary',
+    stepLabelCompleted:   'text-primary/60',
+    stepLabelInactive:    'text-slate-500',
+};
+
+// ─── Register variants here ───────────────────────────────────────────
+const VARIANT_TOKENS: Record<CardVariantType, VariantTokens> = {
+  default:  LIGHT,
+  gradient: GRADIENT,
+  bordered: LIGHT,
+  dark:     DARK,
+};
+
+const tok = (variant: CardVariantType, theme: ThemeType) => {
+    if (theme === 'dark') return DARK;
+  
+    // gradient stays same (already dark-friendly)
+    if (variant === 'gradient') return VARIANT_TOKENS[variant];
+  
+    return VARIANT_TOKENS[variant];
+};
+
+/* ============================================
+   CARD SHAPE VARIANTS (cva)
+   Add a new key here when registering a new variant.
+============================================ */
+
+export const CardVariants = cva(
+  'w-full max-w-lg rounded-3xl overflow-hidden transition-all duration-300',
+  {
+    variants: {
+      variant: {
+        default:  'bg-background border border-slate-200/80 shadow-xl',
+        gradient: 'bg-white/10 backdrop-blur-2xl border border-white/25 shadow-2xl shadow-black/30 ring-1 ring-white/10',
+        bordered: 'bg-background border-2 border-primary/50',
+        dark:     'border border-slate-200/80 shadow-xl',
+      },
+    },
+    defaultVariants: { variant: 'default' },
+  }
+);
+
+/* ============================================
+   ANIMATION VARIANTS
+============================================ */
+
+const questionSlide = {
+  enter: (dir: number) => ({ x: dir > 0 ? 64 : -64, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit:  (dir: number) => ({ x: dir > 0 ? -64 : 64, opacity: 0 }),
+};
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+  exit:    { opacity: 0, y: -16 },
+};
+
+const scaleIn = {
+  initial: { opacity: 0, scale: 0.5 },
+  animate: { opacity: 1, scale: 1 },
+  exit:    { opacity: 0, scale: 0.5 },
+};
+
+const popIn = {
+  initial: { scale: 0, opacity: 0 },
+  animate: { scale: 1, opacity: 1 },
+  exit:    { scale: 0, opacity: 0 },
+};
+
+/* ============================================
+   PROGRESS BAR
+============================================ */
+
+export interface ProgressBarProps { className?: string }
+
+export const ProgressBar: React.FC<ProgressBarProps> = ({ className }) => {
+  const { step, total, cardVariant, stepLabels, theme } = useQuizForm();
+  const pct = ((step + 1) / total) * 100;
+  const t = tok(cardVariant, theme);
+
+  return (
+    <div className={cn('mb-8', className)}>
+      {stepLabels && stepLabels.length > 0 && (
+        <div className="flex gap-2 mb-4">
+          {stepLabels.map((label, i) => (
+            <div key={label} className="flex-1 flex flex-col items-center gap-1">
+              <div className={cn('w-full h-1 rounded-full transition-all duration-500', i <= step ? t.stepActive : t.stepInactive)} />
+              <span className={cn(
+                'text-[10px] font-semibold transition-colors',
+                i === step ? t.stepLabelActive : i < step ? t.stepLabelCompleted : t.stepLabelInactive
+              )}>
+                {label}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="flex justify-between mb-2">
+        <span className={cn('text-xs font-semibold tracking-widest uppercase', t.progressLabel)}>
+          {stepLabels ? `Step ${step + 1} of ${total}` : `Question ${step + 1} of ${total}`}
+        </span>
+        <span className={cn('text-xs font-semibold', t.progressLabel)}>{Math.round(pct)}%</span>
+      </div>
+      <div className={cn('h-1.5 rounded-full overflow-hidden', t.progressBg)}>
+        <motion.div
+          className="h-full rounded-full bg-primary"
+          initial={false}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
+        />
+      </div>
+    </div>
+  );
+};
+
+/* ============================================
+   QUESTION TYPE BADGE
+============================================ */
+
+const typeLabelMap: Record<QuestionType, string> = {
+  single:   'Single Choice',
+  multiple: 'Multiple Choice',
+  rating:   'Rating',
+};
+
+export interface QuestionBadgeProps { type: QuestionType; className?: string }
+
+export const QuestionBadge: React.FC<QuestionBadgeProps> = ({ type, className }) => {
+  const { cardVariant, theme } = useQuizForm();
+  return (
+    <span className={cn(
+      'inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold mb-4',
+      tok(cardVariant, theme).badge,
+      className
+    )}>
+      {typeLabelMap[type]}
+    </span>
+  );
+};
+
+/* ============================================
+   RADIO GROUP (Single Choice)
+============================================ */
+
+export interface RadioGroupProps { question: Question; className?: string }
+
+export const RadioGroup: React.FC<RadioGroupProps> = ({ question, className }) => {
+  const { answers, setAnswer, cardVariant, theme } = useQuizForm();
+  const t = tok(cardVariant, theme);
+  const value = answers[question.id] as string | undefined;
+  if (!question.options) return null;
+
+  return (
+    <div className={cn('space-y-3', className)} role="radiogroup" aria-label={question.question}>
+      {question.options.map((opt, i) => {
+        const selected = value === opt;
+        return (
+          <motion.button
+            key={opt}
+            role="radio"
+            aria-checked={selected}
+            initial={{ opacity: 0, x: 18 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.06, duration: 0.28 }}
+            whileHover={{ x: 4 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setAnswer(question.id, opt)}
+            className={cn(
+              'w-full flex items-center gap-4 px-5 py-4 rounded-2xl border text-left shadow-sm transition-all duration-200',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
+              selected ? t.optionSelected : t.optionDefault
+            )}
+          >
+            <span className={cn(
+              'w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-200',
+              selected ? t.radioSelected : t.controlDefault
+            )}>
+              {selected && (
+                <motion.span {...popIn} transition={{ duration: 0.16, type: 'spring', stiffness: 400 }}>
+                  <CheckIcon className="w-3 h-3 text-white" />
+                </motion.span>
+              )}
+            </span>
+            <span className={cn('text-sm font-medium transition-colors', selected ? t.labelSelected : t.labelDefault)}>
+              {opt}
+            </span>
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+};
+
+/* ============================================
+   CHECKBOX GROUP (Multiple Choice)
+============================================ */
+
+export interface CheckboxGroupProps { question: Question; className?: string }
+
+export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({ question, className }) => {
+  const { answers, setAnswer, cardVariant, theme } = useQuizForm();
+  const t = tok(cardVariant, theme);
+  const value = (answers[question.id] as string[]) ?? [];
+
+  const toggle = useCallback(
+    (opt: string) => setAnswer(
+      question.id,
+      value.includes(opt) ? value.filter((v) => v !== opt) : [...value, opt]
+    ),
+    [value, setAnswer, question.id]
+  );
+
+  if (!question.options) return null;
+
+  return (
+    <div className={cn('grid grid-cols-2 gap-3', className)} role="group" aria-label={question.question}>
+      {question.options.map((opt, i) => {
+        const checked = value.includes(opt);
+        return (
+          <motion.button
+            key={opt}
+            role="checkbox"
+            aria-checked={checked}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.06, duration: 0.28 }}
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => toggle(opt)}
+            className={cn(
+              'flex items-center gap-3 px-4 py-3.5 rounded-2xl border shadow-sm transition-all duration-200 text-left',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
+              checked ? t.optionSelected : t.optionDefault
+            )}
+          >
+            <motion.span
+              animate={checked ? { scale: [1, 1.25, 1] } : { scale: 1 }}
+              transition={{ duration: 0.22 }}
+              className={cn(
+                'w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all duration-200',
+                checked ? t.checkboxSelected : t.controlDefault
+              )}
+            >
+              <AnimatePresence>
+                {checked && (
+                  <motion.span key="check" {...popIn} transition={{ duration: 0.16, type: 'spring', stiffness: 400 }}>
+                    <CheckIcon className="w-3 h-3 text-white" />
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.span>
+            <span className={cn('text-sm font-medium transition-colors', checked ? t.labelSelected : t.labelDefault)}>
+              {opt}
+            </span>
+          </motion.button>
+        );
+      })}
+    </div>
+  );
+};
+
+/* ============================================
+   RATING SCALE (Stars ≤ 5 | Numeric > 5)
+============================================ */
+
+export interface RatingScaleProps { question: Question; className?: string }
+
+export const RatingScale: React.FC<RatingScaleProps> = ({ question, className }) => {
+  const { answers, setAnswer, cardVariant, theme } = useQuizForm();
+  const t = tok(cardVariant, theme);
+  const value = answers[question.id] as number | undefined;
+  const [hovered, setHovered] = useState<number | null>(null);
+  const scale = question.scale ?? 5;
+  const isStar = scale <= 5;
+
+  if (isStar) {
+    return (
+      <div className={cn('flex gap-3 justify-center py-4', className)} role="radiogroup" aria-label={question.question}>
+        {Array.from({ length: scale }, (_, i) => i + 1).map((n) => {
+          const active = (hovered ?? value ?? 0) >= n;
+          return (
+            <motion.button
+              key={n}
+              aria-label={`${n} star${n > 1 ? 's' : ''}`}
+              aria-pressed={value === n}
+              initial={{ opacity: 0, scale: 0.5, rotate: -15 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ delay: n * 0.07, type: 'spring', stiffness: 280, damping: 18 }}
+              whileHover={{ scale: 1.28, rotate: 6 }}
+              whileTap={{ scale: 0.88 }}
+              onClick={() => setAnswer(question.id, n)}
+              onMouseEnter={() => setHovered(n)}
+              onMouseLeave={() => setHovered(null)}
+              className="focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded-full"
+            >
+              <StarIcon className={cn(
+                'w-12 h-12 transition-all duration-150',
+                active
+                  ? 'text-amber-400 fill-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]'
+                  : t.starInactive
+              )} />
+            </motion.button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn('py-4', className)} role="radiogroup" aria-label={question.question}>
+      <div className="flex gap-2 justify-center flex-wrap">
+        {Array.from({ length: scale }, (_, i) => i + 1).map((n) => {
+          const selected = value === n;
+          const isHov = hovered === n;
+          const pct = (n - 1) / (scale - 1);
+          const selectedColor =
+            pct < 0.4 ? 'bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-500/25'
+            : pct < 0.7 ? 'bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-500/25'
+            : 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/25';
+
+          return (
+            <motion.button
+              key={n}
+              aria-label={`Score ${n}`}
+              aria-pressed={selected}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: n * 0.04, duration: 0.28 }}
+              whileHover={{ scale: 1.15, y: -3 }}
+              whileTap={{ scale: 0.92 }}
+              onClick={() => setAnswer(question.id, n)}
+              onMouseEnter={() => setHovered(n)}
+              onMouseLeave={() => setHovered(null)}
+              className={cn(
+                'w-11 h-11 rounded-xl border-2 text-sm font-bold transition-all duration-150',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
+                selected ? selectedColor : isHov ? t.scoreHover : t.scoreDefault
+              )}
+            >
+              {n}
+            </motion.button>
+          );
+        })}
+      </div>
+      <div className={cn('flex justify-between mt-4 px-1 text-xs', t.scaleLabel)}>
+        <span>Not likely</span>
+        <span>Very likely</span>
+      </div>
+    </div>
+  );
+};
+
+/* ============================================
+   QUESTION CARD
+============================================ */
+
+export interface QuestionCardProps { className?: string }
+
+export const QuestionCard: React.FC<QuestionCardProps> = ({ className }) => {
+  const { questions, step, direction, cardVariant, theme } = useQuizForm();
+  const t = tok(cardVariant, theme);
+  const q = questions[step];
+
+  return (
+    <AnimatePresence mode="wait" custom={direction}>
+      <motion.div
+        key={q.id}
+        custom={direction}
+        variants={questionSlide}
+        initial="enter"
+        animate="center"
+        exit="exit"
+        transition={{ duration: 0.32, ease: [0.4, 0, 0.2, 1] }}
+        className={className}
+      >
+        <QuestionBadge type={q.type} />
+        <p className={cn('text-xl font-bold leading-snug mb-1', t.questionText)}>{q.question}</p>
+        {q.hint && <p className={cn('text-sm mb-5', t.hintText)}>{q.hint}</p>}
+        <div className={q.hint ? '' : 'mt-6'}>
+          {q.type === 'single'   && <RadioGroup question={q} />}
+          {q.type === 'multiple' && <CheckboxGroup question={q} />}
+          {q.type === 'rating'   && <RatingScale question={q} />}
+        </div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+/* ============================================
+   NAVIGATION BUTTONS
+============================================ */
+
+export interface NavigationButtonsProps { className?: string }
+
+export const NavigationButtons: React.FC<NavigationButtonsProps> = ({ className }) => {
+  const { step, total, questions, goNext, goPrev, handleSubmit, hasAnswer, cardVariant, submitLabel, nextLabel, backLabel, theme } = useQuizForm();
+  const t = tok(cardVariant, theme);
+  const q = questions[step];
+  const isLast = step === total - 1;
+  const canProceed = hasAnswer(q);
+
+  const primaryCls = cn(
+    'flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-sm font-semibold transition-all duration-200',
+    'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
+    canProceed ? t.btnPrimary : t.btnDisabled
+  );
+
+  return (
+    <div className={cn('flex gap-3 mt-8', className)}>
+      <motion.button
+        whileHover={step > 0 ? { scale: 1.03 } : {}}
+        whileTap={step > 0 ? { scale: 0.97 } : {}}
+        disabled={step === 0}
+        onClick={goPrev}
+        aria-label={backLabel}
+        className={cn(
+          'flex items-center gap-2 px-5 py-3 rounded-2xl border text-sm font-medium transition-all duration-200',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
+          step === 0 ? cn(t.btnBackDisabled, 'cursor-not-allowed') : t.btnBack
+        )}
+      >
+        <ChevronLeftIcon className="w-4 h-4" />
+        {backLabel}
+      </motion.button>
+
+      {isLast ? (
+        <motion.button
+          whileHover={canProceed ? { scale: 1.03 } : {}}
+          whileTap={canProceed ? { scale: 0.97 } : {}}
+          disabled={!canProceed}
+          onClick={handleSubmit}
+          aria-label={submitLabel}
+          className={primaryCls}
+        >
+          <PaperPlaneIcon className="w-4 h-4" />
+          {submitLabel}
+        </motion.button>
+      ) : (
+        <motion.button
+          whileHover={canProceed ? { scale: 1.03 } : {}}
+          whileTap={canProceed ? { scale: 0.97 } : {}}
+          disabled={!canProceed}
+          onClick={goNext}
+          aria-label={nextLabel}
+          className={primaryCls}
+        >
+          {nextLabel}
+          <ChevronRightIcon className="w-4 h-4" />
+        </motion.button>
+      )}
+    </div>
+  );
+};
+
+/* ============================================
+   RESULT PAGE
+============================================ */
+
+export interface ResultPageProps { className?: string }
+
+export const ResultPage: React.FC<ResultPageProps> = ({ className }) => {
+  const { questions, answers, reset, cardVariant, theme } = useQuizForm();
+  const t = tok(cardVariant, theme);
+
+  const formatAnswer = (q: Question): string => {
+    const a = answers[q.id];
+    if (a === undefined || a === null) return '—';
+    if (Array.isArray(a)) return a.length > 0 ? a.join(', ') : '—';
+    if (q.type === 'rating') return `${a} / ${q.scale}`;
+    return String(a);
+  };
+
+  return (
+    <motion.div {...fadeInUp} transition={{ duration: 0.4 }} className={cn('text-center', className)}>
+      <motion.div
+        {...scaleIn}
+        transition={{ delay: 0.15, type: 'spring', stiffness: 200 }}
+        className="w-20 h-20 rounded-full bg-primary flex items-center justify-center mx-auto mb-6 shadow-xl shadow-violet-300/40"
+      >
+        <CheckIcon className="w-10 h-10 text-white" />
+      </motion.div>
+      <h2 className={cn('text-2xl font-bold mb-2', t.questionText)}>All done!</h2>
+      <p className={cn('text-sm mb-8', t.hintText)}>Thanks for taking the time to share your feedback.</p>
+      <div className="space-y-3 text-left mb-8">
+        {questions.map((q, i) => (
+          <motion.div
+            key={q.id}
+            {...fadeInUp}
+            transition={{ delay: 0.25 + i * 0.07 }}
+            className={cn('px-5 py-4 rounded-2xl', t.summaryCard)}
+          >
+            <p className={cn('text-xs mb-1 font-medium', t.summaryLabel)}>{q.question}</p>
+            <p className={cn('text-sm font-semibold', t.summaryValue)}>{formatAnswer(q)}</p>
+          </motion.div>
+        ))}
+      </div>
+      <motion.button
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.97 }}
+        onClick={reset}
+        className={cn('flex items-center gap-2 mx-auto text-sm transition-colors', t.summaryLabel, 'hover:opacity-80')}
+      >
+        <ReloadIcon className="w-4 h-4" />
+        Start over
+      </motion.button>
+    </motion.div>
+  );
+};
+
+/* ============================================
+   ACCENT BAR
+============================================ */
+
+export const AccentBar: React.FC<{ className?: string }> = ({ className }) => (
+  <div className={cn('h-1 bg-primary', className)} />
+);
+
+/* ============================================
+   MAIN QUIZ FORM — PROVIDER + COMPOUND COMPONENT
+============================================ */
+
+export const QuizForm: React.FC<QuizFormProps> & {
+  ProgressBar:       typeof ProgressBar;
+  QuestionCard:      typeof QuestionCard;
+  NavigationButtons: typeof NavigationButtons;
+  ResultPage:        typeof ResultPage;
+  RadioGroup:        typeof RadioGroup;
+  CheckboxGroup:     typeof CheckboxGroup;
+  RatingScale:       typeof RatingScale;
+  AccentBar:         typeof AccentBar;
+} = ({
+  questions,
+  onSubmit,
+  onStepChange,
+  initialAnswers = {},
+  cardVariant = 'default',
+  showResult = true,
+  stepLabels,
+  submitLabel = 'Submit',
+  nextLabel = 'Continue',
+  backLabel = 'Back',
+  className,
+  children,
+  theme = 'light'
+}) => {
+  const [step, setStep]         = useState(0);
+  const [direction, setDirection] = useState(1);
+  const [answers, setAnswers]   = useState<QuizAnswers>(initialAnswers);
+  const [submitted, setSubmitted] = useState(false);
+  const total = questions.length;
+
+  const setAnswer = useCallback((id: string, value: any) => {
+    setAnswers((prev) => ({ ...prev, [id]: value }));
+  }, []);
+
+  const hasAnswer = useCallback((q: Question): boolean => {
+    const a = answers[q.id];
+    if (q.required === false) return true;
+    if (q.type === 'single')   return !!a;
+    if (q.type === 'multiple') return Array.isArray(a) && a.length > 0;
+    if (q.type === 'rating')   return a !== undefined;
+    return false;
+  }, [answers]);
+
+  const goNext = useCallback(() => {
+    if (step < total - 1) {
+      setDirection(1);
+      setStep((s) => { onStepChange?.(s + 1, total); return s + 1; });
+    }
+  }, [step, total, onStepChange]);
+
+  const goPrev = useCallback(() => {
+    if (step > 0) {
+      setDirection(-1);
+      setStep((s) => { onStepChange?.(s - 1, total); return s - 1; });
+    }
+  }, [step, total, onStepChange]);
+
+  const handleSubmit = useCallback(() => {
+    onSubmit(answers);
+    if (showResult) setSubmitted(true);
+  }, [answers, onSubmit, showResult]);
+
+  const reset = useCallback(() => {
+    setAnswers(initialAnswers);
+    setStep(0);
+    setDirection(1);
+    setSubmitted(false);
+  }, [initialAnswers]);
+
+  const ctx: QuizFormContextType = {
+    questions, answers, step, total, direction, submitted, cardVariant, stepLabels,
+    setAnswer, goNext, goPrev, handleSubmit, reset, hasAnswer,
+    submitLabel, nextLabel, backLabel, theme,
+  };
+
+  const t = tok(cardVariant, theme);
+
+  const pageCls = cn(
+    'min-h-screen flex items-center justify-center p-6 transition-colors duration-500',
+    t.pageBg,
+    className
+  );
+
+  const defaultContent = (
+    <div className={CardVariants({ variant: cardVariant })}>
+      <AccentBar />
+      <div className="p-8">
+        {!submitted && <ProgressBar />}
+        <AnimatePresence mode="wait">
+          {submitted ? (
+            <ResultPage key="result" />
+          ) : (
+            <motion.div key={`step-${step}`}>
+              <QuestionCard />
+              <NavigationButtons />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+
+  return (
+    <QuizFormContext.Provider value={ctx}>
+      <div className={pageCls}>
+        <div className="w-full max-w-lg">
+          {children ?? defaultContent}
+        </div>
+      </div>
+    </QuizFormContext.Provider>
+  );
+};
+
+QuizForm.ProgressBar       = ProgressBar;
+QuizForm.QuestionCard      = QuestionCard;
+QuizForm.NavigationButtons = NavigationButtons;
+QuizForm.ResultPage        = ResultPage;
+QuizForm.RadioGroup        = RadioGroup;
+QuizForm.CheckboxGroup     = CheckboxGroup;
+QuizForm.RatingScale       = RatingScale;
+QuizForm.AccentBar         = AccentBar;
+
+export default QuizForm;
