@@ -197,4 +197,88 @@ describe("QuizForm", () => {
 
     expect(onStepChange).toHaveBeenCalledWith(1, 3);
   });
+
+  it("allows continuing when question is not required", () => {
+    const optionalQuestions: Question[] = [
+      {
+        id: "q1",
+        type: "single",
+        question: "Optional question",
+        options: ["A", "B"],
+        required: false,
+      },
+      {
+        id: "q2",
+        type: "single",
+        question: "Next question",
+        options: ["X", "Y"],
+      },
+    ];
+  
+    render(<QuizForm questions={optionalQuestions} onSubmit={vi.fn()} />);
+  
+    const nextBtn = screen.getByRole("button", { name: /continue/i });
+  
+    // should be enabled even without selecting
+    expect(nextBtn).not.toBeDisabled();
+  });
+
+
+  it("preselects answers from initialAnswers", () => {
+    render(
+      <QuizForm
+        questions={questions}
+        onSubmit={vi.fn()}
+        initialAnswers={{
+          q1: "Red",
+          q2: ["Reading"],
+        }}
+      />
+    );
+  
+    // Step 1 → should already allow continue
+    const nextBtn = screen.getByRole("button", { name: /continue/i });
+    expect(nextBtn).not.toBeDisabled();
+  
+    // Move to step 2
+    fireEvent.click(nextBtn);
+  
+    // "Reading" should already be selected → continue enabled
+    const nextBtnStep2 = screen.getByRole("button", { name: /continue/i });
+    expect(nextBtnStep2).not.toBeDisabled();
+  });
+
+  it("supports back navigation and preserves answers", () => {
+    render(<QuizForm questions={questions} onSubmit={vi.fn()} />);
+  
+    // Step 1
+    fireEvent.click(screen.getByText("Red"));
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+  
+    // Step 2
+    fireEvent.click(screen.getByText("Reading"));
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+  
+    // Now go back
+    fireEvent.click(screen.getByRole("button", { name: /back/i }));
+  
+    // Should show step 2 again
+    expect(screen.getByText("Select hobbies")).toBeInTheDocument();
+  
+    // Continue should still be enabled (answer persisted)
+    const nextBtn = screen.getByRole("button", { name: /continue/i });
+    expect(nextBtn).not.toBeDisabled();
+  
+    // Go back again
+    fireEvent.click(screen.getByRole("button", { name: /back/i }));
+  
+    // Step 1 again
+    expect(
+      screen.getByText("What is your favorite color?")
+    ).toBeInTheDocument();
+  
+    // Answer persisted → continue enabled
+    const nextBtnStep1 = screen.getByRole("button", { name: /continue/i });
+    expect(nextBtnStep1).not.toBeDisabled();
+  });
 });
