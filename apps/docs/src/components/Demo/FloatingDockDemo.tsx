@@ -48,7 +48,7 @@ import { FloatingDock } from '@ignix-ui/floating-dock';
 import { 
   HomeIcon, 
   MagnifyingGlassIcon, 
-  BarChartIcon
+  BarChartIcon,
   ArchiveIcon,
   SpeakerLoudIcon,
   GearIcon,

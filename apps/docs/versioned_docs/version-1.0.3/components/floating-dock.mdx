@@ -447,15 +447,17 @@ export function FloatingDock({
         initialItems.map((it) => it.id)
     );
 
-    const hasLoadedStorage = useRef(false);
+    const loadedStorageKeyRef = useRef<string | null>(null);
 
     useEffect(() => {
         setOrderedIds((prev) => {
+            const newIds = initialItems.map((it) => it.id);
             let workingPrev = prev;
 
             // Load from localStorage only once on client-side mount
-            if (storageKey && !hasLoadedStorage.current) {
-                hasLoadedStorage.current = true;
+            if (storageKey && loadedStorageKeyRef.current !== storageKey) {
+                loadedStorageKeyRef.current = storageKey;
+                workingPrev = newIds
                 try {
                     const saved = localStorage.getItem(storageKey);
                     if (saved) {
@@ -464,12 +466,14 @@ export function FloatingDock({
                             workingPrev = parsed;
                         }
                     }
-                } catch (e) {
+                } catch {
                     console.warn("Could not load dock order from storage");
                 }
+            } else if (!storageKey && loadedStorageKeyRef.current !== null) {
+                loadedStorageKeyRef.current = null;
+                workingPrev = newIds
             }
 
-            const newIds = initialItems.map((it) => it.id);
             const prevSet = new Set(workingPrev);
             const newSet = new Set(newIds);
 
