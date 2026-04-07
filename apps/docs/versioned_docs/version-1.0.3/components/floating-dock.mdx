@@ -485,7 +485,7 @@ export function FloatingDock({
             // Load from localStorage only once on client-side mount
             if (storageKey && loadedStorageKeyRef.current !== storageKey) {
                 loadedStorageKeyRef.current = storageKey;
-                workingPrev = newIds
+                workingPrev = newIds;
                 try {
                     const saved = localStorage.getItem(storageKey);
                     if (saved) {
@@ -499,7 +499,7 @@ export function FloatingDock({
                 }
             } else if (!storageKey && loadedStorageKeyRef.current !== null) {
                 loadedStorageKeyRef.current = null;
-                workingPrev = newIds
+                workingPrev = newIds;
             }
 
             const prevSet = new Set(workingPrev);
