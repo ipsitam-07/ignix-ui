@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
     HomeIcon,
@@ -15,9 +14,12 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
 
+type Variant = 'solid' | 'glass' | 'outlined' | 'neon';
+type Orientation = 'horizontal' | 'vertical';
+
 const FloatingDockDemo = () => {
-    const [variant, setVariant] = useState('solid');
-    const [orientation, setOrientation] = useState('horizontal');
+    const [variant, setVariant] = useState<Variant>('solid');
+    const [orientation, setOrientation] = useState<Orientation>('horizontal');
     const [reorderable, setReorderable] = useState(false);
     const [activeId, setActiveId] = useState('home');
 
@@ -34,7 +36,7 @@ const FloatingDockDemo = () => {
     const items: DockItem[] = baseItems.map((item) => ({
         ...item,
         active: item.id === activeId,
-        onClick: () => setActiveId(item.id!),
+        onClick: () => item.id && setActiveId(item.id),
     }));
 
     const variants = ['solid', 'glass', 'outlined', 'neon'];
@@ -46,6 +48,7 @@ import { FloatingDock } from '@ignix-ui/floating-dock';
 import { 
   HomeIcon, 
   MagnifyingGlassIcon, 
+  BarChartIcon
   ArchiveIcon,
   SpeakerLoudIcon,
   GearIcon,
@@ -67,6 +70,7 @@ const items = [
   variant="${variant}" 
   orientation="${orientation}"
   reorderable={${reorderable}}
+  storageKey="docs-demo-dock-order" 
 />
 `;
 
@@ -76,13 +80,13 @@ const items = [
                 <VariantSelector
                     variants={variants}
                     selectedVariant={variant}
-                    onSelectVariant={setVariant}
+                    onSelectVariant={(v) => setVariant(v as Variant)}
                     type="Variant"
                 />
                 <VariantSelector
                     variants={orientations}
                     selectedVariant={orientation}
-                    onSelectVariant={setOrientation}
+                    onSelectVariant={(v) => setOrientation(v as Orientation)}
                     type="Orientation"
                 />
                 <VariantSelector
@@ -98,8 +102,8 @@ const items = [
                     <div className={`p-12 border rounded-lg mt-4 flex items-center justify-center min-h-[300px] ${variant === 'glass' ? 'bg-slate-50 dark:bg-slate-900' : ''}`}>
                         <FloatingDock
                             items={items}
-                            variant={variant as any}
-                            orientation={orientation as any}
+                            variant={variant}
+                            orientation={orientation}
                             reorderable={reorderable}
                         />
                     </div>

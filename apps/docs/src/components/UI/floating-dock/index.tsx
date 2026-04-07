@@ -48,7 +48,7 @@ const iconVariants = cva(
 );
 
 export interface DockItem {
-    id?: string;
+    id: string;
     icon: React.ReactNode;
     label: string;
     onClick?: () => void;
@@ -315,7 +315,7 @@ function ReorderableItem({
     maxIconSize: number;
 }) {
     const [isDragging, setIsDragging] = useState(false);
-    const itemId = item.id ?? item.label;
+    const itemId = item.id;
 
     return (
         <>
@@ -413,12 +413,12 @@ export function FloatingDock({
     }, []);
 
     const itemMap = useMemo(
-        () => new Map(initialItems.map((it) => [it.id ?? it.label, it])),
+        () => new Map(initialItems.map((it) => [it.id, it])),
         [initialItems]
     );
 
     const [orderedIds, setOrderedIds] = useState(() =>
-        initialItems.map((it) => it.id ?? it.label)
+        initialItems.map((it) => it.id)
     );
 
     const hasLoadedStorage = useRef(false);
@@ -443,7 +443,7 @@ export function FloatingDock({
                 }
             }
 
-            const newIds = initialItems.map((it) => it.id ?? it.label);
+            const newIds = initialItems.map((it) => it.id);
             const prevSet = new Set(workingPrev);
             const newSet = new Set(newIds);
 
@@ -513,7 +513,7 @@ export function FloatingDock({
             >
                 {initialItems.map((item) => (
                     <StaticItem
-                        key={item.id ?? item.label}
+                        key={item.id}
                         item={item}
                         variant={v}
                         orientation={o}

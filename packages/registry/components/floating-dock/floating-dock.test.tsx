@@ -122,15 +122,6 @@ describe("FloatingDock", () => {
             expect(toolbar).toBeEmptyDOMElement();
         });
 
-        it("uses item.label as fallback key when id is absent", () => {
-            const items: DockItem[] = [
-                { label: "Home", icon: <span /> },
-                { label: "Settings", icon: <span /> },
-            ];
-            render(<FloatingDock items={items} />);
-            expect(screen.getByRole("button", { name: "Home" })).toBeInTheDocument();
-            expect(screen.getByRole("button", { name: "Settings" })).toBeInTheDocument();
-        });
     });
 
     describe("variant classes", () => {
@@ -380,7 +371,7 @@ describe("FloatingDock", () => {
             expect(container.firstChild?.nodeName).toBe("DIV");
         });
 
-        it("calls onReorder with reordered DockItem array", () => {
+        it("does not call onReorder on initial render", () => {
             const onReorder = vi.fn();
             render(<FloatingDock items={makeItems(3)} reorderable onReorder={onReorder} />);
             expect(onReorder).not.toHaveBeenCalled();

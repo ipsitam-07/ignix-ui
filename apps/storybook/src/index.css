@@ -61,6 +61,7 @@
     --dock-icon-bg: #334155;
     --dock-icon-hover: #475569;
     --dock-separator: #94a3b8;
+    --dock-outlined-dot: #64748b;
   }
 
   .dark {
@@ -121,6 +122,7 @@
     --dock-icon-bg: #1e293b;
     --dock-icon-hover: #334155;
     --dock-separator: #475569;
+    --dock-outlined-dot: #94a3b8;
   }
 }
 
@@ -171,6 +173,7 @@
   --color-dock-icon-bg: var(--dock-icon-bg);
   --color-dock-icon-hover: var(--dock-icon-hover);
   --color-dock-separator: var(--dock-separator);
+   --color-dock-outlined-dot: var(--dock-outlined-dot);
 }
 
 /* scrollbar css - three column layout */
