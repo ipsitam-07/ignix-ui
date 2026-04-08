@@ -53,7 +53,7 @@ describe("Card Components", () => {
       expect(ref.current).toBeInstanceOf(HTMLDivElement);
     });
 
-    it("renders shimmer effect for premium, glass, and gradient variants", () => {
+    it("renders shimmer effect for premium", () => {
       const { container } = render(<Card variant="premium">Premium Card</Card>);
       const shimmer = container.querySelector(".absolute.inset-0.bg-gradient-to-r");
       expect(shimmer).toBeInTheDocument();

@@ -23,13 +23,14 @@ vi.mock("../button", () => ({
         onClick,
         disabled,
         "aria-label": ariaLabel,
+        "aria-current": ariaCurrent,
         variant,
         size,
     }: React.PropsWithChildren<{
         onClick?: () => void;
         disabled?: boolean;
         "aria-label"?: string;
-        "aria-current"?: string;
+        "aria-current"?: any;
         variant?: string;
         size?: string;
     }>) => (
@@ -37,6 +38,7 @@ vi.mock("../button", () => ({
             onClick={onClick}
             disabled={disabled}
             aria-label={ariaLabel}
+            aria-current={ariaCurrent}
             data-variant={variant}
             data-size={size}
         >
