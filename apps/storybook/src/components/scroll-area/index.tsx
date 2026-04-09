@@ -272,6 +272,11 @@ const ScrollArea = React.forwardRef<
             }
         }, [showProgress, autoHide, showScrollButtons, fadeMask, computeEdges, computeAutoFadeMask]);
 
+        //Clear timer after component unmounts
+        React.useEffect(() => {
+            return () => clearTimeout(hideTimer.current);
+        }, []);
+
         React.useEffect(() => {
             const el = internalViewportRef.current;
             if (!el) return;
@@ -290,7 +295,6 @@ const ScrollArea = React.forwardRef<
             return () => ro.disconnect();
         }, [showScrollButtons, computeEdges]);
 
-        /* Init + ResizeObserver for auto-fade mask OR apply static mask */
         React.useEffect(() => {
             const el = internalViewportRef.current;
             if (!el) return;
