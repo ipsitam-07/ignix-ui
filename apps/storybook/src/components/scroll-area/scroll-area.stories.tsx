@@ -38,6 +38,9 @@ const meta = {
         showScrollButtons: {
             control: 'boolean',
         },
+        expandOnHover: {
+            control: 'boolean',
+        },
         animation: {
             control: 'select',
             options: ['fade', 'slide', 'scale', 'none'],
@@ -154,6 +157,36 @@ export const VariantsAndSizes: Story = {
                 <div className="p-4 text-sm font-semibold">Hidden</div>
                 <VerticalContent />
             </ScrollArea>
+        </div>
+    ),
+};
+
+export const HoverExpansion: Story = {
+    render: () => (
+        <div className="flex flex-col gap-6">
+            <div>
+                <p className="mb-2 text-sm text-muted-foreground">
+                    Scrollbars expand their thickness when hovered over (macOS style).
+                </p>
+                <div className="flex gap-4">
+                    <ScrollArea className="h-72 w-48 rounded-md border" variant="thin">
+                        <div className="p-4 text-sm font-semibold">Thin (Expands on hover)</div>
+                        <VerticalContent />
+                    </ScrollArea>
+                    <ScrollArea className="h-72 w-48 rounded-md border" variant="pill">
+                        <div className="p-4 text-sm font-semibold">Pill (Expands on hover)</div>
+                        <VerticalContent />
+                    </ScrollArea>
+                    <ScrollArea className="h-72 w-48 rounded-md border" variant="thick">
+                        <div className="p-4 text-sm font-semibold">Thick (Expands on hover)</div>
+                        <VerticalContent />
+                    </ScrollArea>
+                    <ScrollArea className="h-72 w-48 rounded-md border" variant="thick" expandOnHover={false}>
+                        <div className="p-4 text-sm font-semibold text-muted-foreground">Thick (Disabled expansion)</div>
+                        <VerticalContent />
+                    </ScrollArea>
+                </div>
+            </div>
         </div>
     ),
 };

@@ -11,7 +11,7 @@ import {
 import { cn } from "../../../utils/cn";
 
 const scrollbarVariants = cva(
-    "flex touch-none select-none transition-colors",
+    "flex touch-none select-none transition-all duration-300 ease-out",
     {
         variants: {
             variant: {
@@ -44,25 +44,38 @@ const scrollbarVariants = cva(
 function getTrackClasses(
     orientation: "vertical" | "horizontal",
     variant: string | undefined | null,
-    size: string | undefined | null
+    size: string | undefined | null,
+    expandOnHover: boolean
 ) {
     const v = variant ?? "thin";
     const s = size ?? "md";
 
-    const thicknessMap: Record<string, Record<string, string>> = {
-        thin: { sm: "1.5", md: "2", lg: "2.5" },
-        thick: { sm: "2", md: "2.5", lg: "3" },
-        pill: { sm: "2", md: "2.5", lg: "3" },
-        line: { sm: "px", md: "0.5", lg: "1" },
-        hidden: { sm: "0", md: "0", lg: "0" },
+    const verticalSizeMap: Record<string, Record<string, string>> = {
+        thin: { sm: "w-1 hover:w-1.5", md: "w-1.5 hover:w-2.5", lg: "w-2 hover:w-3" },
+        thick: { sm: "w-2 hover:w-2.5", md: "w-2.5 hover:w-3", lg: "w-3 hover:w-4" },
+        pill: { sm: "w-1.5 hover:w-2.5", md: "w-2 hover:w-3", lg: "w-2.5 hover:w-4" },
+        line: { sm: "w-px hover:w-0.5", md: "w-0.5 hover:w-1", lg: "w-1 hover:w-2" },
+        hidden: { sm: "w-0 hover:w-0", md: "w-0 hover:w-0", lg: "w-0 hover:w-0" },
     };
 
-    const t = thicknessMap[v]?.[s] ?? "2";
+    const horizontalSizeMap: Record<string, Record<string, string>> = {
+        thin: { sm: "h-1 hover:h-1.5", md: "h-1.5 hover:h-2.5", lg: "h-2 hover:h-3" },
+        thick: { sm: "h-2 hover:h-2.5", md: "h-2.5 hover:h-3", lg: "h-3 hover:h-4" },
+        pill: { sm: "h-1.5 hover:h-2.5", md: "h-2 hover:h-3", lg: "h-2.5 hover:h-4" },
+        line: { sm: "h-px hover:h-0.5", md: "h-0.5 hover:h-1", lg: "h-1 hover:h-2" },
+        hidden: { sm: "h-0 hover:h-0", md: "h-0 hover:h-0", lg: "h-0 hover:h-0" },
+    };
+
+    const vClass = verticalSizeMap[v]?.[s] ?? "w-1.5 hover:w-2.5";
+    const hClass = horizontalSizeMap[v]?.[s] ?? "h-1.5 hover:h-2.5";
+
+    const finalVClass = expandOnHover ? vClass : vClass.split(" ")[0];
+    const finalHClass = expandOnHover ? hClass : hClass.split(" ")[0];
 
     if (orientation === "vertical") {
-        return `h-full w-${t} border-l border-l-transparent p-[1px]`;
+        return `h-full border-l border-l-transparent p-[1px] ${finalVClass}`;
     }
-    return `h-${t} flex-col border-t border-t-transparent p-[1px]`;
+    return `flex-col border-t border-t-transparent p-[1px] ${finalHClass}`;
 }
 
 function getThumbClasses(variant: string | undefined | null) {
@@ -125,6 +138,7 @@ export interface ScrollAreaProps
     animation?: "fade" | "slide" | "scale" | "none";
     showProgress?: boolean;
     showScrollButtons?: boolean;
+    expandOnHover?: boolean;
     viewportRef?: React.Ref<HTMLDivElement>;
 }
 
@@ -145,6 +159,7 @@ const ScrollArea = React.forwardRef<
             animation = "none",
             showProgress = false,
             showScrollButtons = false,
+            expandOnHover = true,
             viewportRef,
             ...props
         },
@@ -378,6 +393,7 @@ const ScrollArea = React.forwardRef<
                         thumbColor={thumbColor}
                         size={size}
                         forceVisible={autoHide ? isScrolling : true}
+                        expandOnHover={expandOnHover}
                     />
                 )}
                 {showHorizontal && (
@@ -387,6 +403,7 @@ const ScrollArea = React.forwardRef<
                         thumbColor={thumbColor}
                         size={size}
                         forceVisible={autoHide ? isScrolling : true}
+                        expandOnHover={expandOnHover}
                     />
                 )}
 
@@ -436,6 +453,7 @@ interface ScrollBarProps
     VariantProps<typeof scrollbarVariants> {
     orientation?: "vertical" | "horizontal";
     forceVisible?: boolean;
+    expandOnHover?: boolean;
 }
 
 const ScrollBar = React.forwardRef<
@@ -450,6 +468,7 @@ const ScrollBar = React.forwardRef<
             thumbColor,
             size,
             forceVisible = true,
+            expandOnHover = true,
             ...props
         },
         ref
@@ -466,7 +485,7 @@ const ScrollBar = React.forwardRef<
                 transition={{ duration: 0.3 }}
                 className={cn(
                     scrollbarVariants({ variant, thumbColor, size }),
-                    getTrackClasses(orientation, variant, size),
+                    getTrackClasses(orientation, variant, size, expandOnHover),
                     className
                 )}
                 {...props}
