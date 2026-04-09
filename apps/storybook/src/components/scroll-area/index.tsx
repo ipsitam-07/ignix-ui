@@ -2,6 +2,12 @@ import * as React from "react";
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 import { cva, type VariantProps } from "class-variance-authority";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+    ChevronUpIcon,
+    ChevronDownIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+} from "@radix-ui/react-icons";
 import { cn } from "../../../utils/cn";
 
 const scrollbarVariants = cva(
@@ -71,16 +77,23 @@ function getFadeMaskStyle(
     fadeMask: "top" | "bottom" | "fade" | "none" | undefined | null
 ): React.CSSProperties | undefined {
     if (!fadeMask || fadeMask === "none") return undefined;
-    const size = "24px";
+    const size = "30px";
     const t = "transparent";
     const b = "black";
     switch (fadeMask) {
         case "top":
-            return { maskImage: `linear-gradient(to bottom, ${t}, ${b} ${size})` };
+            return {
+                WebkitMaskImage: `linear-gradient(to bottom, ${t}, ${b} ${size})`,
+                maskImage: `linear-gradient(to bottom, ${t}, ${b} ${size})`
+            };
         case "bottom":
-            return { maskImage: `linear-gradient(to top, ${t}, ${b} ${size})` };
+            return {
+                WebkitMaskImage: `linear-gradient(to top, ${t}, ${b} ${size})`,
+                maskImage: `linear-gradient(to top, ${t}, ${b} ${size})`
+            };
         case "fade":
             return {
+                WebkitMaskImage: `linear-gradient(to bottom, ${t}, ${b} ${size}, ${b} calc(100% - ${size}), ${t})`,
                 maskImage: `linear-gradient(to bottom, ${t}, ${b} ${size}, ${b} calc(100% - ${size}), ${t})`,
             };
         default:
@@ -111,6 +124,7 @@ export interface ScrollAreaProps
     autoHide?: boolean;
     animation?: "fade" | "slide" | "scale" | "none";
     showProgress?: boolean;
+    showScrollButtons?: boolean;
     viewportRef?: React.Ref<HTMLDivElement>;
 }
 
@@ -130,6 +144,7 @@ const ScrollArea = React.forwardRef<
             autoHide = false,
             animation = "none",
             showProgress = false,
+            showScrollButtons = false,
             viewportRef,
             ...props
         },
@@ -137,18 +152,32 @@ const ScrollArea = React.forwardRef<
     ) => {
         const [scrollProgress, setScrollProgress] = React.useState(0);
         const [isScrolling, setIsScrolling] = React.useState(false);
+        const [canScrollUp, setCanScrollUp] = React.useState(false);
+        const [canScrollDown, setCanScrollDown] = React.useState(false);
+        const [canScrollLeft, setCanScrollLeft] = React.useState(false);
+        const [canScrollRight, setCanScrollRight] = React.useState(false);
         const hideTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
         const internalViewportRef = React.useRef<HTMLDivElement>(null);
 
         const setViewportRef = React.useCallback(
             (node: HTMLDivElement | null) => {
-                (internalViewportRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+                (internalViewportRef as React.RefObject<HTMLDivElement | null>).current = node;
                 if (typeof viewportRef === "function") viewportRef(node);
                 else if (viewportRef && typeof viewportRef === "object")
-                    (viewportRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+                    (viewportRef as React.RefObject<HTMLDivElement | null>).current = node;
             },
             [viewportRef]
         );
+
+        const computeEdges = React.useCallback(() => {
+            const el = internalViewportRef.current;
+            if (!el) return;
+            const threshold = 4;
+            setCanScrollUp(el.scrollTop > threshold);
+            setCanScrollDown(el.scrollTop < el.scrollHeight - el.clientHeight - threshold);
+            setCanScrollLeft(el.scrollLeft > threshold);
+            setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - threshold);
+        }, []);
 
         const handleScroll = React.useCallback(() => {
             const el = internalViewportRef.current;
@@ -164,7 +193,11 @@ const ScrollArea = React.forwardRef<
                 clearTimeout(hideTimer.current);
                 hideTimer.current = setTimeout(() => setIsScrolling(false), 1500);
             }
-        }, [showProgress, autoHide]);
+
+            if (showScrollButtons) {
+                computeEdges();
+            }
+        }, [showProgress, autoHide, showScrollButtons, computeEdges]);
 
         React.useEffect(() => {
             const el = internalViewportRef.current;
@@ -172,6 +205,42 @@ const ScrollArea = React.forwardRef<
             el.addEventListener("scroll", handleScroll, { passive: true });
             return () => el.removeEventListener("scroll", handleScroll);
         }, [handleScroll]);
+
+        // compute scroll edges on mount and when content size changes
+        React.useEffect(() => {
+            if (!showScrollButtons) return;
+            const el = internalViewportRef.current;
+            if (!el) return;
+            computeEdges();
+            const ro = new ResizeObserver(() => computeEdges());
+            ro.observe(el);
+            if (el.firstElementChild) ro.observe(el.firstElementChild);
+            return () => ro.disconnect();
+        }, [showScrollButtons, computeEdges]);
+
+        const scrollToEdge = React.useCallback(
+            (direction: "up" | "down" | "left" | "right") => {
+                const el = internalViewportRef.current;
+                if (!el) return;
+                const opts: ScrollToOptions = { behavior: "smooth" };
+                switch (direction) {
+                    case "up":
+                        opts.top = 0;
+                        break;
+                    case "down":
+                        opts.top = el.scrollHeight;
+                        break;
+                    case "left":
+                        opts.left = 0;
+                        break;
+                    case "right":
+                        opts.left = el.scrollWidth;
+                        break;
+                }
+                el.scrollTo(opts);
+            },
+            []
+        );
 
         const anim = entranceVariants[animation];
         const fadeMaskStyle = getFadeMaskStyle(fadeMask);
@@ -239,6 +308,36 @@ const ScrollArea = React.forwardRef<
                     />
                 )}
 
+                {/* Scroll-to-edge buttons */}
+                {showScrollButtons && showVertical && (
+                    <>
+                        <ScrollEdgeButton
+                            direction="up"
+                            visible={canScrollUp}
+                            onClick={() => scrollToEdge("up")}
+                        />
+                        <ScrollEdgeButton
+                            direction="down"
+                            visible={canScrollDown}
+                            onClick={() => scrollToEdge("down")}
+                        />
+                    </>
+                )}
+                {showScrollButtons && showHorizontal && (
+                    <>
+                        <ScrollEdgeButton
+                            direction="left"
+                            visible={canScrollLeft}
+                            onClick={() => scrollToEdge("left")}
+                        />
+                        <ScrollEdgeButton
+                            direction="right"
+                            visible={canScrollRight}
+                            onClick={() => scrollToEdge("right")}
+                        />
+                    </>
+                )}
+
                 <ScrollAreaPrimitive.Corner />
             </ScrollAreaPrimitive.Root>
         );
@@ -249,7 +348,7 @@ ScrollArea.displayName = "ScrollArea";
 interface ScrollBarProps
     extends Omit<
         React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
-        "orientation"
+        "orientation" | "onDrag" | "onDragStart" | "onDragEnd" | "onAnimationStart"
     >,
     VariantProps<typeof scrollbarVariants> {
     orientation?: "vertical" | "horizontal";
@@ -257,7 +356,7 @@ interface ScrollBarProps
 }
 
 const ScrollBar = React.forwardRef<
-    React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
+    React.ComponentRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
     ScrollBarProps
 >(
     (
@@ -275,19 +374,89 @@ const ScrollBar = React.forwardRef<
         <ScrollAreaPrimitive.ScrollAreaScrollbar
             ref={ref}
             orientation={orientation}
-            className={cn(
-                scrollbarVariants({ variant, thumbColor, size }),
-                getTrackClasses(orientation, variant, size),
-                "transition-opacity duration-300",
-                forceVisible ? "opacity-100" : "opacity-0",
-                className
-            )}
-            {...props}
+            asChild
+            forceMount
         >
-            <ScrollAreaPrimitive.ScrollAreaThumb className={getThumbClasses(variant)} />
+            <motion.div
+                initial={false}
+                animate={{ opacity: forceVisible ? 1 : 0 }}
+                transition={{ duration: 0.3 }}
+                className={cn(
+                    scrollbarVariants({ variant, thumbColor, size }),
+                    getTrackClasses(orientation, variant, size),
+                    className
+                )}
+                {...props}
+            >
+                <ScrollAreaPrimitive.ScrollAreaThumb className={getThumbClasses(variant)} />
+            </motion.div>
         </ScrollAreaPrimitive.ScrollAreaScrollbar>
     )
 );
 ScrollBar.displayName = "ScrollBar";
+
+/* ─── Scroll-to-edge button ────────────────────────────────── */
+
+const edgeIcons = {
+    up: ChevronUpIcon,
+    down: ChevronDownIcon,
+    left: ChevronLeftIcon,
+    right: ChevronRightIcon,
+} as const;
+
+const edgePositionClasses: Record<string, string> = {
+    /* vertical: hug the right edge, inline with the vertical scrollbar track */
+    up: "top-1 right-0.5",
+    down: "bottom-1 right-0.5",
+    /* horizontal: hug the bottom edge, inline with the horizontal scrollbar track */
+    left: "bottom-0.5 left-1",
+    right: "bottom-0.5 right-1",
+};
+
+const edgeSlide = {
+    up: { initial: { opacity: 0, y: 6 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: 6 } },
+    down: { initial: { opacity: 0, y: -6 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -6 } },
+    left: { initial: { opacity: 0, x: 6 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: 6 } },
+    right: { initial: { opacity: 0, x: -6 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -6 } },
+} as const;
+
+interface ScrollEdgeButtonProps {
+    direction: "up" | "down" | "left" | "right";
+    visible: boolean;
+    onClick: () => void;
+}
+
+function ScrollEdgeButton({ direction, visible, onClick }: ScrollEdgeButtonProps) {
+    const Icon = edgeIcons[direction];
+    const slide = edgeSlide[direction];
+
+    return (
+        <AnimatePresence>
+            {visible && (
+                <motion.button
+                    key={direction}
+                    type="button"
+                    aria-label={`Scroll ${direction}`}
+                    initial={slide.initial}
+                    animate={slide.animate}
+                    exit={slide.exit}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    onClick={onClick}
+                    className={cn(
+                        "absolute z-20 flex h-5 w-5 items-center justify-center",
+                        "rounded-full bg-muted-foreground/20 backdrop-blur-sm",
+                        "text-muted-foreground",
+                        "hover:bg-muted-foreground/40 hover:text-foreground",
+                        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                        "transition-colors cursor-pointer",
+                        edgePositionClasses[direction]
+                    )}
+                >
+                    <Icon className="h-3 w-3" />
+                </motion.button>
+            )}
+        </AnimatePresence>
+    );
+}
 
 export { ScrollArea, ScrollBar };

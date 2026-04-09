@@ -35,6 +35,9 @@ const meta = {
         showProgress: {
             control: 'boolean',
         },
+        showScrollButtons: {
+            control: 'boolean',
+        },
         animation: {
             control: 'select',
             options: ['fade', 'slide', 'scale', 'none'],
@@ -48,7 +51,7 @@ type Story = StoryObj<typeof meta>;
 const VerticalContent = () => (
     <div className="p-4">
         <h4 className="mb-4 text-sm font-medium leading-none">Settings Menu</h4>
-        {Array.from({ length: 15 }).map((_, i) => (
+        {Array.from({ length: 100 }).map((_, i) => (
             <div key={i} className="text-sm my-2">
                 Setting item {i + 1}
                 <hr className="my-2 border-border" />
@@ -131,20 +134,24 @@ export const ThumbColors: Story = {
 export const VariantsAndSizes: Story = {
     render: () => (
         <div className="flex gap-4">
-            <ScrollArea className="h-72 w-48 rounded-md border bg-slate-50 dark:bg-slate-900" variant="thin" size="md">
+            <ScrollArea className="h-72 w-48 rounded-md border" variant="thin" size="md">
                 <div className="p-4 text-sm font-semibold">Thin (md)</div>
                 <VerticalContent />
             </ScrollArea>
-            <ScrollArea className="h-72 w-48 rounded-md border bg-slate-50 dark:bg-slate-900" variant="thick" size="lg">
+            <ScrollArea className="h-72 w-48 rounded-md border" variant="thick" size="lg">
                 <div className="p-4 text-sm font-semibold">Thick (lg)</div>
                 <VerticalContent />
             </ScrollArea>
-            <ScrollArea className="h-72 w-48 rounded-md border bg-slate-50 dark:bg-slate-900" variant="pill" size="sm">
+            <ScrollArea className="h-72 w-48 rounded-md border" variant="pill" size="sm">
                 <div className="p-4 text-sm font-semibold">Pill (sm)</div>
                 <VerticalContent />
             </ScrollArea>
-            <ScrollArea className="h-72 w-48 rounded-md border bg-slate-50 dark:bg-slate-900" variant="line">
+            <ScrollArea className="h-72 w-48 rounded-md border" variant="line">
                 <div className="p-4 text-sm font-semibold">Line</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" variant="hidden">
+                <div className="p-4 text-sm font-semibold">Hidden</div>
                 <VerticalContent />
             </ScrollArea>
         </div>
@@ -163,19 +170,93 @@ export const Features: Story = {
                 <div className="p-4 text-sm font-semibold">Auto Hide</div>
                 <VerticalContent />
             </ScrollArea>
+        </div>
+    ),
+};
 
-            <ScrollArea className="h-72 w-48 rounded-md border dark:bg-slate-950 bg-slate-100" fadeMask="fade">
-                <div className="p-4 text-sm font-semibold">Fade Edge Mask</div>
+export const FadeMasks: Story = {
+    render: () => (
+        <div className="flex gap-4">
+            <ScrollArea className="h-72 w-48 rounded-md border" fadeMask="top">
+                <div className="p-4 text-sm font-semibold">Top Mask</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" fadeMask="bottom">
+                <div className="p-4 text-sm font-semibold">Bottom Mask</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" fadeMask="fade">
+                <div className="p-4 text-sm font-semibold">Fade (Both) Masks</div>
                 <VerticalContent />
             </ScrollArea>
         </div>
     ),
 };
 
-export const EntranceAnimation: Story = {
+export const Animations: Story = {
+    render: () => (
+        <div className="flex gap-4">
+            <ScrollArea className="h-72 w-48 rounded-md border" animation="fade">
+                <div className="p-4 text-sm font-semibold">Fade Animation</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" animation="slide">
+                <div className="p-4 text-sm font-semibold">Slide Animation</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" animation="scale">
+                <div className="p-4 text-sm font-semibold">Scale Animation</div>
+                <VerticalContent />
+            </ScrollArea>
+        </div>
+    ),
+};
+
+export const ScrollButtons: Story = {
     args: {
         className: 'h-72 w-48 rounded-md border',
-        animation: 'slide',
+        showScrollButtons: true,
         children: <VerticalContent />,
     },
+};
+
+export const HorizontalScrollButtons: Story = {
+    args: {
+        className: 'w-96 whitespace-nowrap rounded-md border',
+        orientation: 'horizontal',
+        showScrollButtons: true,
+        children: <HorizontalContent />,
+    },
+};
+
+export const ScrollButtonsWithFeatures: Story = {
+    render: () => (
+        <div className="flex gap-4">
+            <ScrollArea
+                className="h-72 w-48 rounded-md border"
+                showScrollButtons
+                showProgress
+            >
+                <div className="p-4 text-sm font-semibold">With Progress</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea
+                className="h-72 w-48 rounded-md border"
+                showScrollButtons
+                autoHide
+                thumbColor="accent"
+            >
+                <div className="p-4 text-sm font-semibold">With Auto-Hide</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea
+                className="h-72 w-48 rounded-md border"
+                showScrollButtons
+                fadeMask="fade"
+            >
+                <div className="p-4 text-sm font-semibold">With Fade Mask</div>
+                <VerticalContent />
+            </ScrollArea>
+        </div>
+    ),
 };
