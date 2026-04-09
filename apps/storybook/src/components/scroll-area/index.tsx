@@ -254,8 +254,13 @@ const ScrollArea = React.forwardRef<
             if (!el) return;
 
             if (showProgress) {
-                const max = el.scrollHeight - el.clientHeight;
-                setScrollProgress(max > 0 ? el.scrollTop / max : 0);
+                if (orientation === "horizontal") {
+                    const max = el.scrollWidth - el.clientWidth;
+                    setScrollProgress(max > 0 ? el.scrollLeft / max : 0);
+                } else {
+                    const max = el.scrollHeight - el.clientHeight;
+                    setScrollProgress(max > 0 ? el.scrollTop / max : 0);
+                }
             }
 
             if (autoHide) {
@@ -271,7 +276,7 @@ const ScrollArea = React.forwardRef<
             if (fadeMask === "auto") {
                 computeAutoFadeMask();
             }
-        }, [showProgress, autoHide, showScrollButtons, fadeMask, computeEdges, computeAutoFadeMask]);
+        }, [showProgress, autoHide, showScrollButtons, fadeMask, computeEdges, computeAutoFadeMask, orientation]);
 
         //Clear timer after component unmounts
         React.useEffect(() => {
