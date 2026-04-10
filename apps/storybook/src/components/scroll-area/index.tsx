@@ -71,6 +71,7 @@ function getTrackClasses(
 
     const finalVClass = expandOnHover ? vClass : vClass.split(" ")[0];
     const finalHClass = expandOnHover ? hClass : hClass.split(" ")[0];
+
     const paddingClass = (v === "line" || v === "hidden") ? "p-0" : "p-[1px]";
 
     if (orientation === "vertical") {
@@ -382,8 +383,10 @@ const ScrollArea = React.forwardRef<
                     className={cn("h-full w-full rounded-[inherit]", overflowClass)}
                 >
                     {anim ? (
-                        <AnimatePresence>
+                        <AnimatePresence mode="wait">
                             <motion.div
+                                key={animation}
+                                className="h-full w-full origin-top"
                                 initial={anim.initial}
                                 animate={anim.animate}
                                 transition={anim.transition}

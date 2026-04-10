@@ -102,7 +102,7 @@ function getTrackClasses(
     if (orientation === "vertical") {
         return `h-full border-l border-l-transparent ${paddingClass} ${finalVClass}`;
     }
-    return `flex-col border-t border-t-transparent ${paddingClass} ${finalHClass}`;
+    return `flex-col w-full border-t border-t-transparent ${paddingClass} ${finalHClass}`;
 }
 
 function getThumbClasses(variant: string | undefined | null) {
@@ -117,7 +117,7 @@ function getFadeMaskStyle(
     fadeMask: "top" | "bottom" | "fade" | "auto" | "none" | undefined | null
 ): React.CSSProperties | undefined {
     if (!fadeMask || fadeMask === "none" || fadeMask === "auto") return undefined;
-    const size = "56px";
+    const size = "40px";
     const t = "transparent";
     const b = "black";
     switch (fadeMask) {
@@ -280,8 +280,13 @@ const ScrollArea = React.forwardRef<
             if (!el) return;
 
             if (showProgress) {
-                const max = el.scrollHeight - el.clientHeight;
-                setScrollProgress(max > 0 ? el.scrollTop / max : 0);
+                if (orientation === "horizontal") {
+                    const max = el.scrollWidth - el.clientWidth;
+                    setScrollProgress(max > 0 ? el.scrollLeft / max : 0);
+                } else {
+                    const max = el.scrollHeight - el.clientHeight;
+                    setScrollProgress(max > 0 ? el.scrollTop / max : 0);
+                }
             }
 
             if (autoHide) {
@@ -297,7 +302,7 @@ const ScrollArea = React.forwardRef<
             if (fadeMask === "auto") {
                 computeAutoFadeMask();
             }
-        }, [showProgress, autoHide, showScrollButtons, fadeMask, computeEdges, computeAutoFadeMask]);
+        }, [showProgress, autoHide, showScrollButtons, fadeMask, computeEdges, computeAutoFadeMask, orientation]);
 
         //Clear timer after component unmounts
         React.useEffect(() => {
@@ -403,8 +408,10 @@ const ScrollArea = React.forwardRef<
                     className={cn("h-full w-full rounded-[inherit]", overflowClass)}
                 >
                     {anim ? (
-                        <AnimatePresence>
+                        <AnimatePresence mode="wait">
                             <motion.div
+                                key={animation}
+                                className="h-full w-full origin-top"
                                 initial={anim.initial}
                                 animate={anim.animate}
                                 transition={anim.transition}
@@ -467,6 +474,7 @@ const ScrollArea = React.forwardRef<
                         />
                     </>
                 )}
+
 
                 <ScrollAreaPrimitive.Corner />
             </ScrollAreaPrimitive.Root>

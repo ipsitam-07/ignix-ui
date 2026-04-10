@@ -383,8 +383,10 @@ const ScrollArea = React.forwardRef<
                     className={cn("h-full w-full rounded-[inherit]", overflowClass)}
                 >
                     {anim ? (
-                        <AnimatePresence>
+                        <AnimatePresence mode="wait">
                             <motion.div
+                                key={animation}
+                                className="h-full w-full origin-top"
                                 initial={anim.initial}
                                 animate={anim.animate}
                                 transition={anim.transition}
