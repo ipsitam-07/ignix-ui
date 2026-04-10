@@ -77,7 +77,7 @@ function getTrackClasses(
     if (orientation === "vertical") {
         return `h-full border-l border-l-transparent ${paddingClass} ${finalVClass}`;
     }
-    return `flex-col border-t border-t-transparent ${paddingClass} ${finalHClass}`;
+    return `flex-col w-full border-t border-t-transparent ${paddingClass} ${finalHClass}`;
 }
 
 function getThumbClasses(variant: string | undefined | null) {
