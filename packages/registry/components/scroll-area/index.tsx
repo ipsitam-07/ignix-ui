@@ -141,6 +141,7 @@ export interface ScrollAreaProps
     showProgress?: boolean;
     showScrollButtons?: boolean;
     expandOnHover?: boolean;
+    animationKey?: React.Key;
     viewportRef?: React.Ref<HTMLDivElement>;
 }
 
@@ -163,6 +164,7 @@ const ScrollArea = React.forwardRef<
             showScrollButtons = false,
             expandOnHover = true,
             viewportRef,
+            animationKey,
             ...props
         },
         ref
@@ -378,7 +380,7 @@ const ScrollArea = React.forwardRef<
                     {anim ? (
                         <AnimatePresence mode="wait">
                             <motion.div
-                                key={animation}
+                                key={animationKey}
                                 className="h-full w-full origin-top"
                                 initial={anim.initial}
                                 animate={anim.animate}
