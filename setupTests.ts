@@ -16,3 +16,10 @@ vi.mock('framer-motion', () => ({
 
 // Mock React 18 features if needed
 global.React = React;
+
+// Mock ResizeObserver
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
