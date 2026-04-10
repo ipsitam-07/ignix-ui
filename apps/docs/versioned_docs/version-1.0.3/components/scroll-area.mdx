@@ -26,7 +26,7 @@ Scroll areas provide a highly customizable scroll container with dynamic fade ma
 import * as React from "react";
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 import { cva, type VariantProps } from "class-variance-authority";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type HTMLMotionProps } from "framer-motion";
 import {
     ChevronUpIcon,
     ChevronDownIcon,
@@ -166,6 +166,7 @@ export interface ScrollAreaProps
     showProgress?: boolean;
     showScrollButtons?: boolean;
     expandOnHover?: boolean;
+    animationKey?: React.Key;
     viewportRef?: React.Ref<HTMLDivElement>;
 }
 
@@ -188,6 +189,7 @@ const ScrollArea = React.forwardRef<
             showScrollButtons = false,
             expandOnHover = true,
             viewportRef,
+            animationKey,
             ...props
         },
         ref
@@ -198,6 +200,7 @@ const ScrollArea = React.forwardRef<
         const [canScrollDown, setCanScrollDown] = React.useState(false);
         const [canScrollLeft, setCanScrollLeft] = React.useState(false);
         const [canScrollRight, setCanScrollRight] = React.useState(false);
+        const [autoMaskStyle, setAutoMaskStyle] = React.useState<React.CSSProperties>({});
         const hideTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
         const internalViewportRef = React.useRef<HTMLDivElement>(null);
 
@@ -256,24 +259,30 @@ const ScrollArea = React.forwardRef<
                 }
             }
 
-            if (masks.length > 0) {
-                const val = masks.join(", ");
-                el.style.maskImage = val;
-                el.style.webkitMaskImage = val;
-                if (masks.length > 1) {
-                    el.style.maskComposite = "intersect";
-                    (el.style as unknown as Record<string, string>)["webkitMaskComposite"] = "source-in";
-                } else {
-                    el.style.maskComposite = "";
-                    (el.style as unknown as Record<string, string>)["webkitMaskComposite"] = "";
-                }
-            } else {
-                el.style.maskImage = "";
-                el.style.webkitMaskImage = "";
-                el.style.maskComposite = "";
-                (el.style as unknown as Record<string, string>)["webkitMaskComposite"] = "";
+            if (masks.length === 0) {
+                setAutoMaskStyle({});
+                return;
             }
+
+            const val = masks.join(", ");
+            const composite = masks.length > 1 ? "intersect" : undefined;
+
+
+            setAutoMaskStyle({
+                maskImage: val,
+                WebkitMaskImage: val,
+                ...(composite && {
+                    maskComposite: composite,
+                    WebkitMaskComposite: "source-in"
+                }),
+            });
+
         }, [orientation]);
+
+        const viewportMaskStyle: React.CSSProperties =
+            fadeMask === "auto"
+                ? autoMaskStyle
+                : getFadeMaskStyle(fadeMask) ?? {};
 
         const handleScroll = React.useCallback(() => {
             const el = internalViewportRef.current;
@@ -328,29 +337,14 @@ const ScrollArea = React.forwardRef<
         }, [showScrollButtons, computeEdges]);
 
         React.useEffect(() => {
+            if (fadeMask !== "auto") return;
             const el = internalViewportRef.current;
             if (!el) return;
-
-            if (fadeMask === "auto") {
-                computeAutoFadeMask();
-                const ro = new ResizeObserver(() => computeAutoFadeMask());
-                ro.observe(el);
-                if (el.firstElementChild) ro.observe(el.firstElementChild);
-                return () => ro.disconnect();
-            } else {
-                const staticStyle = getFadeMaskStyle(fadeMask);
-                if (staticStyle && staticStyle.maskImage) {
-                    el.style.maskImage = staticStyle.maskImage as string;
-                    el.style.webkitMaskImage = staticStyle.WebkitMaskImage as string;
-                    el.style.maskComposite = "";
-                    (el.style as unknown as Record<string, string>)["webkitMaskComposite"] = "";
-                } else {
-                    el.style.maskImage = "";
-                    el.style.webkitMaskImage = "";
-                    el.style.maskComposite = "";
-                    (el.style as unknown as Record<string, string>)["webkitMaskComposite"] = "";
-                }
-            }
+            computeAutoFadeMask();
+            const ro = new ResizeObserver(() => computeAutoFadeMask());
+            ro.observe(el);
+            if (el.firstElementChild) ro.observe(el.firstElementChild);
+            return () => ro.disconnect();
         }, [fadeMask, computeAutoFadeMask]);
 
         const scrollToEdge = React.useCallback(
@@ -406,11 +400,12 @@ const ScrollArea = React.forwardRef<
                 <ScrollAreaPrimitive.Viewport
                     ref={setViewportRef}
                     className={cn("h-full w-full rounded-[inherit]", overflowClass)}
+                    style={viewportMaskStyle}
                 >
                     {anim ? (
                         <AnimatePresence mode="wait">
                             <motion.div
-                                key={animation}
+                                key={animationKey}
                                 className="h-full w-full origin-top"
                                 initial={anim.initial}
                                 animate={anim.animate}
@@ -492,6 +487,7 @@ interface ScrollBarProps
     orientation?: "vertical" | "horizontal";
     forceVisible?: boolean;
     expandOnHover?: boolean;
+    motionProps?: Omit<HTMLMotionProps<"div">, "className">;
 }
 
 const ScrollBar = React.forwardRef<
@@ -507,6 +503,7 @@ const ScrollBar = React.forwardRef<
             size,
             forceVisible = true,
             expandOnHover = true,
+            motionProps,
             ...props
         },
         ref
@@ -518,6 +515,7 @@ const ScrollBar = React.forwardRef<
             forceMount
         >
             <motion.div
+                {...motionProps}
                 initial={false}
                 animate={{ opacity: forceVisible ? 1 : 0 }}
                 transition={{ duration: 0.3 }}
@@ -630,9 +628,20 @@ The `ScrollArea` component is built on top of Radix UI's Scroll Area primitive a
 | `orientation` | `"vertical" \| "horizontal" \| "both"` | `"vertical"` | Scrolling directions to display scrollbars for. |
 | `fadeMask` | `"top" \| "bottom" \| "fade" \| "auto" \| "none"` | `"none"` | Applies a fade mask to the edges of the container. |
 | `autoHide` | `boolean` | `false` | If true, hides the scrollbar when not actively scrolling. |
-| `animation` | `"fade" \| "slide" \| "scale" \| "none"` | `"none"` | Entrance animation for the internal content. |
-| `showProgress` | `boolean` | `false` | Shows a progress bar at the top of the container to indicate scroll depth. |
-| `showScrollButtons` | `boolean` | `false` | Renders functional floating chevron buttons allowing users to scroll to edges directly. |
-| `expandOnHover` | `boolean` | `true` | If true, the scrollbar expands its thickness when hovered over. |
+| `animation` | `"fade" \| "slide" \| "scale" \| "none"` | `"none"` | Entrance animation style for the internal content wrapper. |
+| `animationKey` | `React.Key` | `undefined` | Key tied to content identity. Change this value to trigger a new enter/exit animation cycle. |
+| `showProgress` | `boolean` | `false` | Shows a progress bar indicating scroll depth. |
+| `showScrollButtons` | `boolean` | `false` | Renders floatin buttons that scroll to the edge when clicked. |
+| `expandOnHover` | `boolean` | `true` | If true, the scrollbar expands its thickness on hover. |
 | `viewportRef` | `React.Ref<HTMLDivElement>` | `undefined` | Ref accessor for the internal `ScrollAreaPrimitive.Viewport` DOM node. |
 
+### ScrollBar Props
+
+`ScrollBar` accepts all props from `ScrollArea`'s scrollbar variants plus the following:
+
+| Prop | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `orientation` | `"vertical" \| "horizontal"` | `"vertical"` | Axis this scrollbar tracks. |
+| `forceVisible` | `boolean` | `true` | Controls scrollbar opacity directly. |
+| `expandOnHover` | `boolean` | `true` | If true, the scrollbar track expands on hover. |
+| `motionProps` | `Omit<HTMLMotionProps<"div">, "className">` | `undefined` | Escape hatch for Framer Motion props on the scrollbar track element. |
