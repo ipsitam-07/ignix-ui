@@ -1,0 +1,1474 @@
+// components/DataTable.tsx
+import React, { useState, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { 
+  MagnifyingGlassIcon, 
+  EyeOpenIcon, 
+  Cross1Icon, 
+  ChevronDownIcon, 
+  ArrowDownIcon, 
+  ArrowUpIcon, 
+  ChevronLeftIcon, 
+  ChevronRightIcon, 
+  FileIcon 
+} from '@radix-ui/react-icons';
+import { cva } from 'class-variance-authority';
+import { cn } from '@site/src/utils/cn';
+import { Checkbox } from '../checkbox';
+
+/* ============================================
+  TYPES & INTERFACES
+============================================ */
+
+export interface Column<T> {
+  key: keyof T;
+  title: string;
+  sortable?: boolean;
+  visible?: boolean;
+  render?: (value: T[keyof T], row: T) => React.ReactNode;
+  className?: string;
+}
+
+export interface BulkAction<T> {
+  label: string;
+  icon?: React.ReactNode;
+  onClick: (selectedRows: T[]) => void;
+  variant?: 'default' | 'destructive';
+}
+
+export interface DataTableProps<T> {
+  data: T[];
+  columns: Column<T>[];
+  keyExtractor: (row: T) => string | number;
+  bulkActions?: BulkAction<T>[];
+  pageSizeOptions?: number[];
+  defaultPageSize?: number;
+  enableRowSelection?: boolean;
+  loading?: boolean;
+  emptyStateMessage?: string;
+  noResultsMessage?: string;
+  className?: string;
+  theme?: 'light' | 'dark';
+}
+
+type SortDirection = 'asc' | 'desc';
+
+/* ============================================
+  VARIANTS
+============================================ */
+
+const TableContainerVariants = cva("w-full overflow-x-auto rounded-lg transition-all duration-200", {
+  variants: {
+    theme: {
+      light: "",
+      dark: "dark"
+    }
+  },
+  defaultVariants: {
+    theme: "light"
+  }
+});
+
+const ToolbarVariants = cva("flex flex-col sm:flex-row justify-between gap-4 mb-4 p-4 rounded-lg");
+
+const SearchInputVariants = cva(
+  "w-full pl-10 pr-4 py-2 rounded-md focus:outline-none focus:ring-2 transition-all duration-200",
+  {
+    variants: {
+      theme: {
+        light: "bg-background border border-gray-200 text-foreground placeholder:text-muted-foreground focus:ring-primary/20 focus:border-primary",
+        dark: "bg-gray-900 border-gray-700 text-gray-100 placeholder:text-gray-500 focus:ring-primary/20 focus:border-primary"
+      }
+    },
+    defaultVariants: {
+      theme: "light"
+    }
+  }
+);
+
+const TableHeaderVariants = cva("sticky top-0 z-10", {
+  variants: {
+    theme: {
+      light: "bg-muted/50",
+      dark: "bg-gray-900"
+    }
+  },
+  defaultVariants: {
+    theme: "light"
+  }
+});
+
+const TableRowVariants = cva("border-b transition-colors", {
+  variants: {
+    theme: {
+      light: "border-border hover:bg-muted/30",
+      dark: "border-gray-800 hover:bg-gray-800/50"
+    }
+  },
+  defaultVariants: {
+    theme: "light"
+  }
+});
+
+/* ============================================
+  HOOKS
+============================================ */
+
+export function useSort<T>(data: T[], initialSortKey?: keyof T) {
+  const [sortKey, setSortKey] = useState<keyof T | null>(initialSortKey || null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const sortedData = useMemo(() => {
+    if (!sortKey) return data;
+
+    return [...data].sort((a, b) => {
+      const aValue = a[sortKey];
+      const bValue = b[sortKey];
+
+      if (aValue === bValue) return 0;
+
+      let comparison = 0;
+      if (aValue > bValue) comparison = 1;
+      if (aValue < bValue) comparison = -1;
+
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [data, sortKey, sortDirection]);
+
+  const toggleSort = (key: keyof T) => {
+    if (sortKey === key) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDirection('asc');
+    }
+  };
+
+  return { sortedData, sortKey, sortDirection, toggleSort };
+}
+
+export function usePagination<T>(data: T[], pageSize: number) {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(data.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentData = data.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  const nextPage = () => goToPage(currentPage + 1);
+  const previousPage = () => goToPage(currentPage - 1);
+
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [data.length]);
+
+  return {
+    currentPage,
+    totalPages,
+    currentData,
+    nextPage,
+    previousPage,
+    goToPage,
+    startIndex,
+    endIndex,
+  };
+}
+
+export function useFilter<T>(data: T[], columns: Column<T>[]) {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredData = useMemo(() => {
+    if (!searchTerm.trim()) return data;
+
+    const term = searchTerm.toLowerCase();
+    return data.filter(row => {
+      return columns.some(column => {
+        const value = row[column.key];
+        if (value === null || value === undefined) return false;
+        return String(value).toLowerCase().includes(term);
+      });
+    });
+  }, [data, searchTerm, columns]);
+
+  return { filteredData, searchTerm, setSearchTerm };
+}
+
+export function useColumnVisibility<T>(initialColumns: Column<T>[]) {
+  const [visibleColumns, setVisibleColumns] = useState<Set<keyof T>>(
+    new Set(initialColumns.filter(col => col.visible !== false).map(col => col.key))
+  );
+
+  const toggleColumn = (key: keyof T) => {
+    setVisibleColumns(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  };
+
+  const getVisibleColumns = useMemo(() => {
+    return initialColumns.filter(col => visibleColumns.has(col.key));
+  }, [initialColumns, visibleColumns]);
+
+  return { visibleColumns, toggleColumn, getVisibleColumns };
+}
+
+export function useRowSelection<T>(
+  data: T[],
+  keyExtractor: (row: T) => string | number
+) {
+  const [selectedRows, setSelectedRows] = useState<Set<string | number>>(new Set());
+
+  const toggleRow = useCallback((row: T) => {
+    const key = keyExtractor(row);
+    setSelectedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  }, [keyExtractor]);
+
+  const toggleAll = useCallback(() => {
+    if (selectedRows.size === data.length) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(data.map(keyExtractor)));
+    }
+  }, [data, selectedRows.size, keyExtractor]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedRows(new Set());
+  }, []);
+
+  const getSelectedRowData = useCallback(() => {
+    const selectedKeys = Array.from(selectedRows);
+    return data.filter(row => selectedKeys.includes(keyExtractor(row)));
+  }, [data, selectedRows, keyExtractor]);
+
+  const isAllSelected = data.length > 0 && selectedRows.size === data.length;
+  const isIndeterminate = selectedRows.size > 0 && selectedRows.size < data.length;
+
+  return {
+    selectedRows,
+    toggleRow,
+    toggleAll,
+    clearSelection,
+    getSelectedRowData,
+    isAllSelected,
+    isIndeterminate,
+  };
+}
+
+/* ============================================
+  SUBCOMPONENTS
+============================================ */
+
+interface TableHeaderProps<T> {
+  columns: Column<T>[];
+  sortKey: keyof T | null;
+  sortDirection: 'asc' | 'desc';
+  onSort: (key: keyof T) => void;
+  enableRowSelection?: boolean;
+  isAllSelected?: boolean;
+  isIndeterminate?: boolean;
+  onToggleAll?: () => void;
+  theme?: 'light' | 'dark';
+}
+
+export function TableHeader<T>({
+  columns,
+  sortKey,
+  sortDirection,
+  onSort,
+  enableRowSelection,
+  isAllSelected,
+  isIndeterminate,
+  onToggleAll,
+  theme = 'light',
+}: TableHeaderProps<T>) {
+  return (
+    <thead className={cn(TableHeaderVariants({ theme }))}>
+      <tr className={cn("border-b", theme === 'dark' ? 'border-gray-800' : 'border-border')}>
+        {enableRowSelection && columns?.length > 0 && (
+          <th className="px-4 py-3 w-12">
+            <Checkbox
+              data-state={isAllSelected ? 'checked' : isIndeterminate ? 'indeterminate' : 'unchecked'}
+              className={cn(
+                "w-4 h-4 rounded focus:outline-none focus:ring-2",
+                theme === 'dark' 
+                  ? "border-gray-600 focus:ring-primary/20 bg-gray-800" 
+                  : "border-border focus:ring-primary/20"
+              )}
+              variant="default"
+              checked={isAllSelected}
+              onChange={onToggleAll}
+              aria-label="Select all rows"
+            />
+          </th>
+        )}
+        {columns.map((column) => (
+          <th
+            key={String(column.key)}
+            className={cn(
+              "px-4 py-3 text-left text-sm font-semibold",
+              column.sortable !== false ? 'cursor-pointer hover:bg-muted/30' : '',
+              theme === 'dark' ? 'text-gray-300' : 'text-foreground',
+              column.className
+            )}
+            onClick={() => column.sortable !== false && onSort(column.key)}
+            role={column.sortable !== false ? 'button' : undefined}
+            tabIndex={column.sortable !== false ? 0 : undefined}
+            aria-sort={
+              sortKey === column.key
+                ? sortDirection === 'asc'
+                  ? 'ascending'
+                  : 'descending'
+                : undefined
+            }
+          >
+            <div className="flex items-center gap-2">
+              {column.title}
+              {sortKey === column.key && (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="inline-block"
+                >
+                  {sortDirection === 'asc' ? (
+                    <ArrowUpIcon className="w-3 h-3" />
+                  ) : (
+                    <ArrowDownIcon className="w-3 h-3" />
+                  )}
+                </motion.span>
+              )}
+            </div>
+          </th>
+        ))}
+      </tr>
+    </thead>
+  );
+}
+
+interface TableRowProps<T> {
+  row: T;
+  columns: Column<T>[];
+  index: number;
+  isSelected: boolean;
+  onToggleSelect: (row: T) => void;
+  enableRowSelection?: boolean;
+  keyExtractor: (row: T) => string | number;
+  theme?: 'light' | 'dark';
+}
+
+export function TableRow<T>({
+  row,
+  columns,
+  index,
+  isSelected,
+  onToggleSelect,
+  enableRowSelection,
+  keyExtractor,
+  theme = 'light',
+}: TableRowProps<T>) {
+  return (
+    <motion.tr
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      transition={{ duration: 0.2, delay: index * 0.02 }}
+      className={cn(
+        TableRowVariants({ theme }),
+        index % 2 === 0 ? (theme === 'dark' ? 'bg-gray-900/50' : 'bg-background') : (theme === 'dark' ? 'bg-gray-900/30' : 'bg-muted/10'),
+        isSelected && (theme === 'dark' ? 'bg-primary/10' : 'bg-primary/5')
+      )}
+    >
+      {enableRowSelection && (
+        <td className="px-4 py-3">
+          <Checkbox
+            className={cn(
+              "w-4 h-4 rounded focus:outline-none focus:ring-2",
+              theme === 'dark' 
+                ? "border-gray-600 focus:ring-primary/20 bg-gray-800" 
+                : "border-border focus:ring-primary/20"
+            )}
+            variant="default"
+            checked={isSelected}
+            onChange={() => onToggleSelect(row)}
+            aria-label={`Select row ${keyExtractor(row)}`}
+            disabled={columns?.length === 0}
+          />
+        </td>
+      )}
+      {columns.map((column) => (
+        <td
+          key={String(column.key)}
+          className={cn(
+            "px-4 py-3 text-sm",
+            theme === 'dark' ? 'text-gray-300' : 'text-foreground',
+            column.className
+          )}
+        >
+          {column.render
+            ? column.render(row[column.key], row)
+            : String(row[column.key])}
+        </td>
+      ))}
+    </motion.tr>
+  );
+}
+
+interface ColumnVisibilityDropdownProps<T> {
+  columns: Column<T>[];
+  visibleColumns: Set<keyof T>;
+  onToggleColumn: (key: keyof T) => void;
+  theme?: 'light' | 'dark';
+}
+
+export function ColumnVisibilityDropdown<T>({
+  columns,
+  visibleColumns,
+  onToggleColumn,
+  theme = 'light',
+}: ColumnVisibilityDropdownProps<T>) {
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button className={cn(
+          "inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20",
+          theme === 'dark'
+            ? "bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700"
+            : "bg-card text-foreground border border-border hover:bg-muted"
+        )}>
+          <EyeOpenIcon className="w-4 h-4" />
+          Toggle Columns
+          <ChevronDownIcon className="w-4 h-4" />
+        </button>
+      </DropdownMenu.Trigger>
+
+      <AnimatePresence>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            asChild
+            sideOffset={5}
+            align="end"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className={cn(
+                "min-w-[200px] rounded-md shadow-lg border p-2 z-20",
+                theme === 'dark'
+                  ? "bg-gray-800 border-gray-700"
+                  : "bg-card border-border"
+              )}
+            >
+              {columns.map((column) => (
+                <DropdownMenu.Item
+                  key={String(column.key)}
+                  className="flex items-center gap-2 px-2 py-2 rounded-sm cursor-pointer focus:outline-none"
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  <Checkbox
+                    id={`col-${String(column.key)}`}
+                    className={cn(
+                      "w-4 h-4 rounded focus:outline-none focus:ring-2",
+                      theme === 'dark' 
+                        ? "border-gray-600 focus:ring-primary/20 bg-gray-700" 
+                        : "border-border focus:ring-primary/20"
+                    )}
+                    variant="default"
+                    checked={visibleColumns.has(column.key)}
+                    onChange={() => onToggleColumn(column.key)}
+                  />
+                  <label
+                    htmlFor={`col-${String(column.key)}`}
+                    className={cn(
+                      "text-sm cursor-pointer",
+                      theme === 'dark' ? "text-gray-300" : "text-foreground"
+                    )}
+                  >
+                    {column.title}
+                  </label>
+                </DropdownMenu.Item>
+              ))}
+            </motion.div>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </AnimatePresence>
+    </DropdownMenu.Root>
+  );
+}
+
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onNextPage: () => void;
+  onPreviousPage: () => void;
+  onGoToPage: (page: number) => void;
+  pageSize: number;
+  onPageSizeChange: (size: number) => void;
+  pageSizeOptions?: number[];
+  totalItems: number;
+  startIndex: number;
+  endIndex: number;
+  theme?: 'light' | 'dark';
+}
+
+export function Pagination({
+  currentPage,
+  totalPages,
+  onNextPage,
+  onPreviousPage,
+  onGoToPage,
+  pageSize,
+  onPageSizeChange,
+  pageSizeOptions = [5, 10, 25, 50],
+  totalItems,
+  startIndex,
+  endIndex,
+  theme = 'light',
+}: PaginationProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className={cn(
+        "flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t",
+        theme === 'dark' ? "bg-gray-900 border-gray-800" : "bg-card border-border"
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <span className={cn("text-sm", theme === 'dark' ? "text-gray-400" : "text-muted-foreground")}>
+          Rows per page:
+        </span>
+        <select
+          value={pageSize}
+          onChange={(e) => onPageSizeChange(Number(e.target.value))}
+          className={cn(
+            "px-2 py-1 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20",
+            theme === 'dark'
+              ? "bg-gray-800 border-gray-700 text-gray-200"
+              : "bg-background border-border text-foreground"
+          )}
+          aria-label="Rows per page"
+        >
+          {pageSizeOptions.map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className={cn("text-sm", theme === 'dark' ? "text-gray-400" : "text-muted-foreground")}>
+        {totalItems > 0 ? `${startIndex + 1}–${Math.min(endIndex, totalItems)} of ${totalItems}` : '0-0 of 0'}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onPreviousPage}
+          disabled={currentPage === 1}
+          className={cn(
+            "p-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20",
+            theme === 'dark'
+              ? "text-gray-400 hover:text-gray-200 hover:bg-gray-800"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          )}
+          aria-label="Previous page"
+        >
+          <ChevronLeftIcon className="w-5 h-5" />
+        </button>
+
+        <div className="flex gap-1">
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let pageNum;
+            if (totalPages <= 5) {
+              pageNum = i + 1;
+            } else if (currentPage <= 3) {
+              pageNum = i + 1;
+            } else if (currentPage >= totalPages - 2) {
+              pageNum = totalPages - 4 + i;
+            } else {
+              pageNum = currentPage - 2 + i;
+            }
+
+            return (
+              <button
+                key={pageNum}
+                onClick={() => onGoToPage(pageNum)}
+                className={cn(
+                  "px-3 py-1 text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20",
+                  currentPage === pageNum
+                    ? "bg-primary text-primary-foreground"
+                    : theme === 'dark'
+                      ? "text-gray-400 hover:text-gray-200 hover:bg-gray-800"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+                aria-label={`Go to page ${pageNum}`}
+                aria-current={currentPage === pageNum ? 'page' : undefined}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={onNextPage}
+          disabled={currentPage === totalPages}
+          className={cn(
+            "p-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20",
+            theme === 'dark'
+              ? "text-gray-400 hover:text-gray-200 hover:bg-gray-800"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          )}
+          aria-label="Next page"
+        >
+          <ChevronRightIcon className="w-5 h-5" />
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+interface BulkActionBarProps<T> {
+  selectedCount: number;
+  actions: BulkAction<T>[];
+  selectedRows: T[];
+  onClearSelection: () => void;
+  theme?: 'light' | 'dark';
+}
+
+export function BulkActionBar<T>({
+  selectedCount,
+  actions,
+  selectedRows,
+  onClearSelection,
+  theme = 'light',
+}: BulkActionBarProps<T>) {
+  return (
+    <AnimatePresence>
+      {selectedCount > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -50 }}
+          className="overflow-hidden my-4"
+        >
+          <div className={cn(
+            "flex items-center justify-end gap-4 px-6 py-3 rounded-lg shadow-lg border",
+            theme === 'dark' ? "bg-gray-900 text-gray-100" : "bg-gray-300 text-background"
+          )}>
+            <div className="flex gap-2">
+              {actions.map((action, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => action.onClick(selectedRows)}
+                  className={cn(
+                    "inline-flex items-center px-3 py-1 text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2",
+                    action.variant === 'destructive'
+                      ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus:ring-destructive"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary",
+                    theme === 'dark' && "focus:ring-offset-gray-900"
+                  )}
+                  aria-label={action.label}
+                >
+                  {action.icon && (
+                    <span className="mr-2 flex items-center">
+                      {action.icon}
+                    </span>
+                  )}
+                  <span className="flex items-center">{action.label}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={onClearSelection}
+              className={cn(
+                "p-1 rounded-md transition-colors focus:outline-none focus:ring-2",
+                theme === 'dark'
+                  ? "hover:bg-gray-800 focus:ring-gray-500"
+                  : "hover:bg-primary/90 focus:ring-muted-foreground"
+              )}
+              aria-label="Clear selection"
+            >
+              <Cross1Icon className="w-4 h-4" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ============================================
+  SKELETON ROWS COMPONENT
+============================================ */
+
+interface SkeletonRowProps {
+  columns: number;
+  enableRowSelection?: boolean;
+  theme?: 'light' | 'dark';
+}
+
+function SkeletonRow({ columns, enableRowSelection, theme = 'light' }: SkeletonRowProps) {
+  return (
+    <tr className={cn(
+      "border-b animate-pulse",
+      theme === 'dark' ? "border-gray-800" : "border-border"
+    )}>
+      {enableRowSelection && (
+        <td className="px-4 py-3">
+          <div className={cn(
+            "w-4 h-4 rounded",
+            theme === 'dark' ? "bg-gray-800" : "bg-muted"
+          )} />
+        </td>
+      )}
+      {Array.from({ length: columns }).map((_, idx) => (
+        <td key={idx} className="px-4 py-3">
+          <div className={cn(
+            "h-4 rounded",
+            theme === 'dark' ? "bg-gray-800" : "bg-muted",
+            idx === 0 ? "w-3/4" : "w-full"
+          )} />
+        </td>
+      ))}
+    </tr>
+  );
+}
+
+/* ============================================
+   MOBILE CARD COMPONENT
+============================================ */
+
+interface MobileCardViewProps<T> {
+  data: T[];
+  columns: Column<T>[];
+  selectedRows: Set<string | number>;
+  onToggleSelect: (row: T) => void;
+  enableRowSelection?: boolean;
+  keyExtractor: (row: T) => string | number;
+  theme?: 'light' | 'dark';
+  onRowClick?: (row: T) => void;
+}
+
+function MobileCardView<T>({
+  data,
+  columns,
+  selectedRows,
+  onToggleSelect,
+  enableRowSelection,
+  keyExtractor,
+  theme = 'light',
+  onRowClick,
+}: MobileCardViewProps<T>) {
+  return (
+    <div className="space-y-3 sm:space-y-4">
+      <AnimatePresence mode="wait">
+        {data.map((row, idx) => {
+          const rowKey = keyExtractor(row);
+          const isSelected = selectedRows.has(rowKey);
+          
+          return (
+            <motion.div
+              key={rowKey}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2, delay: idx * 0.03 }}
+              className={cn(
+                "rounded-lg border transition-all duration-200",
+                theme === 'dark'
+                  ? isSelected 
+                    ? "bg-primary/10 border-primary/30"
+                    : "bg-gray-900 border-gray-800 hover:border-gray-700"
+                  : isSelected
+                    ? "bg-primary/5 border-primary/20"
+                    : "bg-card border-border hover:shadow-md",
+                "cursor-pointer"
+              )}
+              onClick={() => onRowClick?.(row)}
+            >
+              {/* Card Header with Selection Checkbox */}
+              <div className={cn(
+                "flex items-center justify-between border-b p-4",
+                theme === 'dark' ? "border-gray-800" : "border-border"
+              )}>
+                <div className="flex-1">
+                  {columns[0] && (
+                    <div className="font-semibold text-foreground">
+                      {columns[0].render
+                        ? columns[0].render(row[columns[0].key], row)
+                        : String(row[columns[0].key])}
+                    </div>
+                  )}
+                </div>
+                
+                {enableRowSelection && (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      className={cn(
+                        "w-4 h-4 rounded focus:outline-none focus:ring-2",
+                        theme === 'dark' 
+                          ? "border-gray-600 focus:ring-primary/20 bg-gray-800" 
+                          : "border-border focus:ring-primary/20"
+                      )}
+                      variant="default"
+                      checked={isSelected}
+                      onChange={() => onToggleSelect(row)}
+                      aria-label={`Select row ${rowKey}`}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Card Body */}
+              <div className="space-y-2 p-4">
+                {columns.slice(1).map((column) => (
+                  <div key={String(column.key)} className="flex gap-3">
+                    <div className={cn(
+                      "w-1/3 text-sm font-medium",
+                      theme === 'dark' ? "text-gray-400" : "text-muted-foreground"
+                    )}>
+                      {column.title}
+                    </div>
+                    <div className={cn(
+                      "flex-1 text-sm",
+                      theme === 'dark' ? "text-gray-200" : "text-foreground"
+                    )}>
+                      {column.render
+                        ? column.render(row[column.key], row)
+                        : String(row[column.key])}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+interface MobileSkeletonCardProps {
+  theme?: 'light' | 'dark';
+}
+
+function MobileSkeletonCard({ theme = 'light' }: MobileSkeletonCardProps) {
+  return (
+    <div className={cn(
+      "rounded-lg border animate-pulse",
+      theme === 'dark' ? "bg-gray-900 border-gray-800" : "bg-card border-border"
+    )}>
+      <div className={cn(
+        "border-b p-4",
+        theme === 'dark' ? "border-gray-800" : "border-border"
+      )}>
+        <div className="h-5 w-32 rounded bg-muted" />
+      </div>
+      <div className="space-y-3 p-4">
+        <div className="flex gap-3">
+          <div className="w-1/3 h-4 rounded bg-muted" />
+          <div className="flex-1 h-4 rounded bg-muted" />
+        </div>
+        <div className="flex gap-3">
+          <div className="w-1/3 h-4 rounded bg-muted" />
+          <div className="flex-1 h-4 rounded bg-muted" />
+        </div>
+        <div className="flex gap-3">
+          <div className="w-1/3 h-4 rounded bg-muted" />
+          <div className="flex-1 h-4 rounded bg-muted" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================
+  MOBILE PAGINATION COMPONENT
+============================================ */
+
+interface MobilePaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onNextPage: () => void;
+  onPreviousPage: () => void;
+  onGoToPage: (page: number) => void;
+  pageSize: number;
+  onPageSizeChange: (size: number) => void;
+  pageSizeOptions?: number[];
+  totalItems: number;
+  startIndex: number;
+  endIndex: number;
+  theme?: 'light' | 'dark';
+}
+
+function MobilePagination({
+  currentPage,
+  totalPages,
+  onNextPage,
+  onPreviousPage,
+  onGoToPage,
+  pageSize,
+  onPageSizeChange,
+  pageSizeOptions = [5, 10, 25, 50],
+  totalItems,
+  startIndex,
+  endIndex,
+  theme = 'light',
+}: MobilePaginationProps) {
+  const [showPageSizeMenu, setShowPageSizeMenu] = useState(false);
+  
+  const getPageNumbers = () => {
+    const pages: (number | '...')[] = [];
+    
+    if (totalPages <= 3) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 2) {
+        pages.push(1, 2, 3, '...', totalPages);
+      } else if (currentPage >= totalPages - 1) {
+        pages.push(1, '...', totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage, '...', totalPages);
+      }
+    }
+    
+    return pages;
+  };
+
+  return (
+    <div className={cn(
+      "flex flex-col gap-3 px-3 py-3 border-t",
+      theme === 'dark' ? "bg-gray-900 border-gray-800" : "bg-card border-border"
+    )}>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => setShowPageSizeMenu(!showPageSizeMenu)}
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all",
+            "focus:outline-none focus:ring-2 focus:ring-primary/20",
+            theme === 'dark'
+              ? "bg-gray-800 text-gray-200 border border-gray-700"
+              : "bg-background text-foreground border border-border"
+          )}
+        >
+          <span>{pageSize} per page</span>
+          <ChevronDownIcon className={cn(
+            "w-3 h-3 transition-transform",
+            showPageSizeMenu && "rotate-180"
+          )} />
+        </button>
+        
+        <div className="text-sm text-muted-foreground">
+          {totalItems > 0 ? `${startIndex + 1}-${Math.min(endIndex, totalItems)} of ${totalItems}` : '0-0 of 0'}
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {showPageSizeMenu && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className={cn(
+              "rounded-lg border p-1",
+              theme === 'dark'
+                ? "bg-gray-800 border-gray-700"
+                : "bg-card border-border shadow-lg"
+            )}
+          >
+            {pageSizeOptions.map((size) => (
+              <button
+                key={size}
+                onClick={() => {
+                  onPageSizeChange(size);
+                  setShowPageSizeMenu(false);
+                }}
+                className={cn(
+                  "w-full px-3 py-2 text-sm rounded-md transition-colors text-left",
+                  pageSize === size
+                    ? "bg-primary text-primary-foreground"
+                    : theme === 'dark'
+                      ? "text-gray-300 hover:bg-gray-700"
+                      : "text-foreground hover:bg-muted"
+                )}
+              >
+                {size} rows per page
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex items-center justify-between gap-2">
+        <button
+          onClick={onPreviousPage}
+          disabled={currentPage === 1}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+            "focus:outline-none focus:ring-2 focus:ring-primary/20",
+            "disabled:opacity-40 disabled:cursor-not-allowed",
+            theme === 'dark'
+              ? "bg-gray-800 text-gray-200 hover:bg-gray-700 disabled:bg-gray-900"
+              : "bg-muted text-foreground hover:bg-muted/80 disabled:bg-muted/50"
+          )}
+          aria-label="Previous page"
+        >
+          <ChevronLeftIcon className="w-4 h-4" />
+          Previous
+        </button>
+
+        <div className="flex gap-1">
+          {getPageNumbers().map((page, idx) => (
+            <React.Fragment key={idx}>
+              {page === '...' ? (
+                <span className={cn(
+                  "w-8 h-8 flex items-center justify-center text-sm",
+                  theme === 'dark' ? "text-gray-500" : "text-muted-foreground"
+                )}>
+                  ...
+                </span>
+              ) : (
+                <button
+                  onClick={() => onGoToPage(page as number)}
+                  className={cn(
+                    "w-8 h-8 rounded-lg text-sm font-medium transition-all",
+                    "focus:outline-none focus:ring-2 focus:ring-primary/20",
+                    currentPage === page
+                      ? "bg-primary text-primary-foreground"
+                      : theme === 'dark'
+                        ? "text-gray-300 hover:bg-gray-800"
+                        : "text-foreground hover:bg-muted"
+                  )}
+                  aria-label={`Go to page ${page}`}
+                  aria-current={currentPage === page ? 'page' : undefined}
+                >
+                  {page}
+                </button>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+
+        <button
+          onClick={onNextPage}
+          disabled={currentPage === totalPages}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+            "focus:outline-none focus:ring-2 focus:ring-primary/20",
+            "disabled:opacity-40 disabled:cursor-not-allowed",
+            theme === 'dark'
+              ? "bg-gray-800 text-gray-200 hover:bg-gray-700 disabled:bg-gray-900"
+              : "bg-muted text-foreground hover:bg-muted/80 disabled:bg-muted/50"
+          )}
+          aria-label="Next page"
+        >
+          Next
+          <ChevronRightIcon className="w-4 h-4" />
+        </button>
+      </div>
+
+      {totalPages > 5 && (
+        <div className="flex items-center gap-2 pt-2">
+          <span className={cn(
+            "text-xs",
+            theme === 'dark' ? "text-gray-500" : "text-muted-foreground"
+          )}>
+            Jump to page:
+          </span>
+          <input
+            type="number"
+            min={1}
+            max={totalPages}
+            className={cn(
+              "w-16 px-2 py-1 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20",
+              theme === 'dark'
+                ? "bg-gray-800 border-gray-700 text-gray-200"
+                : "bg-background border-border text-foreground"
+            )}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const page = parseInt((e.target as HTMLInputElement).value);
+                if (!isNaN(page) && page >= 1 && page <= totalPages) {
+                  onGoToPage(page);
+                  (e.target as HTMLInputElement).value = '';
+                }
+              }
+            }}
+            placeholder="Page #"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================================
+  MAIN DATATABLE COMPONENT
+============================================ */
+
+export function DataTable<T extends Record<string, any>>({
+  data,
+  columns,
+  keyExtractor,
+  bulkActions = [],
+  pageSizeOptions = [5, 10, 25, 50],
+  defaultPageSize = 5,
+  enableRowSelection = true,
+  loading = false,
+  emptyStateMessage = 'No data available.',
+  noResultsMessage = 'No results found.',
+  className = '',
+  theme = 'light',
+  onRowClick,
+}: DataTableProps<T> & {
+  onRowClick?: (row: T) => void;
+}) {
+  const [pageSize, setPageSize] = useState(defaultPageSize);
+  
+  const { filteredData, searchTerm, setSearchTerm } = useFilter(data, columns);
+  const { sortedData, sortKey, sortDirection, toggleSort } = useSort(filteredData);
+  const { currentPage, totalPages, currentData, nextPage, previousPage, goToPage, startIndex, endIndex } = 
+    usePagination(sortedData, pageSize);
+  const { getVisibleColumns, toggleColumn, visibleColumns } = useColumnVisibility(columns);
+  const { 
+    selectedRows, 
+    toggleRow, 
+    toggleAll, 
+    clearSelection, 
+    getSelectedRowData,
+    isAllSelected,
+    isIndeterminate 
+  } = useRowSelection(currentData, keyExtractor);
+
+  const visibleColumnsList = getVisibleColumns;
+  const hasData = currentData.length > 0;
+  const hasSearchResults = filteredData.length > 0;
+  
+  const skeletonRowCount = pageSize;
+
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    goToPage(1);
+  };
+
+  const handleDeleteSelected = (rows: T[]) => {
+    console.log('Delete rows:', rows);
+    clearSelection();
+  };
+
+  const defaultBulkActions = bulkActions.length > 0 ? bulkActions : [
+    {
+      label: 'Delete',
+      variant: 'destructive' as const,
+      onClick: handleDeleteSelected,
+    },
+    {
+      label: 'Export',
+      variant: 'default' as const,
+      onClick: (rows: T[]) => {
+        console.log('Export rows:', rows);
+      },
+    },
+  ];
+
+  const getMinTableHeight = useCallback(() => {
+    const rowHeight = 52;
+    const headerHeight = 48;
+    const paginationHeight = 65;
+    const contentHeight = headerHeight + (pageSize * rowHeight) + paginationHeight;
+    return `${contentHeight}px`;
+  }, [pageSize]);
+
+  const minTableHeight = useMemo(() => getMinTableHeight(), [getMinTableHeight]);
+
+  const renderMobileView = () => (
+    <div className="space-y-4">
+      {hasData && (
+        <div className={cn(
+          "text-sm px-2",
+          theme === 'dark' ? "text-gray-400" : "text-muted-foreground"
+        )}>
+          Showing {startIndex + 1}-{Math.min(endIndex, sortedData.length)} of {sortedData.length} results
+        </div>
+      )}
+      
+      {loading ? (
+        <>
+          {Array.from({ length: skeletonRowCount }).map((_, idx) => (
+            <MobileSkeletonCard key={`mobile-skeleton-${idx}`} theme={theme} />
+          ))}
+        </>
+      ) : !hasData && !hasSearchResults && searchTerm ? (
+        <div className={cn(
+          "text-center py-12 rounded-lg border",
+          theme === 'dark' ? "bg-gray-900 border-gray-800" : "bg-card border-border"
+        )}>
+          <FileIcon className={cn(
+            "w-12 h-12 mx-auto mb-3",
+            theme === 'dark' ? "text-gray-600" : "text-muted-foreground"
+          )} />
+          <p className={theme === 'dark' ? "text-gray-400" : "text-muted-foreground"}>
+            {noResultsMessage}
+          </p>
+        </div>
+      ) : !hasData ? (
+        <div className={cn(
+          "text-center py-12 rounded-lg border",
+          theme === 'dark' ? "bg-gray-900 border-gray-800" : "bg-card border-border"
+        )}>
+          <FileIcon className={cn(
+            "w-12 h-12 mx-auto mb-3",
+            theme === 'dark' ? "text-gray-600" : "text-muted-foreground"
+          )} />
+          <p className={theme === 'dark' ? "text-gray-400" : "text-muted-foreground"}>
+            {emptyStateMessage}
+          </p>
+        </div>
+      ) : (
+        <>
+          <MobileCardView
+            data={currentData}
+            columns={visibleColumnsList}
+            selectedRows={selectedRows}
+            onToggleSelect={toggleRow}
+            enableRowSelection={enableRowSelection}
+            keyExtractor={keyExtractor}
+            theme={theme}
+            onRowClick={onRowClick}
+          />
+          
+          {totalPages > 0 && (
+            <MobilePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onNextPage={nextPage}
+              onPreviousPage={previousPage}
+              onGoToPage={goToPage}
+              pageSize={pageSize}
+              onPageSizeChange={handlePageSizeChange}
+              pageSizeOptions={pageSizeOptions}
+              totalItems={sortedData.length}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              theme={theme}
+            />
+          )}
+        </>
+      )}
+    </div>
+  );
+
+  const renderDesktopView = () => (
+    <>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[800px] table-fixed" role="grid" aria-label="Data table">
+          <colgroup>
+            {enableRowSelection && <col style={{ width: '48px' }} />}
+            {visibleColumnsList.map((col, idx) => (
+              <col key={idx} style={{ width: `${100 / visibleColumnsList.length}%` }} />
+            ))}
+          </colgroup>
+          
+          <TableHeader
+            columns={visibleColumnsList}
+            sortKey={sortKey}
+            sortDirection={sortDirection}
+            onSort={toggleSort}
+            enableRowSelection={enableRowSelection}
+            isAllSelected={isAllSelected}
+            isIndeterminate={isIndeterminate}
+            onToggleAll={toggleAll}
+            theme={theme}
+          />
+          
+          <tbody>
+            {loading ? (
+              <>
+                {Array.from({ length: skeletonRowCount }).map((_, idx) => (
+                  <SkeletonRow
+                    key={`skeleton-${idx}`}
+                    columns={visibleColumnsList.length}
+                    enableRowSelection={enableRowSelection}
+                    theme={theme}
+                  />
+                ))}
+              </>
+            ) : !hasData && !hasSearchResults && searchTerm ? (
+              <tr>
+                <td
+                  colSpan={visibleColumnsList.length + (enableRowSelection ? 1 : 0)}
+                  className="px-4 py-3 text-center"
+                  style={{ height: `calc(${minTableHeight} - 48px - 65px)` }}
+                >
+                  <div className="flex flex-col items-center justify-center gap-3 min-h-[200px]">
+                    <FileIcon className={cn(
+                      "w-12 h-12",
+                      theme === 'dark' ? "text-gray-600" : "text-muted-foreground"
+                    )} />
+                    <div>
+                      <p className={cn(
+                        "text-sm font-medium",
+                        theme === 'dark' ? "text-gray-400" : "text-foreground"
+                      )}>
+                        No results found
+                      </p>
+                      <p className={cn(
+                        "text-sm mt-1",
+                        theme === 'dark' ? "text-gray-500" : "text-muted-foreground"
+                      )}>
+                        {noResultsMessage}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ) : !hasData ? (
+              <tr>
+                <td
+                  colSpan={visibleColumnsList.length + (enableRowSelection ? 1 : 0)}
+                  className="px-4 py-3 text-center"
+                  style={{ height: `calc(${minTableHeight} - 48px - 65px)` }}
+                >
+                  <div className="flex flex-col items-center justify-center gap-3 min-h-[200px]">
+                    <FileIcon className={cn(
+                      "w-12 h-12",
+                      theme === 'dark' ? "text-gray-600" : "text-muted-foreground"
+                    )} />
+                    <div>
+                      <p className={cn(
+                        "text-sm font-medium",
+                        theme === 'dark' ? "text-gray-400" : "text-foreground"
+                      )}>
+                        No data available
+                      </p>
+                      <p className={cn(
+                        "text-sm mt-1",
+                        theme === 'dark' ? "text-gray-500" : "text-muted-foreground"
+                      )}>
+                        {emptyStateMessage}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              <AnimatePresence mode="wait">
+                {currentData.map((row, idx) => (
+                  <TableRow
+                    key={keyExtractor(row)}
+                    row={row}
+                    columns={visibleColumnsList}
+                    index={idx}
+                    isSelected={selectedRows.has(keyExtractor(row))}
+                    onToggleSelect={toggleRow}
+                    enableRowSelection={enableRowSelection}
+                    keyExtractor={keyExtractor}
+                    theme={theme}
+                  />
+                ))}
+              </AnimatePresence>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {hasData && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onNextPage={nextPage}
+          onPreviousPage={previousPage}
+          onGoToPage={goToPage}
+          pageSize={pageSize}
+          onPageSizeChange={handlePageSizeChange}
+          pageSizeOptions={pageSizeOptions}
+          totalItems={sortedData.length}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          theme={theme}
+        />
+      )}
+    </>
+  );
+
+  return (
+    <div className={cn("w-full", theme === 'dark' && "dark", className)}>
+      {/* Toolbar */}
+      <div className={cn(
+        ToolbarVariants(), 
+        theme === 'dark' && "bg-gray-900 border-gray-800",
+        "flex flex-col sm:flex-row gap-3 sm:gap-4",
+        "bg-card border border-border"
+      )}>
+        <div className="relative flex-1">
+          <MagnifyingGlassIcon className={cn(
+            "absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4",
+            theme === 'dark' ? "text-gray-500" : "text-muted-foreground"
+          )} />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search all columns..."
+            className={SearchInputVariants({ theme })}
+            aria-label="Search"
+          />
+        </div>
+        <ColumnVisibilityDropdown
+          columns={columns}
+          visibleColumns={visibleColumns}
+          onToggleColumn={toggleColumn}
+          theme={theme}
+        />
+      </div>
+
+      {/* Bulk Action Bar */}
+      {enableRowSelection && (
+        <BulkActionBar
+          selectedCount={selectedRows.size}
+          actions={defaultBulkActions}
+          selectedRows={getSelectedRowData()}
+          onClearSelection={clearSelection}
+          theme={theme}
+        />
+      )}
+
+      {/* Table/Card Container */}
+      <div className={cn(
+        TableContainerVariants({ theme }),
+        "transition-all duration-200",
+        "bg-card border border-border shadow-sm"
+      )}>
+        {/* Mobile view */}
+        <div className="block sm:hidden">
+          <div className="p-3 sm:p-4">
+            {renderMobileView()}
+          </div>
+        </div>
+
+        {/* Desktop view */}
+        <div className="hidden sm:block">
+          {renderDesktopView()}
+        </div>
+      </div>
+    </div>
+  );
+}
