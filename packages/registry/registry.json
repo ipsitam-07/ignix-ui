@@ -799,6 +799,23 @@
         }
       }
     },
+    "scroll-area": {
+      "name": "Scroll-Area",
+      "description": "A flexible scroll area component with custom scrollbars, fade masks, animations, and scroll buttons.",
+      "dependencies": [
+        "@radix-ui/react-scroll-area",
+        "@radix-ui/react-icons",
+        "class-variance-authority",
+        "framer-motion"
+      ],
+      "componentDependencies": [],
+      "files": {
+        "main": {
+          "path": "components/scroll-area/index.tsx",
+          "type": "component"
+        }
+      }
+    },
     "cluster": {
       "name": "Cluster",
       "description": "A layout component for creating distinct group related items with consistent spacing and alignment.",
@@ -1614,23 +1631,6 @@
         "main": {
           "path": "templates/pages/contact-form/index.tsx",
           "type": "template"
-        }
-      }
-    },
-    "scroll-area": {
-      "name": "ScrollArea",
-      "description": "A flexible scroll area component with custom scrollbars, fade masks, animations, and scroll buttons.",
-      "dependencies": [
-        "@radix-ui/react-scroll-area",
-        "@radix-ui/react-icons",
-        "class-variance-authority",
-        "framer-motion"
-      ],
-      "componentDependencies": [],
-      "files": {
-        "main": {
-          "path": "components/scroll-area/index.tsx",
-          "type": "component"
         }
       }
     }
