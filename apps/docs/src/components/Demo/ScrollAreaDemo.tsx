@@ -6,6 +6,14 @@ import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
 import { cn } from '@site/src/utils/cn';
 
+//Types
+type ScrollAreaVariant = 'thin' | 'thick' | 'pill' | 'line' | 'hidden';
+type ScrollAreaSize = 'sm' | 'md' | 'lg';
+type ScrollAreaThumbColor = 'default' | 'subtle' | 'accent' | 'contrast';
+type ScrollAreaOrientation = 'vertical' | 'horizontal' | 'both';
+type ScrollAreaFadeMask = 'none' | 'auto' | 'fade' | 'top' | 'bottom';
+type ScrollAreaAnimation = 'none' | 'fade' | 'slide' | 'scale';
+
 const scrollAreaVariants = [
     { value: 'thin', label: 'Thin' },
     { value: 'thick', label: 'Thick' },
@@ -195,15 +203,15 @@ const ScrollAreaDemo = () => {
   orientation="${orientation}"
   fadeMask="${fadeMask}"
   animation="${animation}"
-  ${autoHide ? 'autoHide' : ''}
-  ${showProgress ? 'showProgress' : ''}
-  ${showScrollButtons ? 'showScrollButtons' : ''}
-  ${!expandOnHover ? 'expandOnHover={false}' : ''}
+  autoHide={${autoHide}}
+  showProgress={${showProgress}}
+  showScrollButtons={${showScrollButtons}}
+  expandOnHover={${expandOnHover}}
   className="${orientation === 'horizontal' ? 'w-full whitespace-nowrap' : orientation === 'both' ? 'h-72 w-full' : 'h-72 w-48'} rounded-md border"
 >
   {/* Content goes here */}
 </ScrollArea>
-`.trim().replace(/\n\s*\n/g, '\n');
+`.trim();
 
     return (
         <div className="space-y-8 mb-8">
@@ -311,12 +319,12 @@ const ScrollAreaDemo = () => {
                 <TabItem value="preview" label="Preview">
                     <div className="p-6 border rounded-lg mt-4 bg-background flex justify-center items-center overflow-hidden min-h-[400px]">
                         <ScrollArea
-                            variant={variant as any}
-                            size={size as any}
-                            thumbColor={thumbColor as any}
-                            orientation={orientation as any}
-                            fadeMask={fadeMask as any}
-                            animation={animation as any}
+                            variant={variant as ScrollAreaVariant}
+                            size={size as ScrollAreaSize}
+                            thumbColor={thumbColor as ScrollAreaThumbColor}
+                            orientation={orientation as ScrollAreaOrientation}
+                            fadeMask={fadeMask as ScrollAreaFadeMask}
+                            animation={animation as ScrollAreaAnimation}
                             autoHide={autoHide}
                             showProgress={showProgress}
                             showScrollButtons={showScrollButtons}

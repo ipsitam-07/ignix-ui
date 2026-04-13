@@ -145,14 +145,50 @@ describe("ScrollArea", () => {
             expect(screen.queryByLabelText("Scroll down")).not.toBeInTheDocument();
         });
 
-        it("renders up/down edge buttons for vertical orientation when showScrollButtons is true", () => {
+        it("renders up/down edge buttons for vertical orientation when content overflows", () => {
             renderScrollArea({ showScrollButtons: true, orientation: "vertical" });
+            const viewport = screen.getByTestId("scroll-viewport");
+
+            Object.defineProperties(viewport, {
+                scrollHeight: { value: 1000, configurable: true },
+                clientHeight: { value: 200, configurable: true },
+                scrollTop: { value: 0, configurable: true, writable: true },
+            });
+
+            fireEvent.scroll(viewport);
+
+            expect(screen.getByLabelText("Scroll down")).toBeInTheDocument();
             expect(screen.queryByLabelText("Scroll up")).not.toBeInTheDocument();
+
+            viewport.scrollTop = 500;
+            fireEvent.scroll(viewport);
+            expect(screen.getByLabelText("Scroll up")).toBeInTheDocument();
+            expect(screen.getByLabelText("Scroll down")).toBeInTheDocument();
+            viewport.scrollTop = 800;
+            fireEvent.scroll(viewport);
+            expect(screen.getByLabelText("Scroll up")).toBeInTheDocument();
+            expect(screen.queryByLabelText("Scroll down")).not.toBeInTheDocument();
         });
 
-        it("renders left/right edge buttons for horizontal orientation when showScrollButtons is true", () => {
+        it("renders left/right edge buttons for horizontal orientation when content overflows", () => {
             renderScrollArea({ showScrollButtons: true, orientation: "horizontal" });
+            const viewport = screen.getByTestId("scroll-viewport");
+
+            Object.defineProperties(viewport, {
+                scrollWidth: { value: 1000, configurable: true },
+                clientWidth: { value: 200, configurable: true },
+                scrollLeft: { value: 0, configurable: true, writable: true },
+            });
+
+            fireEvent.scroll(viewport);
+
+            expect(screen.getByLabelText("Scroll right")).toBeInTheDocument();
             expect(screen.queryByLabelText("Scroll left")).not.toBeInTheDocument();
+
+            viewport.scrollLeft = 800;
+            fireEvent.scroll(viewport);
+            expect(screen.getByLabelText("Scroll left")).toBeInTheDocument();
+            expect(screen.queryByLabelText("Scroll right")).not.toBeInTheDocument();
         });
 
         it("does not render vertical edge buttons for horizontal orientation", () => {
@@ -269,22 +305,38 @@ describe("ScrollArea", () => {
         it('applies top fade mask style to viewport for fadeMask="top"', () => {
             renderScrollArea({ fadeMask: "top" });
             const viewport = screen.getByTestId("scroll-viewport");
-            expect(viewport.style.maskImage || viewport.style.webkitMaskImage || "").toContain("");
+            const style = viewport.style.maskImage || viewport.style.webkitMaskImage;
+            expect(style).toContain("linear-gradient");
+            expect(style).toContain("to bottom");
+            expect(style).toContain("40px");
         });
 
         it('applies bottom fade mask style to viewport for fadeMask="bottom"', () => {
             renderScrollArea({ fadeMask: "bottom" });
-            expect(screen.getByTestId("scroll-viewport")).toBeInTheDocument();
+            const viewport = screen.getByTestId("scroll-viewport");
+            const style = viewport.style.maskImage || viewport.style.webkitMaskImage;
+            expect(style).toContain("linear-gradient");
+            expect(style).toContain("to top");
+            expect(style).toContain("40px");
         });
 
         it('applies both-ends fade mask for fadeMask="fade"', () => {
             renderScrollArea({ fadeMask: "fade" });
-            expect(screen.getByTestId("scroll-viewport")).toBeInTheDocument();
+            const viewport = screen.getByTestId("scroll-viewport");
+            const style = viewport.style.maskImage || viewport.style.webkitMaskImage;
+            expect(style).toContain("linear-gradient");
+            expect(style).toContain("to bottom");
+            expect(style).toContain("transparent");
+            // Check for color stops or key parts of the multi-stop gradient
+            expect(style).toContain("black 40px");
+            expect(style).toContain("calc(100% - 40px)");
         });
 
-        it('fadeMask="none" does not crash and renders normally', () => {
+        it('fadeMask="none" does not apply mask style', () => {
             renderScrollArea({ fadeMask: "none" });
-            expect(screen.getByTestId("scroll-viewport")).toBeInTheDocument();
+            const viewport = screen.getByTestId("scroll-viewport");
+            const style = viewport.style.maskImage || viewport.style.webkitMaskImage;
+            expect(style).toBeFalsy();
         });
     });
 
