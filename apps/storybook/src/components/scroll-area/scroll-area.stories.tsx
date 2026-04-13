@@ -1,0 +1,346 @@
+import type { Meta, StoryObj } from '@storybook/react';
+import { ScrollArea } from './index';
+
+const meta = {
+    title: 'Components/ScrollArea',
+    component: ScrollArea,
+    parameters: {
+        layout: 'centered',
+    },
+    tags: ['autodocs'],
+    argTypes: {
+        variant: {
+            control: 'select',
+            options: ['thin', 'thick', 'pill', 'line', 'hidden'],
+        },
+        thumbColor: {
+            control: 'select',
+            options: ['default', 'subtle', 'accent', 'contrast'],
+        },
+        size: {
+            control: 'select',
+            options: ['sm', 'md', 'lg'],
+        },
+        orientation: {
+            control: 'select',
+            options: ['vertical', 'horizontal', 'both'],
+        },
+        fadeMask: {
+            control: 'select',
+            options: ['top', 'bottom', 'fade', 'auto', 'none'],
+        },
+        autoHide: {
+            control: 'boolean',
+        },
+        showProgress: {
+            control: 'boolean',
+        },
+        showScrollButtons: {
+            control: 'boolean',
+        },
+        expandOnHover: {
+            control: 'boolean',
+        },
+        animation: {
+            control: 'select',
+            options: ['fade', 'slide', 'scale', 'none'],
+        },
+    },
+} satisfies Meta<typeof ScrollArea>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+const VerticalContent = () => (
+    <div className="p-4">
+        <h4 className="mb-4 text-sm font-medium leading-none">Settings Menu</h4>
+        {Array.from({ length: 20 }).map((_, i) => (
+            <div key={i} className="text-sm my-2">
+                Setting item {i + 1}
+                <hr className="my-2 border-border" />
+            </div>
+        ))}
+    </div>
+);
+
+const HorizontalContent = () => (
+    <div className="flex w-max space-x-4 p-4">
+        {Array.from({ length: 15 }).map((_, i) => (
+            <div key={i} className="w-32 shrink-0 rounded-md bg-secondary p-4 text-center text-sm font-medium">
+                Card {i + 1}
+            </div>
+        ))}
+    </div>
+);
+
+const BothContent = () => (
+    <div className="flex w-max space-x-4 p-4">
+        {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="w-48 shrink-0">
+                <div className="mb-4 font-semibold">Column {i + 1}</div>
+                {Array.from({ length: 10 }).map((_, j) => (
+                    <div key={j} className="text-sm my-2 mb-4 h-16 rounded-md bg-muted p-2">
+                        Row {j + 1}
+                    </div>
+                ))}
+            </div>
+        ))}
+    </div>
+);
+
+export const Default: Story = {
+    args: {
+        className: 'h-72 w-48 rounded-md border',
+        children: <VerticalContent />,
+    },
+};
+
+export const Horizontal: Story = {
+    args: {
+        className: 'w-96 whitespace-nowrap rounded-md border',
+        orientation: 'horizontal',
+        children: <HorizontalContent />,
+    },
+};
+
+export const BothOrientations: Story = {
+    args: {
+        className: 'h-72 w-96 rounded-md border',
+        orientation: 'both',
+        children: <BothContent />,
+    },
+};
+
+export const ThumbColors: Story = {
+    render: () => (
+        <div className="flex gap-4">
+            <ScrollArea className="h-72 w-48 rounded-md border" thumbColor="default">
+                <div className="p-4 font-semibold text-sm hover:underline">Default</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" thumbColor="subtle">
+                <div className="p-4 font-semibold text-sm hover:underline">Subtle</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" thumbColor="accent">
+                <div className="p-4 font-semibold text-sm hover:underline">Accent</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" thumbColor="contrast">
+                <div className="p-4 font-semibold text-sm hover:underline">Contrast</div>
+                <VerticalContent />
+            </ScrollArea>
+        </div>
+    ),
+};
+
+export const VariantsAndSizes: Story = {
+    render: () => (
+        <div className="flex gap-4">
+            <ScrollArea className="h-72 w-48 rounded-md border" variant="thin" size="md">
+                <div className="p-4 text-sm font-semibold">Thin (md)</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" variant="thick" size="lg">
+                <div className="p-4 text-sm font-semibold">Thick (lg)</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" variant="pill" size="sm">
+                <div className="p-4 text-sm font-semibold">Pill (sm)</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" variant="line">
+                <div className="p-4 text-sm font-semibold">Line</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" variant="hidden">
+                <div className="p-4 text-sm font-semibold">Hidden</div>
+                <VerticalContent />
+            </ScrollArea>
+        </div>
+    ),
+};
+
+export const HoverExpansion: Story = {
+    render: () => (
+        <div className="flex flex-col gap-6">
+            <div>
+                <p className="mb-2 text-sm text-muted-foreground">
+                    Scrollbars expand their thickness when hovered over (macOS style).
+                </p>
+                <div className="flex gap-4">
+                    <ScrollArea className="h-72 w-48 rounded-md border" variant="thin">
+                        <div className="p-4 text-sm font-semibold">Thin (Expands on hover)</div>
+                        <VerticalContent />
+                    </ScrollArea>
+                    <ScrollArea className="h-72 w-48 rounded-md border" variant="pill">
+                        <div className="p-4 text-sm font-semibold">Pill (Expands on hover)</div>
+                        <VerticalContent />
+                    </ScrollArea>
+                    <ScrollArea className="h-72 w-48 rounded-md border" variant="thick">
+                        <div className="p-4 text-sm font-semibold">Thick (Expands on hover)</div>
+                        <VerticalContent />
+                    </ScrollArea>
+                    <ScrollArea className="h-72 w-48 rounded-md border" variant="thick" expandOnHover={false}>
+                        <div className="p-4 text-sm font-semibold text-muted-foreground">Thick (Disabled expansion)</div>
+                        <VerticalContent />
+                    </ScrollArea>
+                </div>
+            </div>
+        </div>
+    ),
+};
+
+export const Features: Story = {
+    render: () => (
+        <div className="flex gap-4">
+            <ScrollArea className="h-72 w-48 rounded-md border" showProgress={true}>
+                <div className="p-4 text-sm font-semibold">Progress Bar</div>
+                <VerticalContent />
+            </ScrollArea>
+
+            <ScrollArea className="h-72 w-48 rounded-md border" autoHide={true}>
+                <div className="p-4 text-sm font-semibold">Auto Hide</div>
+                <VerticalContent />
+            </ScrollArea>
+        </div>
+    ),
+};
+
+export const FadeMasks: Story = {
+    render: () => (
+        <div className="flex gap-4">
+            <ScrollArea className="h-72 w-48 rounded-md border" fadeMask="top">
+                <div className="p-4 text-sm font-semibold">Top Mask</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" fadeMask="bottom">
+                <div className="p-4 text-sm font-semibold">Bottom Mask</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" fadeMask="fade">
+                <div className="p-4 text-sm font-semibold">Fade (Both) Masks</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" fadeMask="auto">
+                <div className="p-4 text-sm font-semibold">Auto (Dynamic)</div>
+                <VerticalContent />
+            </ScrollArea>
+        </div>
+    ),
+};
+
+export const AutoFadeMask: Story = {
+    render: () => (
+        <div className="flex flex-col gap-6">
+            <div>
+                <p className="mb-2 text-sm text-muted-foreground">
+                    Scroll to see the fade appear/disappear at each edge dynamically.
+                </p>
+                <div className="flex gap-4">
+                    <ScrollArea className="h-72 w-48 rounded-md border" fadeMask="auto">
+                        <div className="p-4 text-sm font-semibold">Vertical Auto</div>
+                        <VerticalContent />
+                    </ScrollArea>
+                    <ScrollArea className="w-96 whitespace-nowrap rounded-md border" orientation="horizontal" fadeMask="auto">
+                        <div className="p-4 text-sm font-semibold">Horizontal Auto</div>
+                        <HorizontalContent />
+                    </ScrollArea>
+                </div>
+            </div>
+            <div>
+                <p className="mb-2 text-sm text-muted-foreground">
+                    Both orientations — vertical and horizontal fades compose via mask-composite.
+                </p>
+                <ScrollArea className="h-72 w-96 rounded-md border" orientation="both" fadeMask="auto">
+                    <BothContent />
+                </ScrollArea>
+            </div>
+            <div>
+                <p className="mb-2 text-sm text-muted-foreground">
+                    Combined with scroll buttons and progress bar.
+                </p>
+                <ScrollArea className="h-72 w-48 rounded-md border" fadeMask="auto" showScrollButtons showProgress>
+                    <div className="p-4 text-sm font-semibold">All Features</div>
+                    <VerticalContent />
+                </ScrollArea>
+            </div>
+        </div>
+    ),
+};
+
+export const Animations: Story = {
+    render: () => (
+        <div className="flex gap-4">
+            <ScrollArea className="h-72 w-48 rounded-md border" animation="fade">
+                <div className="p-4 text-sm font-semibold">Fade Animation</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" animation="slide">
+                <div className="p-4 text-sm font-semibold">Slide Animation</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea className="h-72 w-48 rounded-md border" animation="scale">
+                <div className="p-4 text-sm font-semibold">Scale Animation</div>
+                <VerticalContent />
+            </ScrollArea>
+        </div>
+    ),
+};
+
+export const ScrollButtons: Story = {
+    args: {
+        className: 'h-72 w-48 rounded-md border',
+        showScrollButtons: true,
+        children: <VerticalContent />,
+    },
+};
+
+export const HorizontalScrollButtons: Story = {
+    args: {
+        className: 'w-96 whitespace-nowrap rounded-md border',
+        orientation: 'horizontal',
+        showScrollButtons: true,
+        children: <HorizontalContent />,
+    },
+};
+
+export const ScrollButtonsWithFeatures: Story = {
+    render: () => (
+        <div className="flex gap-4">
+            <ScrollArea
+                className="h-72 w-48 rounded-md border"
+                showScrollButtons
+                showProgress
+            >
+                <div className="p-4 text-sm font-semibold">With Progress</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea
+                className="h-72 w-48 rounded-md border"
+                showScrollButtons
+                autoHide
+                thumbColor="accent"
+            >
+                <div className="p-4 text-sm font-semibold">With Auto-Hide</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea
+                className="h-72 w-48 rounded-md border"
+                showScrollButtons
+                fadeMask="fade"
+            >
+                <div className="p-4 text-sm font-semibold">With Static Fade</div>
+                <VerticalContent />
+            </ScrollArea>
+            <ScrollArea
+                className="h-72 w-48 rounded-md border"
+                showScrollButtons
+                fadeMask="auto"
+            >
+                <div className="p-4 text-sm font-semibold">With Auto Fade</div>
+                <VerticalContent />
+            </ScrollArea>
+        </div>
+    ),
+};

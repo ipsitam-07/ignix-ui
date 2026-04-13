@@ -3,7 +3,7 @@ import { Spacer } from '.';
 import React from 'react';
 
 const meta = {
-  title: 'Layouts/Spacer',
+  title: 'Components/Spacer',
   component: Spacer,
   tags: ['autodocs'],
   parameters: {
