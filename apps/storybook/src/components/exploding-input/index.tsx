@@ -103,7 +103,7 @@ function getPresetParticle(
             return {
                 content: char || randomFrom(LETTER_CHARS.split("")),
                 color: randomFrom(CONFETTI_COLORS),
-                size: 12 + Math.random() * 4,
+                size: 18 + Math.random() * 6,
             };
         case "emoji":
             return {
@@ -348,9 +348,9 @@ class ParticleEngine {
             const spreadFactor = preset === "stars" ? 1.4 : preset === "confetti" ? 1.4 : 1.2;
             const vel = getDirectionVelocity(direction, velocityMultiplier, spreadFactor);
 
-            const maxLifeMs = (preset === "emoji" || preset === "confetti")
-                ? 4000 + Math.random() * 2000
-                : 800 + Math.random() * 800;
+            const maxLifeMs = preset === "letters" 
+                ? 1500 + Math.random() * 1000
+                : 4000 + Math.random() * 2000;
 
             this.particles.push({
                 id: this.nextId++,
@@ -636,6 +636,10 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
 
                 if (preset === "confetti" && !overrideCount) {
                     count = Math.max(3, Math.floor(count * 0.4));
+                }
+
+                if (preset === "letters" && !overrideCount) {
+                    count = Math.min(count, 3);
                 }
 
                 const speed = overrideSpeed ?? speedTracker.current.getSpeedMultiplier();
