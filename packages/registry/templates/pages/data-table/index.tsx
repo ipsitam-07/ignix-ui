@@ -14,8 +14,8 @@ import {
   FileIcon 
 } from '@radix-ui/react-icons';
 import { cva } from 'class-variance-authority';
-import { cn } from '../../../../utils/cn';
-import { Checkbox } from '../../../components/checkbox';
+import { Checkbox } from '@ignix-ui/checkbox';
+import { cn } from '../../../utils/cn';
 
 /* ============================================
   TYPES & INTERFACES
@@ -477,15 +477,20 @@ export function ColumnVisibilityDropdown<T>({
   onToggleColumn,
   theme = 'light',
 }: ColumnVisibilityDropdownProps<T>) {
+  
+  const [open, setOpen] = useState(false);
+
   return (
-    <DropdownMenu.Root>
+    <DropdownMenu.Root open={open} onOpenChange={setOpen}>
       <DropdownMenu.Trigger asChild>
         <button className={cn(
           "inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20",
           theme === 'dark'
             ? "bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700"
             : "bg-card text-foreground border border-border hover:bg-muted"
-        )}>
+        )}
+        data-testid="column-visibility-trigger"
+        >
           <EyeOpenIcon className="w-4 h-4" />
           Toggle Columns
           <ChevronDownIcon className="w-4 h-4" />
@@ -498,6 +503,7 @@ export function ColumnVisibilityDropdown<T>({
             asChild
             sideOffset={5}
             align="end"
+            forceMount
           >
             <motion.div
               initial={{ opacity: 0, y: -10 }}
@@ -515,6 +521,7 @@ export function ColumnVisibilityDropdown<T>({
                   key={String(column.key)}
                   className="flex items-center gap-2 px-2 py-2 rounded-sm cursor-pointer focus:outline-none"
                   onSelect={(e) => e.preventDefault()}
+                  data-testid={`checkbox-${String(column.key)}`}
                 >
                   <Checkbox
                     id={`col-${String(column.key)}`}
@@ -527,6 +534,7 @@ export function ColumnVisibilityDropdown<T>({
                     variant="default"
                     checked={visibleColumns.has(column.key)}
                     onChange={() => onToggleColumn(column.key)}
+                    data-testid={`checkbox-${String(column.key)}`}
                   />
                   <label
                     htmlFor={`col-${String(column.key)}`}
@@ -663,7 +671,7 @@ export function Pagination({
 
         <button
           onClick={onNextPage}
-          disabled={currentPage === totalPages}
+          disabled={currentPage === totalPages || totalPages === 0}
           className={cn(
             "p-1 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20",
             theme === 'dark'
@@ -696,7 +704,7 @@ export function BulkActionBar<T>({
 }: BulkActionBarProps<T>) {
   return (
     <AnimatePresence>
-      {selectedCount > 0 && (
+      {selectedCount > 0 && actions && (
         <motion.div
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1103,7 +1111,7 @@ function MobilePagination({
 
         <button
           onClick={onNextPage}
-          disabled={currentPage === totalPages}
+          disabled={currentPage === totalPages || totalPages === 0}
           className={cn(
             "flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-all",
             "focus:outline-none focus:ring-2 focus:ring-primary/20",
@@ -1200,26 +1208,6 @@ export function DataTable<T extends Record<string, any>>({
     setPageSize(newSize);
     goToPage(1);
   };
-
-  const handleDeleteSelected = (rows: T[]) => {
-    console.log('Delete rows:', rows);
-    clearSelection();
-  };
-
-  const defaultBulkActions = bulkActions.length > 0 ? bulkActions : [
-    {
-      label: 'Delete',
-      variant: 'destructive' as const,
-      onClick: handleDeleteSelected,
-    },
-    {
-      label: 'Export',
-      variant: 'default' as const,
-      onClick: (rows: T[]) => {
-        console.log('Export rows:', rows);
-      },
-    },
-  ];
 
   const getMinTableHeight = useCallback(() => {
     const rowHeight = 52;
@@ -1473,10 +1461,10 @@ export function DataTable<T extends Record<string, any>>({
       </div>
 
       {/* Bulk Action Bar */}
-      {enableRowSelection && (
+      {enableRowSelection && bulkActions.length > 0 && (
         <BulkActionBar
           selectedCount={selectedRows.size}
-          actions={defaultBulkActions}
+          actions={bulkActions}
           selectedRows={getSelectedRowData()}
           onClearSelection={clearSelection}
           theme={theme}

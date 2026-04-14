@@ -1,8 +1,8 @@
 import React from 'react';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
-import { DataTable, type Column } from '.';
+import { DataTable, DataTableProps, type Column } from '.';
 import userEvent from '@testing-library/user-event';
 
 vi.mock('framer-motion', () => ({
@@ -60,10 +60,17 @@ const columns: Column<User>[] = [
 ============================================ */
 
 describe('DataTable', () => {
-    const defaultProps = {
+    const defaultProps: DataTableProps<User>= {
         data,
         columns,
         keyExtractor: (row: User) => row.id,
+        bulkActions: [
+            {
+                label: 'Delete',
+                variant: 'destructive',
+                onClick: (rows) => alert(`Deleted ${rows.length} employee(s)`),
+            },
+        ]
     };
 
     beforeEach(() => {
@@ -198,7 +205,7 @@ describe('DataTable', () => {
             const rowCheckbox = screen.getAllByTestId('row-checkbox')[0];
 
             await userEvent.click(rowCheckbox);
-
+            screen.debug();
             expect(screen.getByText('Delete')).toBeInTheDocument();
         });
     });
@@ -208,17 +215,18 @@ describe('DataTable', () => {
     ============================================ */
 
     describe('Column Visibility', () => {
-        it('toggles column visibility', () => {
+        it('toggles column visibility', async () => {
             render(<DataTable {...defaultProps} />);
 
-            const toggleBtn = screen.getByText(/toggle columns/i);
+            const toggleBtn = screen.getByTestId('column-visibility-trigger');
+            await userEvent.click(toggleBtn);
 
-            fireEvent.click(toggleBtn);
+            const checkbox = await screen.findByTestId('checkbox-name');
+            await userEvent.click(checkbox);
 
-            const checkbox = screen.getByLabelText('Name');
-            fireEvent.click(checkbox);
-
-            expect(screen.queryByText('Alice')).not.toBeInTheDocument();
+            await waitFor(() => {
+                expect(screen.queryAllByText('Alice').length).toBe(0);
+            });
         });
     });
 
