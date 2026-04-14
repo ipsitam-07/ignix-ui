@@ -345,10 +345,12 @@ class ParticleEngine {
                 ? 2 * speedMultiplier * (2.5 + Math.random() * 2.5)
                 : 2 * speedMultiplier;
 
-            const spreadFactor = preset === "stars" ? 1.4 : 0.4;
+            const spreadFactor = preset === "stars" ? 1.4 : preset === "confetti" ? 1.4 : 1.2;
             const vel = getDirectionVelocity(direction, velocityMultiplier, spreadFactor);
 
-            const maxLifeMs = preset === "emoji" ? 4000 + Math.random() * 2000 : 800 + Math.random() * 800;
+            const maxLifeMs = (preset === "emoji" || preset === "confetti")
+                ? 4000 + Math.random() * 2000
+                : 800 + Math.random() * 800;
 
             this.particles.push({
                 id: this.nextId++,
@@ -403,7 +405,7 @@ class ParticleEngine {
             p.vy *= friction;
             p.rotation += p.rotationSpeed;
 
-            if (p.type === "emoji") {
+            if (p.type === "emoji" || p.type === "confetti") {
                 p.opacity = 1;
                 p.scale = 1;
             } else {
@@ -438,6 +440,12 @@ class ParticleEngine {
 
             if (p.type === "stars") {
                 drawStar(this.ctx2d, s * 0.55);
+            } else if (p.type === "confetti") {
+                this.ctx2d.fillRect(-s / 2, -s / 2, s, s);
+            } else if (p.type === "sparks" || p.type === "bubbles") {
+                this.ctx2d.beginPath();
+                this.ctx2d.arc(0, 0, s / 2, 0, Math.PI * 2);
+                this.ctx2d.fill();
             } else {
                 this.ctx2d.font = `${s}px sans-serif`;
                 this.ctx2d.textAlign = "center";
@@ -531,7 +539,7 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
             direction = "up",
             cursorTrail = false,
             validate,
-            maxParticles = 150,
+            maxParticles = 400,
             audio,
             explodeRef,
             type,
@@ -624,6 +632,10 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
 
                 if (preset === "emoji" && !overrideCount) {
                     count = Math.min(count, 3);
+                }
+
+                if (preset === "confetti" && !overrideCount) {
+                    count = Math.max(3, Math.floor(count * 0.4));
                 }
 
                 const speed = overrideSpeed ?? speedTracker.current.getSpeedMultiplier();
