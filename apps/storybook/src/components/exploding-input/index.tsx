@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { cn } from '../../../utils/cn';
 
+const CANVAS_OVERHANG = 500;
+
 //Types
 
 type TriggerMode = "keypress" | "submit" | "focus" | "clear" | "custom";
@@ -14,8 +16,8 @@ interface Particle {
     y: number;
     vx: number;
     vy: number;
-    life: number;
-    maxLife: number;
+    spawnedAt: number;
+    maxLifeMs: number;
     size: number;
     rotation: number;
     rotationSpeed: number;
@@ -37,7 +39,7 @@ export interface ExplodingInputProps extends Omit<React.ComponentProps<"input">,
     maxParticles?: number;
     cleanup?: boolean;
     audio?: AudioPreset | string;
-    explodeRef?: React.Ref<ExplodingInputHandle>; //Ref handle for custom trigger mode
+    explodeRef?: React.Ref<ExplodingInputHandle>;
 }
 
 export interface ExplodingInputHandle {
@@ -143,14 +145,12 @@ class TypingSpeedTracker {
     private timestamps: number[] = [];
     private windowSize = 5;
 
-
     record() {
         this.timestamps.push(performance.now());
         if (this.timestamps.length > this.windowSize + 1) {
             this.timestamps.shift();
         }
     }
-
 
     getIntensity(): number {
         if (this.timestamps.length < 2) return 0.3;
@@ -167,6 +167,7 @@ class TypingSpeedTracker {
         const intensity = this.getIntensity();
         return Math.max(3, Math.round(base * (0.3 + intensity * 2.0)));
     }
+
     getSpeedMultiplier(): number {
         const intensity = this.getIntensity();
         return 0.5 + intensity * 2.5;
@@ -201,30 +202,24 @@ class AudioManager {
         try {
             const ctx = this.getCtx();
             const res = await fetch(url);
-            if (!res.ok) {
-                this.loadFailed = true;
-                return;
-            }
+            if (!res.ok) { this.loadFailed = true; return; }
             const buf = await res.arrayBuffer();
             this.customBuffer = await ctx.decodeAudioData(buf);
-        } catch (err) {
+        } catch {
             this.loadFailed = true;
         }
     }
 
     play() {
         if (this.loadFailed && !this.isBuiltinPreset(this.preset)) return;
-
         try {
             if (this.isBuiltinPreset(this.preset)) {
                 this.playBuiltin(this.preset);
             } else if (this.customBuffer) {
                 this.playBuffer(this.customBuffer);
             }
-        } catch (err) {
-            if (this.preset !== "pop") {
-                this.playBuiltin("pop");
-            }
+        } catch {
+            if (this.preset !== "pop") this.playBuiltin("pop");
         }
     }
 
@@ -291,7 +286,6 @@ class AudioManager {
     }
 }
 
-
 //Particle Engine Canvas Based
 class ParticleEngine {
     private particles: Particle[] = [];
@@ -321,13 +315,12 @@ class ParticleEngine {
     ) {
         for (let i = 0; i < count; i++) {
             if (this.particles.length >= this.maxParticles) {
-                // cull oldest
                 this.particles.shift();
             }
 
             const p = getPresetParticle(preset, char, this.customEmoji);
             const vel = getDirectionVelocity(direction, 2 * speedMultiplier);
-            const maxLife = 40 + Math.random() * 40;
+            const maxLifeMs = 800 + Math.random() * 800;
 
             this.particles.push({
                 id: this.nextId++,
@@ -335,8 +328,8 @@ class ParticleEngine {
                 y,
                 vx: vel.vx,
                 vy: vel.vy,
-                life: 0,
-                maxLife,
+                spawnedAt: performance.now(),
+                maxLifeMs,
                 size: p.size,
                 rotation: Math.random() * 360,
                 rotationSpeed: preset === "emoji"
@@ -355,8 +348,8 @@ class ParticleEngine {
 
     private start() {
         this.running = true;
-        const loop = () => {
-            this.update();
+        const loop = (now: number) => {
+            this.update(now);
             this.render();
             if (this.particles.length > 0) {
                 this.animFrame = requestAnimationFrame(loop);
@@ -367,24 +360,24 @@ class ParticleEngine {
         this.animFrame = requestAnimationFrame(loop);
     }
 
-    private update() {
-        const gravity = 0.06;
-        const friction = 0.985;
+    private update(now: number) {
+        const gravity = 0.15;
+        const friction = 0.97;
 
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const p = this.particles[i];
-            p.life++;
+            const elapsed = now - p.spawnedAt;
+            const lifeRatio = Math.min(elapsed / p.maxLifeMs, 1);
             p.x += p.vx;
             p.y += p.vy;
             p.vy += gravity;
             p.vx *= friction;
             p.vy *= friction;
             p.rotation += p.rotationSpeed;
-            const lifeRatio = p.life / p.maxLife;
             p.opacity = 1 - lifeRatio;
             p.scale = 1 - lifeRatio * 0.3;
 
-            if (p.life >= p.maxLife) {
+            if (lifeRatio >= 1) {
                 this.particles.splice(i, 1);
             }
         }
@@ -392,9 +385,7 @@ class ParticleEngine {
 
     private render() {
         const dpr = window.devicePixelRatio || 1;
-        const w = this.canvas.width / dpr;
-        const h = this.canvas.height / dpr;
-        this.ctx2d.clearRect(0, 0, w * dpr, h * dpr);
+        this.ctx2d.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx2d.save();
         this.ctx2d.scale(dpr, dpr);
 
@@ -403,10 +394,8 @@ class ParticleEngine {
             this.ctx2d.translate(p.x, p.y);
             this.ctx2d.rotate((p.rotation * Math.PI) / 180);
             this.ctx2d.globalAlpha = p.opacity;
-            this.ctx2d.fillStyle = p.color;
 
             if (p.type === "sparks") {
-                // Glow effect
                 this.ctx2d.shadowBlur = 6;
                 this.ctx2d.shadowColor = p.color;
             }
@@ -414,6 +403,7 @@ class ParticleEngine {
             if (p.type !== "emoji") {
                 this.ctx2d.fillStyle = p.color;
             }
+
             const s = p.size * p.scale;
             this.ctx2d.font = `${s}px sans-serif`;
             this.ctx2d.textAlign = "center";
@@ -434,8 +424,7 @@ class ParticleEngine {
             this.animFrame = null;
         }
         this.running = false;
-        const dpr = window.devicePixelRatio || 1;
-        this.ctx2d.clearRect(0, 0, this.canvas.width / dpr * dpr, this.canvas.height);
+        this.ctx2d.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     dispose() {
@@ -473,7 +462,7 @@ function getCursorPixelPosition(
 
     return {
         x: inputRect.left - containerRect.left + paddingLeft + textWidth - scrollLeft,
-        y: inputRect.top - containerRect.top + inputRect.height / 2,
+        y: inputRect.top - containerRect.top + inputRect.height / 2 + CANVAS_OVERHANG,
     };
 }
 
@@ -528,9 +517,8 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
         const prevValueRef = React.useRef("");
 
         React.useImperativeHandle(ref, () => inputRef.current!);
-
         React.useImperativeHandle(explodeRef, () => ({
-            explode: () => fireExplosion(),
+            explode: () => fireExplosion(undefined, 40, 2.5),
         }));
 
         React.useEffect(() => {
@@ -549,9 +537,9 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
                 const dpr = window.devicePixelRatio || 1;
                 const rect = container.getBoundingClientRect();
                 canvas.width = rect.width * dpr;
-                canvas.height = rect.height * dpr;
+                canvas.height = (rect.height + CANVAS_OVERHANG * 2) * dpr;
                 canvas.style.width = `${rect.width}px`;
-                canvas.style.height = `${rect.height}px`;
+                canvas.style.height = `${rect.height + CANVAS_OVERHANG * 2}px`;
             };
             resize();
 
@@ -589,14 +577,14 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
         }, [validate]);
 
         const fireExplosion = React.useCallback(
-            (char?: string) => {
+            (char?: string, overrideCount?: number, overrideSpeed?: number) => {
                 if (reducedMotion || !engineRef.current || !inputRef.current || !containerRef.current) return;
 
                 const pos = getCursorPixelPosition(inputRef.current, containerRef.current);
                 const preset = characterParticles && char ? "letters" : particlePreset;
                 const charToUse = characterParticles && char ? char : undefined;
-                const count = speedTracker.current.getParticleCount();
-                const speed = speedTracker.current.getSpeedMultiplier();
+                const count = overrideCount ?? speedTracker.current.getParticleCount();
+                const speed = overrideSpeed ?? speedTracker.current.getSpeedMultiplier();
                 const color = particlePreset === "emoji" ? undefined : getValidationColor();
 
                 engineRef.current.spawn(pos.x, pos.y, count, preset, direction, speed, color, charToUse);
@@ -610,7 +598,7 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
             const pos = getCursorPixelPosition(inputRef.current, containerRef.current);
             const color = particlePreset === "emoji" ? undefined : getValidationColor();
             engineRef.current.spawn(pos.x, pos.y, 1, "sparks", "radial", 0.3, color);
-        }, [reducedMotion, getValidationColor]);
+        }, [reducedMotion, particlePreset, getValidationColor]);
 
         const handleChange = React.useCallback(
             (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -626,7 +614,7 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
                 }
 
                 if (triggerMode === "clear" && newValue === "" && prevValue !== "") {
-                    fireExplosion();
+                    fireExplosion(undefined, 30, 2.0);
                 }
 
                 prevValueRef.current = newValue;
@@ -638,7 +626,7 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
         const handleKeyDown = React.useCallback(
             (e: React.KeyboardEvent<HTMLInputElement>) => {
                 if (triggerMode === "submit" && e.key === "Enter") {
-                    fireExplosion();
+                    fireExplosion(undefined, 60, 2.8);
                 }
                 onKeyDown?.(e);
             },
@@ -648,7 +636,7 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
         const handleFocus = React.useCallback(
             (e: React.FocusEvent<HTMLInputElement>) => {
                 if (triggerMode === "focus") {
-                    fireExplosion();
+                    fireExplosion(undefined, 25, 1.5);
                 }
 
                 if (cursorTrail && !reducedMotion) {
@@ -678,11 +666,12 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
         }, []);
 
         return (
-            <div ref={containerRef} className="relative inline-block w-full">
+            <div ref={containerRef} className="relative inline-block w-full overflow-visible">
                 <canvas
                     ref={canvasRef}
-                    className="pointer-events-none absolute inset-0 z-10"
                     aria-hidden="true"
+                    className="pointer-events-none absolute left-0 z-10"
+                    style={{ top: -CANVAS_OVERHANG }}
                 />
                 <input
                     ref={inputRef}

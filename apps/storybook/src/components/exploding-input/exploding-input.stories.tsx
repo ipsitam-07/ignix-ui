@@ -82,7 +82,7 @@ export const Default: Story = {
 export const StarBurst: Story = {
     args: {
         placeholder: "Press Enter to burst...",
-        triggerMode: "submit",
+        triggerMode: "keypress",
         particlePreset: "stars",
         direction: "burst",
         audio: "whoosh",
