@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { cn } from '../../../utils/cn';
 
-const CANVAS_OVERHANG = 500;
+// Allow sufficient overhang for particles to fall completely out of a large screen view
+const CANVAS_OVERHANG = 1500;
 
 //Types
 
@@ -109,7 +110,7 @@ function getPresetParticle(
             return {
                 content: randomFrom(customEmoji?.length ? customEmoji : DEFAULT_EMOJI),
                 color: "#000000",
-                size: 18 + Math.random() * 10,
+                size: 28 + Math.random() * 20,
             };
     }
 }
@@ -319,8 +320,10 @@ class ParticleEngine {
             }
 
             const p = getPresetParticle(preset, char, this.customEmoji);
-            const vel = getDirectionVelocity(direction, 2 * speedMultiplier);
-            const maxLifeMs = 800 + Math.random() * 800;
+
+            const velocityMultiplier = preset === "emoji" ? 2 * speedMultiplier * (2.5 + Math.random() * 2.5) : 2 * speedMultiplier;
+            const vel = getDirectionVelocity(direction, velocityMultiplier);
+            const maxLifeMs = preset === "emoji" ? 4000 + Math.random() * 2000 : 800 + Math.random() * 800;
 
             this.particles.push({
                 id: this.nextId++,
@@ -374,8 +377,14 @@ class ParticleEngine {
             p.vx *= friction;
             p.vy *= friction;
             p.rotation += p.rotationSpeed;
-            p.opacity = 1 - lifeRatio;
-            p.scale = 1 - lifeRatio * 0.3;
+
+            if (p.type === "emoji") {
+                p.opacity = 1;
+                p.scale = 1;
+            } else {
+                p.opacity = 1 - lifeRatio;
+                p.scale = 1 - lifeRatio * 0.3;
+            }
 
             if (lifeRatio >= 1) {
                 this.particles.splice(i, 1);
@@ -583,7 +592,12 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
                 const pos = getCursorPixelPosition(inputRef.current, containerRef.current);
                 const preset = characterParticles && char ? "letters" : particlePreset;
                 const charToUse = characterParticles && char ? char : undefined;
-                const count = overrideCount ?? speedTracker.current.getParticleCount();
+                let count = overrideCount ?? speedTracker.current.getParticleCount();
+
+                if (preset === "emoji" && !overrideCount) {
+                    count = Math.min(count, 3);
+                }
+
                 const speed = overrideSpeed ?? speedTracker.current.getSpeedMultiplier();
                 const color = particlePreset === "emoji" ? undefined : getValidationColor();
 
