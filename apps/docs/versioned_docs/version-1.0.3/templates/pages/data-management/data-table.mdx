@@ -1518,7 +1518,6 @@ export function DataTable<T extends Record<string, any>>({
 | `loading` | `boolean` | `false` | Show animated skeleton rows instead of data. |
 | `emptyStateMessage` | `string` | `'No data available.'` | Message shown when `data` is empty and `loading` is false. |
 | `noResultsMessage` | `string` | `'No results found.'` | Message shown when the global search returns zero results. |
-| `variant` | `'default' \| 'bordered' \| 'minimal' \| 'elevated'` | `'default'` | Visual style of the table container. |
 | `theme` | `'light' \| 'dark'` | `'light'` | Activates the dark colour scheme (adds the `dark` class to the root). |
 | `onRowClick` | `(row: T) => void` | `undefined` | Callback fired when the user taps a row (used in the mobile card view). |
 | `mobileBreakpoint` | `number` | `768` | Pixel width below which the mobile card layout is rendered instead of the table. |
@@ -1567,7 +1566,8 @@ Each hook manages a single concern and can be imported independently for headles
 
 ```tsx
 const { sortedData, sortKey, sortDirection, toggleSort } = useSort(data);
-// toggleSort(key) cycles: none → asc → desc → none
+// toggleSort(key) toggles between 'asc' ↔ 'desc' for the active column.
+// When switching columns, sorting starts at 'asc'.
 ```
 
 | Return | Type | Description |
@@ -1598,7 +1598,7 @@ const { currentPage, totalPages, currentData, nextPage, previousPage, goToPage }
 
 ```tsx
 const { filteredData, searchTerm, setSearchTerm } = useFilter(data, columns);
-// Searches all visible columns by default.
+// Searches across all provided columns (i.e., the columns passed into useFilter).
 ```
 
 | Return | Type | Description |
@@ -1644,10 +1644,17 @@ const { selectedRows, toggleRow, toggleAll, clearSelection, getSelectedRowData, 
 import { DataTable, Column } from '@ignix-ui/data-table';
 
 interface User {
-  key: string;
-  title: string;
-  sortable: boolean;
+  id: string;
+  name: string;
+  email: string;
+  role: string;
 }
+
+// Example data
+const users: User[] = [
+  { id: '1', name: 'Alice', email: 'alice@example.com', role: 'Admin' },
+  { id: '2', name: 'Bob', email: 'bob@example.com', role: 'User' },
+];
 
 const columns: Column<User>[] = [
   { key: 'name',  title: 'Name',  sortable: true },
@@ -1705,10 +1712,17 @@ const columns: Column<Employee>[] = [
 import { DataTable, BulkAction } from '@ignix-ui/data-table';
 
 interface User {
-  key: string;
-  title: string;
-  sortable: boolean;
+  id: string;
+  name: string;
+  email: string;
+  role: string;
 }
+
+// Example data
+const users: User[] = [
+  { id: '1', name: 'Alice', email: 'alice@example.com', role: 'Admin' },
+  { id: '2', name: 'Bob', email: 'bob@example.com', role: 'User' },
+];
 
 const bulkActions: BulkAction<User>[] = [
   {

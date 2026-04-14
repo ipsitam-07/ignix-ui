@@ -124,111 +124,127 @@ export const DataTableDemo = () => {
     setTheme(colorMode === 'dark' ? 'dark' : 'light');
   }, [colorMode]);
 
-
   const generateCodeString = () => `
-import { DataTable, Column, BulkAction } from '@ignix-ui/data-table';
-
-interface Employee {
-  id: number;
-  name: string;
-  department: string;
-  role: string;
-  status: 'active' | 'inactive' | 'pending';
-  salary: number;
-}
-
-const STATUS_STYLES: Record<Employee['status'], string> = {
-  active:   'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20',
-  inactive: 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border',
-  pending:  'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground border border-border',
-};
-
-const columns: Column<Employee>[] = [
-  {
-    key: 'name',
-    title: 'Name',
-    sortable: true,
-    render: (_, row) => (
-      <div className="flex items-center gap-2.5">
-        <Avatar
-          size="sm"
-          letters={row.name.split(' ').map(n => n[0]).join('')}
-        />
-        <div>
-          <div className="font-medium text-foreground text-sm">{row.name}</div>
-          <div className="text-xs text-muted-foreground">{row.email}</div>
+  import { DataTable, Column, BulkAction } from '@ignix-ui/data-table';
+  import { Avatar } from '../UI/avatar';
+  import { DownloadIcon, TrashIcon } from '@radix-ui/react-icons';
+  
+  interface Employee {
+    id: number;
+    name: string;
+    email: string;
+    department: string;
+    role: string;
+    status: 'active' | 'inactive' | 'pending';
+    salary: number;
+    joinDate: string;
+  }
+  
+  const STATUS_STYLES: Record<Employee['status'], string> = {
+    active:   'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20',
+    inactive: 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground border border-border',
+    pending:  'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground border border-border',
+  };
+  
+  const columns: Column<Employee>[] = [
+    {
+      key: 'name',
+      title: 'Name',
+      sortable: true,
+      render: (_, row) => (
+        <div className="flex items-center gap-2.5">
+          <Avatar
+            size="sm"
+            letters={row.name.split(' ').map(n => n[0]).join('')}
+          />
+          <div>
+            <div className="font-medium text-foreground text-sm">{row.name}</div>
+            <div className="text-xs text-muted-foreground">{row.email}</div>
+          </div>
         </div>
-      </div>
-    ),
-  },
-  { key: 'department', title: 'Department', sortable: true },
-  { key: 'role',       title: 'Role',       sortable: true },
-  {
-    key: 'status',
-    title: 'Status',
-    sortable: true,
-    render: (value) => (
-      <span className={STATUS_STYLES[value as Employee['status']]}>
-        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-        {String(value)}
-      </span>
-    ),
-  },
-  {
-    key: 'salary',
-    title: 'Salary',
-    sortable: true,
-    render: (value) => (
-      <span className="font-mono text-sm">value.toLocaleString()</span>
-    ),
-  },
-  {
-    key: 'joinDate',
-    title: 'Joined',
-    sortable: true,
-    render: (value) =>
-      new Date(value as string).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-  },
-];
-
-const bulkActions: BulkAction<Employee>[] = [
-  {
-    label: 'Delete',
-    icon: <TrashIcon className="w-4 h-4" />,
-    variant: 'destructive',
-  },
-  {
-    label: 'Export CSV',
-    variant: 'destructive',
-    icon: <DownloadIcon className="w-4 h-4" />,
-    onClick: (rows) => {
-      const csv = [
-        ['Name', 'Email', 'Department', 'Role', 'Status', 'Salary', 'Joined'].join(','),
-        ...rows.map((r) =>
-          [r.name, r.email, r.department, r.role, r.status, r.salary, r.joinDate].join(',')
-        ),
-      ].join('\n');
-      const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-      Object.assign(document.createElement('a'), { href: url, download: 'employees.csv' }).click();
-      URL.revokeObjectURL(url);
+      ),
     },
-  },
-];
-
-<DataTable<Employee>
-  data={employees}
-  columns={columns}
-  keyExtractor={(row) => row.id}
-  theme="${theme}"
-  enableRowSelection={${enableRowSelection}}
-  loading={${loading}}
-  defaultPageSize={5}
-  pageSizeOptions={[5, 10, 25, 50]}
-  bulkActions={bulkActions}
-  emptyStateMessage="No employees found."
-  noResultsMessage="No results match your search."
-  onRowClick={(row) => console.log('clicked', row)}
-/>`;
+    { key: 'department', title: 'Department', sortable: true },
+    { key: 'role',       title: 'Role',       sortable: true },
+    {
+      key: 'status',
+      title: 'Status',
+      sortable: true,
+      render: (value) => (
+        <span className={STATUS_STYLES[value as Employee['status']]}>
+          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+          {String(value)}
+        </span>
+      ),
+    },
+    {
+      key: 'salary',
+      title: 'Salary',
+      sortable: true,
+      render: (value) => (
+        <span className="font-mono text-sm">
+          \${value?.toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      key: 'joinDate',
+      title: 'Joined',
+      sortable: true,
+      render: (value) =>
+        new Date(value as string).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        }),
+    },
+  ];
+  
+  const bulkActions: BulkAction<Employee>[] = [
+    {
+      label: 'Delete',
+      icon: <TrashIcon className="w-4 h-4" />,
+      variant: 'destructive',
+      onClick: (rows) => {
+        console.log('Deleting:', rows);
+      },
+    },
+    {
+      label: 'Export CSV',
+      variant: 'destructive',
+      icon: <DownloadIcon className="w-4 h-4" />,
+      onClick: (rows) => {
+        const csv = [
+          ['Name', 'Email', 'Department', 'Role', 'Status', 'Salary', 'Joined'].join(','),
+          ...rows.map((r) =>
+            [r.name, r.email, r.department, r.role, r.status, r.salary, r.joinDate].join(',')
+          ),
+        ].join('\\n');
+        const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+        Object.assign(document.createElement('a'), {
+          href: url,
+          download: 'employees.csv',
+        }).click();
+        URL.revokeObjectURL(url);
+      },
+    },
+  ];
+  
+  <DataTable<Employee>
+    data={employees}
+    columns={columns}
+    keyExtractor={(row) => row.id}
+    theme="${theme}"
+    enableRowSelection={${enableRowSelection}}
+    loading={${loading}}
+    defaultPageSize={5}
+    pageSizeOptions={[5, 10, 25, 50]}
+    bulkActions={bulkActions}
+    emptyStateMessage="No employees found."
+    noResultsMessage="No results match your search."
+    onRowClick={(row) => console.log('clicked', row)}
+  />
+  `;
 
   const preview = (
     <DataTable
