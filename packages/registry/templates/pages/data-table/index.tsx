@@ -1,5 +1,5 @@
 // components/DataTable.tsx
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { 
@@ -14,8 +14,8 @@ import {
   FileIcon 
 } from '@radix-ui/react-icons';
 import { cva } from 'class-variance-authority';
-import { cn } from '../../../utils/cn';
-import { Checkbox } from '@ignix-ui/checkbox';
+import { cn } from '../../../../utils/cn';
+import { Checkbox } from '../../../components/checkbox';
 
 /* ============================================
   TYPES & INTERFACES
@@ -50,6 +50,7 @@ export interface DataTableProps<T> {
   noResultsMessage?: string;
   className?: string;
   theme?: 'light' | 'dark';
+  onRowClick?: (row: T) => void;
 }
 
 type SortDirection = 'asc' | 'desc';
@@ -163,7 +164,7 @@ export function usePagination<T>(data: T[], pageSize: number) {
   const nextPage = () => goToPage(currentPage + 1);
   const previousPage = () => goToPage(currentPage - 1);
 
-  useMemo(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [data.length]);
 
@@ -207,6 +208,7 @@ export function useColumnVisibility<T>(initialColumns: Column<T>[]) {
     setVisibleColumns(prev => {
       const newSet = new Set(prev);
       if (newSet.has(key)) {
+        if (newSet.size === 1) return prev;
         newSet.delete(key);
       } else {
         newSet.add(key);
@@ -228,6 +230,28 @@ export function useRowSelection<T>(
 ) {
   const [selectedRows, setSelectedRows] = useState<Set<string | number>>(new Set());
 
+  const currentKeys = useMemo(
+    () => new Set(data.map(keyExtractor)),
+    [data, keyExtractor]
+  );
+  
+  useEffect(() => {
+    setSelectedRows(prev => {
+      let changed = false;
+      const next = new Set<string | number>();
+  
+      prev.forEach(key => {
+        if (currentKeys.has(key)) {
+          next.add(key);
+        } else {
+          changed = true;
+        }
+      });
+  
+      return changed ? next : prev;
+    });
+  }, [currentKeys]);
+
   const toggleRow = useCallback((row: T) => {
     const key = keyExtractor(row);
     setSelectedRows(prev => {
@@ -242,12 +266,15 @@ export function useRowSelection<T>(
   }, [keyExtractor]);
 
   const toggleAll = useCallback(() => {
-    if (selectedRows.size === data.length) {
-      setSelectedRows(new Set());
-    } else {
-      setSelectedRows(new Set(data.map(keyExtractor)));
-    }
-  }, [data, selectedRows.size, keyExtractor]);
+    const keys = data.map(keyExtractor);
+  
+    setSelectedRows(prev => {
+      if (prev.size === keys.length) {
+        return new Set();
+      }
+      return new Set(keys);
+    });
+  }, [data, keyExtractor]);
 
   const clearSelection = useCallback(() => {
     setSelectedRows(new Set());
@@ -329,6 +356,12 @@ export function TableHeader<T>({
               column.className
             )}
             onClick={() => column.sortable !== false && onSort(column.key)}
+            onKeyDown={(e) => {
+              if (column.sortable !== false && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                onSort(column.key);
+              }
+            }}
             role={column.sortable !== false ? 'button' : undefined}
             tabIndex={column.sortable !== false ? 0 : undefined}
             aria-sort={
@@ -404,8 +437,8 @@ export function TableRow<T>({
                 ? "border-gray-600 focus:ring-primary/20 bg-gray-800" 
                 : "border-border focus:ring-primary/20"
             )}
-            data-testid="row-checkbox"
             variant="default"
+            data-testid="row-checkbox"
             checked={isSelected}
             onChange={() => onToggleSelect(row)}
             aria-label={`Select row ${keyExtractor(row)}`}
@@ -1139,9 +1172,7 @@ export function DataTable<T extends Record<string, any>>({
   className = '',
   theme = 'light',
   onRowClick,
-}: DataTableProps<T> & {
-  onRowClick?: (row: T) => void;
-}) {
+}: DataTableProps<T>) {
   const [pageSize, setPageSize] = useState(defaultPageSize);
   
   const { filteredData, searchTerm, setSearchTerm } = useFilter(data, columns);

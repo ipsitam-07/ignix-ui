@@ -1465,7 +1465,7 @@
       ],
       "files": {
         "main": {
-          "path": "templates/pages/data-management/index.tsx",
+          "path": "templates/pages/data-table/index.tsx",
           "type": "template"
         }
       }

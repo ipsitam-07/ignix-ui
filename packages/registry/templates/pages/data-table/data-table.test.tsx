@@ -41,7 +41,7 @@ vi.mock('@ignix-ui/checkbox', () => ({
 type User = {
     id: number;
     name: string;
-    age: number;
+    age?: number;
 };
 
 const data: User[] = [
