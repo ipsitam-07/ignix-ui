@@ -3,7 +3,11 @@
     {
       "type": "category",
       "label": "Getting Started",
-      "items": ["introduction", "installation", "mcp"]
+      "items": [
+        "introduction",
+        "installation",
+        "mcp"
+      ]
     },
     {
       "type": "category",
@@ -22,7 +26,10 @@
         {
           "type": "category",
           "label": "API Reference",
-          "items": ["theming/api-reference/components", "theming/api-reference/hooks"]
+          "items": [
+            "theming/api-reference/components",
+            "theming/api-reference/hooks"
+          ]
         },
         {
           "type": "doc",
@@ -36,9 +43,9 @@
       "label": "Components",
       "items": [
         {
-        "type": "doc",
-        "id": "components/all-components/index",
-        "label": "All Components"
+          "type": "doc",
+          "id": "components/all-components/index",
+          "label": "All Components"
         },
         {
           "type": "category",
@@ -69,7 +76,8 @@
             "components/list",
             "components/advanced-table",
             "components/tooltip",
-            "components/typography"
+            "components/typography",
+            "components/scroll-area"
           ]
         },
         {
@@ -78,14 +86,15 @@
           "items": [
             "components/breadcrumbs",
             "components/drawer",
+            "components/floating-dock",
             "components/navbar",
             "components/sidebar",
             "components/stepper",
-            "components/tab"            
+            "components/tab"
           ]
         },
         {
-          "type":"category",
+          "type": "category",
           "label": "Feedback",
           "items": [
             "components/dialog-box",
@@ -102,9 +111,9 @@
       "label": "Layouts",
       "items": [
         {
-        "type": "doc",
-        "id": "components/all-layouts/index",
-        "label": "All Layouts"
+          "type": "doc",
+          "id": "components/all-layouts/index",
+          "label": "All Layouts"
         },
         {
           "type": "category",
@@ -125,7 +134,7 @@
             "templates/layouts/responsive-grid-layout",
             "templates/layouts/sidebar-left-layout",
             "templates/layouts/sidebar-right-layout",
-            "templates/layouts/single-column-layout", 
+            "templates/layouts/single-column-layout",
             "templates/layouts/three-column-sidebar-layout"
           ]
         },
@@ -180,7 +189,7 @@
     {
       "type": "category",
       "label": "Templates",
-      "items":[
+      "items": [
         {
           "type": "doc",
           "id": "components/all-templates/index",
@@ -189,7 +198,7 @@
         {
           "type": "category",
           "label": "Starter",
-           "items": [
+          "items": [
             "starters/monorepo",
             "starters/nextjs-app",
             "starters/vite-react"
@@ -210,7 +219,7 @@
                 "templates/pages/authentication/sign-up",
                 "templates/pages/authentication/two-factor-auth-setup-page"
               ]
-            }, 
+            },
             {
               "type": "category",
               "label": "Account Management",
@@ -229,6 +238,7 @@
               "items": [
                 "templates/pages/dashboard/dashboard-overview-page",
                 "templates/pages/dashboard/analytics-dashboard-page",
+                "templates/pages/dashboard/activity-feed-page",
                 "templates/pages/dashboard/dashboard-shortcuts-page"
               ]
             },
@@ -248,7 +258,6 @@
                 "templates/pages/forms/dynamic-form",
                 "templates/pages/forms/contact-form",
                 "templates/pages/forms/multi-step-form"
-
               ]
             },
             {
@@ -258,7 +267,7 @@
                 "templates/pages/data-management/data-table"
               ]
             }
-          ]                      
+          ]
         },
         {
           "type": "category",
@@ -280,7 +289,10 @@
     {
       "type": "category",
       "label": "Contribution Guide",
-      "items": ["contribution-guide/how-to-contribute", "contribution-guide/code-of-conduct"]
+      "items": [
+        "contribution-guide/how-to-contribute",
+        "contribution-guide/code-of-conduct"
+      ]
     }
   ]
 }
