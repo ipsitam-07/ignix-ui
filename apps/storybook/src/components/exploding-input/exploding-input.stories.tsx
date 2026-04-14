@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { ExplodingInput, type ExplodingInputHandle } from "./index";
 
@@ -71,7 +71,7 @@ type Story = StoryObj<typeof ExplodingInput>;
 
 export const Default: Story = {
     args: {
-        placeholder: "Type to see confetti...",
+        placeholder: "Start typing to celebration...",
         triggerMode: "keypress",
         particlePreset: "confetti",
         direction: "up",
@@ -79,19 +79,29 @@ export const Default: Story = {
     },
 };
 
-export const StarBurst: Story = {
+export const BurstFire: Story = {
     args: {
-        placeholder: "Press Enter to burst...",
-        triggerMode: "keypress",
+        placeholder: "Type something and hit Enter...",
+        triggerMode: "submit",
         particlePreset: "stars",
         direction: "burst",
         audio: "whoosh",
     },
 };
 
-export const SparksAndTrail: Story = {
+export const RainyDay: Story = {
     args: {
-        placeholder: "Click to focus...",
+        placeholder: "Type then backspace everything...",
+        triggerMode: "clear",
+        particlePreset: "emoji",
+        direction: "down",
+        audio: "pop",
+    },
+};
+
+export const MagicalTrail: Story = {
+    args: {
+        placeholder: "Click here to see the magic...",
         triggerMode: "focus",
         particlePreset: "sparks",
         direction: "radial",
@@ -100,88 +110,77 @@ export const SparksAndTrail: Story = {
     },
 };
 
-export const MagicalTypewriter: Story = {
-    args: {
-        placeholder: "Type magical characters...",
-        triggerMode: "keypress",
-        characterParticles: true,
-        direction: "up",
-        audio: "sparkle",
-    },
-};
-
-export const BubbleWand: Story = {
-    args: {
-        placeholder: "Type and then clear the input...",
-        triggerMode: "clear",
-        particlePreset: "bubbles",
-        direction: "down",
-        audio: "pop",
-    },
-};
-
-export const WithValidation: Story = {
-    render: () => {
-        const validate = (value: string) => {
-            // Valid if length is greater than 5
-            return value.length > 5;
+export const ValidationPlayground: Story = {
+    render: (args) => {
+        const [isValid, setIsValid] = useState(false);
+        const validate = (val: string) => {
+            const ok = val.length >= 8 && /[0-9]/.test(val);
+            setIsValid(ok);
+            return ok;
         };
 
         return (
-            <ExplodingInput
-                placeholder="Needs at least 6 characters..."
-                triggerMode="keypress"
-                particlePreset="confetti"
-                direction="radial"
-                validate={validate}
-                audio="pop"
-            />
+            <div className="space-y-4">
+                <ExplodingInput
+                    {...args}
+                    placeholder="Enter a secure password (8+ chars, 1 number)..."
+                    triggerMode="keypress"
+                    particlePreset="confetti"
+                    direction="radial"
+                    validate={validate}
+                    audio="pop"
+                />
+                <p className={`text-xs font-semibold ${isValid ? 'text-green-500' : 'text-slate-400'}`}>
+                    {isValid ? "✨ Password looks strong!" : "Enter 8 characters with at least one number."}
+                </p>
+            </div>
         );
     },
 };
 
-export const CustomTrigger: Story = {
-    render: () => {
+export const TypeWriter: Story = {
+    args: {
+        placeholder: "A mechanical typewriter feel...",
+        triggerMode: "keypress",
+        characterParticles: true,
+        direction: "up",
+        audio: "pop",
+    },
+};
+
+export const CustomControl: Story = {
+    render: (args) => {
         const explodeRef = useRef<ExplodingInputHandle>(null);
 
         return (
-            <div className="flex gap-4 items-center w-full">
+            <div className="flex gap-3 items-center w-full">
                 <ExplodingInput
+                    {...args}
                     explodeRef={explodeRef}
-                    placeholder="Click the button ->"
+                    placeholder="Control explicitly..."
                     triggerMode="custom"
-                    particlePreset="stars"
+                    particlePreset="bubbles"
                     direction="burst"
-                    audio="whoosh"
+                    audio="pop"
                 />
                 <button
                     onClick={() => explodeRef.current?.explode()}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-md shadow hover:bg-primary/90 transition-colors"
+                    className="shrink-0 px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg shadow-sm hover:bg-indigo-700 active:scale-95 transition-all"
                 >
-                    Explode
+                    Fire!
                 </button>
             </div>
         );
     },
 };
 
-export const EmojiBurst: Story = {
+export const CuratedEmoji: Story = {
     args: {
-        placeholder: "Type to release emojis...",
+        placeholder: "Only hearts and sparks...",
         triggerMode: "keypress",
         particlePreset: "emoji",
+        customEmoji: ["💖", "✨", "🔥", "🦄"],
         direction: "up",
-        audio: "pop",
-    },
-};
-
-export const CustomEmojis: Story = {
-    args: {
-        placeholder: "Only hearts and stars...",
-        triggerMode: "keypress",
-        particlePreset: "emoji",
-        customEmoji: ["❤️", "💖", "⭐", "🌟", "✨"],
-        direction: "radial",
         audio: "sparkle",
     },
 };
