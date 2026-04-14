@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { cn } from '../../../utils/cn';
 
-// Allow sufficient overhang for particles to fall completely out of a large screen view
 const CANVAS_OVERHANG = 1500;
 
 //Types
@@ -117,8 +116,12 @@ function getPresetParticle(
 
 //Direction Vectors
 
-function getDirectionVelocity(direction: Direction, speed: number): { vx: number; vy: number } {
-    const spread = () => (Math.random() - 0.5) * speed * 0.4;
+function getDirectionVelocity(
+    direction: Direction,
+    speed: number,
+    spreadFactor = 0.4
+): { vx: number; vy: number } {
+    const spread = () => (Math.random() - 0.5) * speed * spreadFactor;
     switch (direction) {
         case "up":
             return { vx: spread(), vy: -(speed * 0.5 + Math.random() * speed) };
@@ -287,7 +290,18 @@ class AudioManager {
     }
 }
 
-//Particle Engine Canvas Based
+function drawStar(ctx: CanvasRenderingContext2D, r: number) {
+    const inner = r * 0.4;
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+        const a = (i * Math.PI) / 5 - Math.PI / 2;
+        const rad = i % 2 === 0 ? r : inner;
+        ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+    }
+    ctx.closePath();
+    ctx.fill();
+}
+
 class ParticleEngine {
     private particles: Particle[] = [];
     private nextId = 0;
@@ -296,12 +310,18 @@ class ParticleEngine {
     private animFrame: number | null = null;
     private maxParticles: number;
     private running = false;
+    private dpr = 1;
     customEmoji: string[] = [];
 
     constructor(canvas: HTMLCanvasElement, maxParticles: number) {
         this.canvas = canvas;
         this.ctx2d = canvas.getContext("2d")!;
         this.maxParticles = maxParticles;
+    }
+
+    setDpr(dpr: number) {
+        this.dpr = dpr;
+        this.ctx2d.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     spawn(
@@ -321,8 +341,13 @@ class ParticleEngine {
 
             const p = getPresetParticle(preset, char, this.customEmoji);
 
-            const velocityMultiplier = preset === "emoji" ? 2 * speedMultiplier * (2.5 + Math.random() * 2.5) : 2 * speedMultiplier;
-            const vel = getDirectionVelocity(direction, velocityMultiplier);
+            const velocityMultiplier = preset === "emoji"
+                ? 2 * speedMultiplier * (2.5 + Math.random() * 2.5)
+                : 2 * speedMultiplier;
+
+            const spreadFactor = preset === "stars" ? 1.4 : 0.4;
+            const vel = getDirectionVelocity(direction, velocityMultiplier, spreadFactor);
+
             const maxLifeMs = preset === "emoji" ? 4000 + Math.random() * 2000 : 800 + Math.random() * 800;
 
             this.particles.push({
@@ -393,37 +418,36 @@ class ParticleEngine {
     }
 
     private render() {
-        const dpr = window.devicePixelRatio || 1;
-        this.ctx2d.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx2d.save();
-        this.ctx2d.scale(dpr, dpr);
+        const cssW = this.canvas.width / this.dpr;
+        const cssH = this.canvas.height / this.dpr;
+        this.ctx2d.clearRect(0, 0, cssW, cssH);
 
         for (const p of this.particles) {
             this.ctx2d.save();
             this.ctx2d.translate(p.x, p.y);
             this.ctx2d.rotate((p.rotation * Math.PI) / 180);
             this.ctx2d.globalAlpha = p.opacity;
+            this.ctx2d.fillStyle = p.color;
 
             if (p.type === "sparks") {
                 this.ctx2d.shadowBlur = 6;
                 this.ctx2d.shadowColor = p.color;
             }
 
-            if (p.type !== "emoji") {
-                this.ctx2d.fillStyle = p.color;
-            }
-
             const s = p.size * p.scale;
-            this.ctx2d.font = `${s}px sans-serif`;
-            this.ctx2d.textAlign = "center";
-            this.ctx2d.textBaseline = "middle";
-            this.ctx2d.fillText(p.content, 0, 0);
+
+            if (p.type === "stars") {
+                drawStar(this.ctx2d, s * 0.55);
+            } else {
+                this.ctx2d.font = `${s}px sans-serif`;
+                this.ctx2d.textAlign = "center";
+                this.ctx2d.textBaseline = "middle";
+                this.ctx2d.fillText(p.content, 0, 0);
+            }
 
             this.ctx2d.shadowBlur = 0;
             this.ctx2d.restore();
         }
-
-        this.ctx2d.restore();
     }
 
     clear() {
@@ -433,7 +457,7 @@ class ParticleEngine {
             this.animFrame = null;
         }
         this.running = false;
-        this.ctx2d.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx2d.clearRect(0, 0, this.canvas.width / this.dpr, this.canvas.height / this.dpr);
     }
 
     dispose() {
@@ -441,8 +465,21 @@ class ParticleEngine {
     }
 }
 
+let _measureSpan: HTMLSpanElement | null = null;
 
-//Cursor Position Helper
+function getMeasureSpan(input: HTMLInputElement): HTMLSpanElement {
+    if (!_measureSpan) {
+        _measureSpan = document.createElement("span");
+        _measureSpan.style.cssText =
+            "visibility:hidden;position:absolute;white-space:pre;pointer-events:none;top:-9999px;left:0";
+        document.body.appendChild(_measureSpan);
+    }
+    const s = window.getComputedStyle(input);
+    _measureSpan.style.font = s.font;
+    _measureSpan.style.letterSpacing = s.letterSpacing;
+    return _measureSpan;
+}
+
 function getCursorPixelPosition(
     input: HTMLInputElement,
     container: HTMLElement
@@ -450,22 +487,12 @@ function getCursorPixelPosition(
     const inputRect = input.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
 
-    const span = document.createElement("span");
-    const style = window.getComputedStyle(input);
-    span.style.font = style.font;
-    span.style.fontSize = style.fontSize;
-    span.style.fontFamily = style.fontFamily;
-    span.style.letterSpacing = style.letterSpacing;
-    span.style.visibility = "hidden";
-    span.style.position = "absolute";
-    span.style.whiteSpace = "pre";
-    document.body.appendChild(span);
-
+    const span = getMeasureSpan(input);
     const pos = input.selectionStart ?? input.value.length;
     span.textContent = input.value.substring(0, pos);
     const textWidth = span.offsetWidth;
-    document.body.removeChild(span);
 
+    const style = window.getComputedStyle(input);
     const paddingLeft = parseFloat(style.paddingLeft) || 0;
     const scrollLeft = input.scrollLeft || 0;
 
@@ -542,6 +569,10 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
             const container = containerRef.current;
             if (!canvas || !container) return;
 
+            const engine = new ParticleEngine(canvas, maxParticles);
+            engine.customEmoji = customEmoji ?? [];
+            engineRef.current = engine;
+
             const resize = () => {
                 const dpr = window.devicePixelRatio || 1;
                 const rect = container.getBoundingClientRect();
@@ -549,15 +580,12 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
                 canvas.height = (rect.height + CANVAS_OVERHANG * 2) * dpr;
                 canvas.style.width = `${rect.width}px`;
                 canvas.style.height = `${rect.height + CANVAS_OVERHANG * 2}px`;
+                engine.setDpr(dpr);
             };
             resize();
 
             const ro = new ResizeObserver(resize);
             ro.observe(container);
-
-            const engine = new ParticleEngine(canvas, maxParticles);
-            engine.customEmoji = customEmoji ?? [];
-            engineRef.current = engine;
 
             return () => {
                 ro.disconnect();
