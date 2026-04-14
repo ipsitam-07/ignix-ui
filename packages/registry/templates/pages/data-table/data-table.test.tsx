@@ -205,7 +205,7 @@ describe('DataTable', () => {
             const rowCheckbox = screen.getAllByTestId('row-checkbox')[0];
 
             await userEvent.click(rowCheckbox);
-            screen.debug();
+           
             expect(screen.getByText('Delete')).toBeInTheDocument();
         });
     });

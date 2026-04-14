@@ -483,7 +483,9 @@ export function ColumnVisibilityDropdown<T>({
   return (
     <DropdownMenu.Root open={open} onOpenChange={setOpen}>
       <DropdownMenu.Trigger asChild>
-        <button className={cn(
+        <button 
+        type='button'
+        className={cn(
           "inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20",
           theme === 'dark'
             ? "bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700"
@@ -622,6 +624,7 @@ export function Pagination({
 
       <div className="flex items-center gap-2">
         <button
+          type="button"
           onClick={onPreviousPage}
           disabled={currentPage === 1}
           className={cn(
@@ -650,6 +653,7 @@ export function Pagination({
 
             return (
               <button
+                type="button"
                 key={pageNum}
                 onClick={() => onGoToPage(pageNum)}
                 className={cn(
@@ -670,6 +674,7 @@ export function Pagination({
         </div>
 
         <button
+          type="button"
           onClick={onNextPage}
           disabled={currentPage === totalPages || totalPages === 0}
           className={cn(
@@ -718,6 +723,7 @@ export function BulkActionBar<T>({
             <div className="flex gap-2">
               {actions.map((action, idx) => (
                 <button
+                  type="button"
                   key={idx}
                   onClick={() => action.onClick(selectedRows)}
                   className={cn(
@@ -739,6 +745,7 @@ export function BulkActionBar<T>({
               ))}
             </div>
             <button
+              type="button"
               onClick={onClearSelection}
               className={cn(
                 "p-1 rounded-md transition-colors focus:outline-none focus:ring-2",
@@ -1002,6 +1009,7 @@ function MobilePagination({
     )}>
       <div className="flex items-center justify-between">
         <button
+          type="button"
           onClick={() => setShowPageSizeMenu(!showPageSizeMenu)}
           className={cn(
             "flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all",
@@ -1038,6 +1046,7 @@ function MobilePagination({
           >
             {pageSizeOptions.map((size) => (
               <button
+                type="button"
                 key={size}
                 onClick={() => {
                   onPageSizeChange(size);
@@ -1061,6 +1070,7 @@ function MobilePagination({
 
       <div className="flex items-center justify-between gap-2">
         <button
+          type="button"
           onClick={onPreviousPage}
           disabled={currentPage === 1}
           className={cn(
@@ -1089,6 +1099,7 @@ function MobilePagination({
                 </span>
               ) : (
                 <button
+                  type="button"
                   onClick={() => onGoToPage(page as number)}
                   className={cn(
                     "w-8 h-8 rounded-lg text-sm font-medium transition-all",
@@ -1110,6 +1121,7 @@ function MobilePagination({
         </div>
 
         <button
+          type="button"
           onClick={onNextPage}
           disabled={currentPage === totalPages || totalPages === 0}
           className={cn(

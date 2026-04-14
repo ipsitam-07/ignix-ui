@@ -14,8 +14,8 @@ import {
   FileIcon 
 } from '@radix-ui/react-icons';
 import { cva } from 'class-variance-authority';
-import { cn } from '../../../../utils/cn';
 import { Checkbox } from '../../../components/checkbox';
+import { cn } from '../../../../utils/cn';
 
 /* ============================================
   TYPES & INTERFACES
@@ -483,12 +483,16 @@ export function ColumnVisibilityDropdown<T>({
   return (
     <DropdownMenu.Root open={open} onOpenChange={setOpen}>
       <DropdownMenu.Trigger asChild>
-        <button className={cn(
+        <button 
+        type='button'
+        className={cn(
           "inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20",
           theme === 'dark'
             ? "bg-gray-800 text-gray-200 border border-gray-700 hover:bg-gray-700"
             : "bg-card text-foreground border border-border hover:bg-muted"
-        )}>
+        )}
+        data-testid="column-visibility-trigger"
+        >
           <EyeOpenIcon className="w-4 h-4" />
           Toggle Columns
           <ChevronDownIcon className="w-4 h-4" />
@@ -496,7 +500,6 @@ export function ColumnVisibilityDropdown<T>({
       </DropdownMenu.Trigger>
 
       <AnimatePresence>
-      {open && (
         <DropdownMenu.Portal>
           <DropdownMenu.Content
             asChild
@@ -520,6 +523,7 @@ export function ColumnVisibilityDropdown<T>({
                   key={String(column.key)}
                   className="flex items-center gap-2 px-2 py-2 rounded-sm cursor-pointer focus:outline-none"
                   onSelect={(e) => e.preventDefault()}
+                  data-testid={`checkbox-${String(column.key)}`}
                 >
                   <Checkbox
                     id={`col-${String(column.key)}`}
@@ -532,6 +536,7 @@ export function ColumnVisibilityDropdown<T>({
                     variant="default"
                     checked={visibleColumns.has(column.key)}
                     onChange={() => onToggleColumn(column.key)}
+                    data-testid={`checkbox-${String(column.key)}`}
                   />
                   <label
                     htmlFor={`col-${String(column.key)}`}
@@ -547,7 +552,6 @@ export function ColumnVisibilityDropdown<T>({
             </motion.div>
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
-      )}
       </AnimatePresence>
     </DropdownMenu.Root>
   );
@@ -620,6 +624,7 @@ export function Pagination({
 
       <div className="flex items-center gap-2">
         <button
+          type="button"
           onClick={onPreviousPage}
           disabled={currentPage === 1}
           className={cn(
@@ -648,6 +653,7 @@ export function Pagination({
 
             return (
               <button
+                type="button"
                 key={pageNum}
                 onClick={() => onGoToPage(pageNum)}
                 className={cn(
@@ -668,6 +674,7 @@ export function Pagination({
         </div>
 
         <button
+          type="button"
           onClick={onNextPage}
           disabled={currentPage === totalPages || totalPages === 0}
           className={cn(
@@ -716,6 +723,7 @@ export function BulkActionBar<T>({
             <div className="flex gap-2">
               {actions.map((action, idx) => (
                 <button
+                  type="button"
                   key={idx}
                   onClick={() => action.onClick(selectedRows)}
                   className={cn(
@@ -737,6 +745,7 @@ export function BulkActionBar<T>({
               ))}
             </div>
             <button
+              type="button"
               onClick={onClearSelection}
               className={cn(
                 "p-1 rounded-md transition-colors focus:outline-none focus:ring-2",
@@ -1000,6 +1009,7 @@ function MobilePagination({
     )}>
       <div className="flex items-center justify-between">
         <button
+          type="button"
           onClick={() => setShowPageSizeMenu(!showPageSizeMenu)}
           className={cn(
             "flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all",
@@ -1036,6 +1046,7 @@ function MobilePagination({
           >
             {pageSizeOptions.map((size) => (
               <button
+                type="button"
                 key={size}
                 onClick={() => {
                   onPageSizeChange(size);
@@ -1059,6 +1070,7 @@ function MobilePagination({
 
       <div className="flex items-center justify-between gap-2">
         <button
+          type="button"
           onClick={onPreviousPage}
           disabled={currentPage === 1}
           className={cn(
@@ -1087,6 +1099,7 @@ function MobilePagination({
                 </span>
               ) : (
                 <button
+                  type="button"
                   onClick={() => onGoToPage(page as number)}
                   className={cn(
                     "w-8 h-8 rounded-lg text-sm font-medium transition-all",
@@ -1108,6 +1121,7 @@ function MobilePagination({
         </div>
 
         <button
+          type="button"
           onClick={onNextPage}
           disabled={currentPage === totalPages || totalPages === 0}
           className={cn(
