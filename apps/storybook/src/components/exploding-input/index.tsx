@@ -4,7 +4,7 @@ import { cn } from '../../../utils/cn';
 //Types
 
 type TriggerMode = "keypress" | "submit" | "focus" | "clear" | "custom";
-type ParticlePreset = "confetti" | "sparks" | "stars" | "bubbles" | "letters";
+type ParticlePreset = "confetti" | "sparks" | "stars" | "bubbles" | "letters" | "emoji";
 type Direction = "up" | "down" | "left" | "right" | "radial" | "burst";
 type AudioPreset = "pop" | "whoosh" | "sparkle";
 
@@ -29,6 +29,7 @@ interface Particle {
 export interface ExplodingInputProps extends Omit<React.ComponentProps<"input">, "validate"> {
     triggerMode?: TriggerMode;
     particlePreset?: ParticlePreset;
+    customEmoji?: string[];
     characterParticles?: boolean;
     direction?: Direction;
     cursorTrail?: boolean;
@@ -76,13 +77,16 @@ const BUBBLE_COLORS = [
 
 const LETTER_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
 
+const DEFAULT_EMOJI = ["🤩", "👾", "😺", "👻", "🎃", "🖤", "🗯️", "✨", "🎉", "💥"];
+
 function randomFrom<T>(arr: T[]): T {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
 function getPresetParticle(
     preset: ParticlePreset,
-    char?: string
+    char?: string,
+    customEmoji?: string[]
 ): { content: string; color: string; size: number } {
     switch (preset) {
         case "confetti":
@@ -98,6 +102,12 @@ function getPresetParticle(
                 content: char || randomFrom(LETTER_CHARS.split("")),
                 color: randomFrom(CONFETTI_COLORS),
                 size: 12 + Math.random() * 4,
+            };
+        case "emoji":
+            return {
+                content: randomFrom(customEmoji?.length ? customEmoji : DEFAULT_EMOJI),
+                color: "#000000",
+                size: 18 + Math.random() * 10,
             };
     }
 }
@@ -291,6 +301,7 @@ class ParticleEngine {
     private animFrame: number | null = null;
     private maxParticles: number;
     private running = false;
+    customEmoji: string[] = [];
 
     constructor(canvas: HTMLCanvasElement, maxParticles: number) {
         this.canvas = canvas;
@@ -314,7 +325,7 @@ class ParticleEngine {
                 this.particles.shift();
             }
 
-            const p = getPresetParticle(preset, char);
+            const p = getPresetParticle(preset, char, this.customEmoji);
             const vel = getDirectionVelocity(direction, 2 * speedMultiplier);
             const maxLife = 40 + Math.random() * 40;
 
@@ -328,7 +339,9 @@ class ParticleEngine {
                 maxLife,
                 size: p.size,
                 rotation: Math.random() * 360,
-                rotationSpeed: (Math.random() - 0.5) * 10,
+                rotationSpeed: preset === "emoji"
+                    ? (Math.random() - 0.5) * 4
+                    : (Math.random() - 0.5) * 10,
                 opacity: 1,
                 color: colorOverride || p.color,
                 content: p.content,
@@ -398,6 +411,9 @@ class ParticleEngine {
                 this.ctx2d.shadowColor = p.color;
             }
 
+            if (p.type !== "emoji") {
+                this.ctx2d.fillStyle = p.color;
+            }
             const s = p.size * p.scale;
             this.ctx2d.font = `${s}px sans-serif`;
             this.ctx2d.textAlign = "center";
@@ -485,6 +501,7 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
             className,
             triggerMode = "keypress",
             particlePreset = "confetti",
+            customEmoji,
             characterParticles = false,
             direction = "up",
             cursorTrail = false,
@@ -517,6 +534,12 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
         }));
 
         React.useEffect(() => {
+            if (engineRef.current) {
+                engineRef.current.customEmoji = customEmoji ?? [];
+            }
+        }, [customEmoji]);
+
+        React.useEffect(() => {
             if (reducedMotion) return;
             const canvas = canvasRef.current;
             const container = containerRef.current;
@@ -535,7 +558,9 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
             const ro = new ResizeObserver(resize);
             ro.observe(container);
 
-            engineRef.current = new ParticleEngine(canvas, maxParticles);
+            const engine = new ParticleEngine(canvas, maxParticles);
+            engine.customEmoji = customEmoji ?? [];
+            engineRef.current = engine;
 
             return () => {
                 ro.disconnect();
@@ -572,7 +597,7 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
                 const charToUse = characterParticles && char ? char : undefined;
                 const count = speedTracker.current.getParticleCount();
                 const speed = speedTracker.current.getSpeedMultiplier();
-                const color = getValidationColor();
+                const color = particlePreset === "emoji" ? undefined : getValidationColor();
 
                 engineRef.current.spawn(pos.x, pos.y, count, preset, direction, speed, color, charToUse);
                 audioRef.current?.play();
@@ -583,7 +608,7 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
         const fireTrailParticle = React.useCallback(() => {
             if (reducedMotion || !engineRef.current || !inputRef.current || !containerRef.current) return;
             const pos = getCursorPixelPosition(inputRef.current, containerRef.current);
-            const color = getValidationColor();
+            const color = particlePreset === "emoji" ? undefined : getValidationColor();
             engineRef.current.spawn(pos.x, pos.y, 1, "sparks", "radial", 0.3, color);
         }, [reducedMotion, getValidationColor]);
 

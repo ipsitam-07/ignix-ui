@@ -15,7 +15,7 @@ It supports multiple interactive modes, customized presets, directional animatio
 
 ### Features
 - 5 **trigger modes**: \`keypress\`, \`submit\`, \`focus\`, \`clear\`, \`custom\`
-- 5 **particle presets**: \`confetti\`, \`sparks\`, \`stars\`, \`bubbles\`, \`letters\`
+- 6 **particle presets**: \`confetti\`, \`sparks\`, \`stars\`, \`bubbles\`, \`letters\`, \`emoji\`
 - Built-in **audio** effects (\`pop\`, \`whoosh\`, \`sparkle\`) or custom URLs
 - **Directional** control (\`up\`, \`down\`, \`left\`, \`right\`, \`radial\`, \`burst\`)
 - **Validation** support (colors particles green/red based on validity)
@@ -33,8 +33,12 @@ It supports multiple interactive modes, customized presets, directional animatio
         },
         particlePreset: {
             control: "select",
-            options: ["confetti", "sparks", "stars", "bubbles", "letters"],
+            options: ["confetti", "sparks", "stars", "bubbles", "letters", "emoji"],
             description: "Style of the particles.",
+        },
+        customEmoji: {
+            control: "object",
+            description: "Custom array of emojis to use for the 'emoji' preset.",
         },
         direction: {
             control: "select",
@@ -158,5 +162,26 @@ export const CustomTrigger: Story = {
                 </button>
             </div>
         );
+    },
+};
+
+export const EmojiBurst: Story = {
+    args: {
+        placeholder: "Type to release emojis...",
+        triggerMode: "keypress",
+        particlePreset: "emoji",
+        direction: "up",
+        audio: "pop",
+    },
+};
+
+export const CustomEmojis: Story = {
+    args: {
+        placeholder: "Only hearts and stars...",
+        triggerMode: "keypress",
+        particlePreset: "emoji",
+        customEmoji: ["❤️", "💖", "⭐", "🌟", "✨"],
+        direction: "radial",
+        audio: "sparkle",
     },
 };
