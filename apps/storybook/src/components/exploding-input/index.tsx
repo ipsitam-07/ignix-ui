@@ -311,6 +311,7 @@ class ParticleEngine {
     private maxParticles: number;
     private running = false;
     private dpr = 1;
+    private textureCache = new Map<string, HTMLCanvasElement>();
     customEmoji: string[] = [];
 
     constructor(canvas: HTMLCanvasElement, maxParticles: number) {
@@ -390,6 +391,31 @@ class ParticleEngine {
         this.animFrame = requestAnimationFrame(loop);
     }
 
+    private getTexture(p: Particle): HTMLCanvasElement {
+        const key = `${p.content}-${p.color}-${p.size}-${this.dpr}`;
+        if (this.textureCache.has(key)) return this.textureCache.get(key)!;
+
+        const offCanvas = document.createElement("canvas");
+        // We create a canvas that's large enough to fit the character at the given size and DPR
+        const renderSize = p.size * 1.5; // Padding for glyph ascender/descender
+        offCanvas.width = renderSize * this.dpr;
+        offCanvas.height = renderSize * this.dpr;
+
+        const offCtx = offCanvas.getContext("2d")!;
+        offCtx.scale(this.dpr, this.dpr);
+
+        offCtx.fillStyle = p.color;
+        offCtx.font = `${p.size}px sans-serif`;
+        offCtx.textAlign = "center";
+        offCtx.textBaseline = "middle";
+
+        // Draw the character in the center of the offscreen canvas
+        offCtx.fillText(p.content, renderSize / 2, renderSize / 2);
+
+        this.textureCache.set(key, offCanvas);
+        return offCanvas;
+    }
+
     private update(now: number) {
         const gravity = 0.15;
         const friction = 0.97;
@@ -447,10 +473,16 @@ class ParticleEngine {
                 this.ctx2d.arc(0, 0, s / 2, 0, Math.PI * 2);
                 this.ctx2d.fill();
             } else {
-                this.ctx2d.font = `${s}px sans-serif`;
-                this.ctx2d.textAlign = "center";
-                this.ctx2d.textBaseline = "middle";
-                this.ctx2d.fillText(p.content, 0, 0);
+                const texture = this.getTexture(p);
+                const drawW = texture.width / this.dpr;
+                const drawH = texture.height / this.dpr;
+                this.ctx2d.drawImage(
+                    texture,
+                    -(drawW * p.scale) / 2,
+                    -(drawH * p.scale) / 2,
+                    drawW * p.scale,
+                    drawH * p.scale
+                );
             }
 
             this.ctx2d.shadowBlur = 0;
