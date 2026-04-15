@@ -186,8 +186,8 @@ describe('DataTable', () => {
 
             fireEvent.click(selectAll);
 
-            const checkboxes = screen.getAllByTestId('checkbox');
 
+            const checkboxes = screen.getAllByTestId('row-checkbox');
             checkboxes.forEach(cb => {
                 expect(cb).toBeChecked();
             });
