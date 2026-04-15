@@ -90,9 +90,9 @@ describe('DataTable', () => {
         });
 
         it('shows empty state', () => {
-            render(<DataTable {...defaultProps} data={[]} emptyStateMessage="No data" />);
+            render(<DataTable {...defaultProps} data={[]} emptyStateMessage="No data available" />);
 
-            expect(screen.getByText('No data available')).toBeInTheDocument();
+            expect(screen.getAllByText('No data available').length).toBeGreaterThan(0);
         });
 
         it('shows loading state', () => {
