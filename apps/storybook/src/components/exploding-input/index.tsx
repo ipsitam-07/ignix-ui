@@ -348,7 +348,7 @@ class ParticleEngine {
             const spreadFactor = preset === "stars" ? 1.4 : preset === "confetti" ? 1.4 : 1.2;
             const vel = getDirectionVelocity(direction, velocityMultiplier, spreadFactor);
 
-            const maxLifeMs = preset === "letters" 
+            const maxLifeMs = preset === "letters"
                 ? 1500 + Math.random() * 1000
                 : 4000 + Math.random() * 2000;
 
@@ -694,7 +694,7 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
         const handleFocus = React.useCallback(
             (e: React.FocusEvent<HTMLInputElement>) => {
                 if (triggerMode === "focus") {
-                    fireExplosion(undefined, 25, 1.5);
+                    setTimeout(() => fireExplosion(undefined, 25, 1.5), 0);
                 }
 
                 if (cursorTrail && !reducedMotion) {
