@@ -1,7 +1,7 @@
 // DataTable.stories.tsx
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { DataTable } from '.';
-import type { Column, BulkAction } from '.';
+import { DataTable } from './';
+import type { Column, BulkAction } from './';
 import {
   PersonIcon,
   BackpackIcon,
@@ -12,7 +12,7 @@ import {
   StarFilledIcon,
   BadgeIcon
 } from "@radix-ui/react-icons";
-import { Avatar } from '../../../components/avatar';
+import { Avatar } from '../../../../components/avatar';
 
 /* ============================================
    META

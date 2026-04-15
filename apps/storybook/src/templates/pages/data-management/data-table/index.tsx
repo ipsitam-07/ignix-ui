@@ -14,8 +14,8 @@ import {
   FileIcon 
 } from '@radix-ui/react-icons';
 import { cva } from 'class-variance-authority';
-import { Checkbox } from '../../../components/checkbox';
-import { cn } from '../../../../utils/cn';
+import { Checkbox } from '../../../../components/checkbox';
+import { cn } from '../../../../../utils/cn';
 
 /* ============================================
   TYPES & INTERFACES
