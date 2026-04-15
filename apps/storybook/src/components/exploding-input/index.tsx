@@ -49,12 +49,12 @@ export interface ExplodingInputHandle {
 //Preset Definitions
 
 const CONFETTI_COLORS = [
-    "hsl(0 90% 60%)",
-    "hsl(45 95% 55%)",
-    "hsl(120 70% 50%)",
-    "hsl(200 90% 55%)",
-    "hsl(280 80% 60%)",
-    "hsl(330 85% 55%)",
+    "hsla(0, 74%, 58%, 1.00)",
+    "hsla(45, 76%, 66%, 1.00)",
+    "hsla(120, 69%, 63%, 1.00)",
+    "hsla(200, 79%, 65%, 1.00)",
+    "hsla(280, 81%, 71%, 1.00)",
+    "hsla(330, 79%, 67%, 1.00)",
 ];
 
 const SPARK_COLORS = [
@@ -345,7 +345,7 @@ class ParticleEngine {
                 ? 2 * speedMultiplier * (2.5 + Math.random() * 2.5)
                 : 2 * speedMultiplier;
 
-            const spreadFactor = preset === "stars" ? 1.4 : preset === "confetti" ? 1.4 : 1.2;
+            const spreadFactor = (preset === "stars" || preset === "confetti") ? 1.4 : preset === "letters" ? 1.8 : 1.2;
             const vel = getDirectionVelocity(direction, velocityMultiplier, spreadFactor);
 
             const maxLifeMs = preset === "letters"
@@ -631,15 +631,15 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
                 let count = overrideCount ?? speedTracker.current.getParticleCount();
 
                 if (preset === "emoji" && !overrideCount) {
-                    count = Math.min(count, 3);
+                    count = Math.floor(Math.random() * 3) + 1
                 }
 
                 if (preset === "confetti" && !overrideCount) {
-                    count = Math.max(3, Math.floor(count * 0.4));
+                    count = Math.floor(Math.random() * 5) + 1
                 }
 
                 if (preset === "letters" && !overrideCount) {
-                    count = Math.min(count, 3);
+                    count = Math.floor(Math.random() * 3) + 1
                 }
 
                 const speed = overrideSpeed ?? speedTracker.current.getSpeedMultiplier();
