@@ -668,11 +668,18 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
                     if (newValue.length > prevValue.length) {
                         const typed = newValue[newValue.length - 1];
                         fireExplosion(typed);
+                    } else if (newValue.length < prevValue.length) {
+                        fireExplosion();
                     }
                 }
 
-                if (triggerMode === "clear" && newValue === "" && prevValue !== "") {
-                    fireExplosion(undefined, 30, 2.0);
+                if (triggerMode === "clear" && newValue.length < prevValue.length) {
+                    speedTracker.current.record();
+                    if (newValue === "") {
+                        fireExplosion(undefined, 30, 2.0);
+                    } else {
+                        fireExplosion();
+                    }
                 }
 
                 prevValueRef.current = newValue;
