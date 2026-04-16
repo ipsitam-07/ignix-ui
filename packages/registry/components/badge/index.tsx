@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, Variants } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { cn } from "../../../utils/cn";
 
 type BadgeBaseProps = {
@@ -32,6 +32,7 @@ const Badge: React.FC<BadgeProps> = ({
   const types = {
     primary: cn(
       "bg-primary text-primary-foreground",
+      "shadow-lg shadow-primary/25",
       "ring-2 ring-primary/20"
     ),
     secondary: cn(
@@ -118,12 +119,12 @@ const Badge: React.FC<BadgeProps> = ({
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
-    <span className="leading-none">{text}</span>
+      <span className="leading-none">{text}</span>
 
-    <div
+      <div
         className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent to-white/20 dark:to-white/10 pointer-events-none"
         aria-hidden="true"
-    />
+      />
     </motion.div>
   );
 
