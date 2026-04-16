@@ -389,6 +389,17 @@
         }
       }
     },
+    "exploding-input": {
+      "name": "Exploding-Input",
+      "description": "An interactive input field that fires animated particles, confetti, and emojis based on user input.",
+      "dependencies": [],
+      "files": {
+        "main": {
+          "path": "components/exploding-input/index.tsx",
+          "type": "component"
+        }
+      }
+    },
     "navbar": {
       "name": "Navbar",
       "description": "A responsive navigation bar with animation",
@@ -1364,7 +1375,9 @@
     "activity-feed-page": {
       "name": "activity-feed-page",
       "description": "A composable activity feed page template with a chronological events list (newest-first), event-type filters, search, relative/absolute timestamps, and pagination or infinite load-more.",
-      "dependencies": ["@radix-ui/react-icons"],
+      "dependencies": [
+        "@radix-ui/react-icons"
+      ],
       "componentDependencies": [
         "button",
         "card",
