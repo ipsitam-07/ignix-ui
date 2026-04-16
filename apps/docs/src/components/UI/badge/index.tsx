@@ -2,16 +2,24 @@ import React from "react";
 import { motion, Variants } from "framer-motion";
 import { cn } from "../../../utils/cn";
 
-type BadgeMode = "inline" | "attached"
-
-interface BadgeProps {
+type BadgeBaseProps = {
   text?: string;
   type?: "primary" | "secondary" | "success" | "warning" | "error";
   variant?: "pulse" | "bounce" | "tinypop";
-  mode?: BadgeMode;
   className?: string;
-  children?: React.ReactNode;
-}
+};
+
+type InlineBadgeProps = BadgeBaseProps & {
+  mode?: "inline";
+  children?: never;
+};
+
+type AttachedBadgeProps = BadgeBaseProps & {
+  mode: "attached";
+  children: React.ReactNode;
+};
+
+type BadgeProps = InlineBadgeProps | AttachedBadgeProps;
 
 const Badge: React.FC<BadgeProps> = ({
   text,
@@ -24,7 +32,6 @@ const Badge: React.FC<BadgeProps> = ({
   const types = {
     primary: cn(
       "bg-primary text-primary-foreground",
-      "shadow-lg shadow-primary/25",
       "ring-2 ring-primary/20"
     ),
     secondary: cn(
@@ -87,7 +94,6 @@ const Badge: React.FC<BadgeProps> = ({
   };
 
   const isAttached = mode === "attached";
-  const isInline = mode === "inline";
 
   // Base styles
   const baseStyles = cn(
@@ -95,9 +101,6 @@ const Badge: React.FC<BadgeProps> = ({
     "rounded-full font-bold tracking-tight",
     "text-xs sm:text-sm px-1.5 sm:px-2 h-5 sm:h-6 min-w-[20px]",
 
-    isInline
-      ? "shadow-none ring-0"
-      : "shadow-lg ring-2",
     types[type],
     className
   );
