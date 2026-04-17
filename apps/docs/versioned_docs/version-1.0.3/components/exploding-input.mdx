@@ -21,8 +21,8 @@ The **ExplodingInput** component is a delightful, interactive input field that r
     ```
   </TabItem>
   <TabItem value="manual" label="Manual">
-    ```tsx
-    import * as React from 'react';
+```tsx
+import * as React from 'react';
 import { cn } from '../../../utils/cn';
 
 const CANVAS_OVERHANG_TOP = 1500;
@@ -62,7 +62,6 @@ export interface ExplodingInputProps extends Omit<React.ComponentProps<"input">,
     cursorTrail?: boolean;
     validate?: (value: string) => boolean;
     maxParticles?: number;
-    cleanup?: boolean;
     audio?: AudioPreset | string;
     explodeRef?: React.Ref<ExplodingInputHandle>;
 }
@@ -813,7 +812,7 @@ ExplodingInput.displayName = "ExplodingInput";
 
 export { ExplodingInput };
 
-    ```
+```
   </TabItem>
 </Tabs>
 
@@ -821,7 +820,10 @@ export { ExplodingInput };
 
 ```tsx
 import { ExplodingInput } from '@ignix-ui/exploding-input';
+```
 
+### Basic Usage
+```tsx
 export default function App() {
   return (
     <ExplodingInput 
@@ -835,15 +837,15 @@ export default function App() {
 
 ## Props
 
-| Prop                 | Type                                                                     | Default     | Description                                                                 |
-|----------------------|--------------------------------------------------------------------------|-------------|-----------------------------------------------------------------------------|
-| `triggerMode`        | `"keypress" \| "submit" \| "focus" \| "clear" \| "custom"`               | `"keypress"`| Modes that trigger the explosion                          |
-| `particlePreset`     | `"confetti" \| "sparks" \| "stars" \| "bubbles" \| "letters" \| "emoji"` | `"confetti"`| Type of spawned particles                               |
-| `customEmoji`        | `string[]`                                                               | `DEFAULT_EMOJI` | Array of emoji characters                               |
-| `characterParticles` | `boolean`                                                                | `false`     | If true, the typed character itself becomes the explosion particle        |
-| `direction`          | `"up" \| "down" \| "left" \| "right" \| "radial" \| "burst"`             | `"up"`      | Direction of the particle spread                        |
-| `cursorTrail`        | `boolean`                                                                | `false`     | Trailing spark effect continuously while focused        |
-| `validate`           | `(value: string) => boolean`                                             | `undefined` | Changes particle color to green/red based on validity     |
-| `maxParticles`       | `number`                                                                 | `400`       | Max canvas particles alive at once before pooling starts |
-| `audio`              | `"pop" \| "whoosh" \| "sparkle" \| string`                               | `undefined` | Triggers a sound effect hook |
-| `explodeRef`         | `React.Ref<ExplodingInputHandle>`                                        | `undefined` | Ref used to manually trigger the `explode()` instance method              |
+| Prop                 | Type                                                                     | Default     | Description                                                         |
+|----------------------|--------------------------------------------------------------------------|-------------|---------------------------------------------------------------------|
+| `triggerMode`        | `"keypress" \| "submit" \| "focus" \| "clear" \| "custom"`               | `"keypress"`| Modes that trigger the explosion                                    |
+| `particlePreset`     | `"confetti" \| "sparks" \| "stars" \| "bubbles" \| "letters" \| "emoji"` | `"confetti"`| Type of spawned particles                                           |
+| `customEmoji`        | `string[]`                                                               | `DEFAULT_EMOJI` | Array of emoji characters                                       |
+| `characterParticles` | `boolean`                                                                | `false`     | If true, the typed character itself becomes the explosion particle  |
+| `direction`          | `"up" \| "down" \| "left" \| "right" \| "radial" \| "burst"`             | `"up"`      | Direction of the particle spread                                    |
+| `cursorTrail`        | `boolean`                                                                | `false`     | Trailing spark effect continuously while focused                    |
+| `validate`           | `(value: string) => boolean`                                             | `undefined` | Changes particle color to green/red based on validity               |
+| `maxParticles`       | `number`                                                                 | `400`       | Max canvas particles alive at once before pooling starts            |
+| `audio`              | `"pop" \| "whoosh" \| "sparkle" \| string`                               | `undefined` | Triggers a sound effect hook                                        |
+| `explodeRef`         | `React.Ref<ExplodingInputHandle>`                                        | `undefined` | Ref used to manually trigger the `explode()` instance method        |

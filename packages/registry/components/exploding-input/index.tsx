@@ -38,7 +38,6 @@ export interface ExplodingInputProps extends Omit<React.ComponentProps<"input">,
     cursorTrail?: boolean;
     validate?: (value: string) => boolean;
     maxParticles?: number;
-    cleanup?: boolean;
     audio?: AudioPreset | string;
     explodeRef?: React.Ref<ExplodingInputHandle>;
 }
