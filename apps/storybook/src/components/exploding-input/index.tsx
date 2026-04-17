@@ -535,7 +535,7 @@ function getCursorPixelPosition(
     const scrollLeft = input.scrollLeft || 0;
 
     return {
-        x: inputRect.left - containerRect.left + paddingLeft + textWidth - scrollLeft,
+        x: inputRect.left - containerRect.left + paddingLeft + textWidth - scrollLeft + CANVAS_OVERHANG,
         y: inputRect.top - containerRect.top + inputRect.height / 2 + CANVAS_OVERHANG,
     };
 }
@@ -614,9 +614,9 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
             const resize = () => {
                 const dpr = window.devicePixelRatio || 1;
                 const rect = container.getBoundingClientRect();
-                canvas.width = rect.width * dpr;
+                canvas.width = (rect.width + CANVAS_OVERHANG * 2) * dpr;
                 canvas.height = (rect.height + CANVAS_OVERHANG * 2) * dpr;
-                canvas.style.width = `${rect.width}px`;
+                canvas.style.width = `${rect.width + CANVAS_OVERHANG * 2}px`;
                 canvas.style.height = `${rect.height + CANVAS_OVERHANG * 2}px`;
                 engine.setDpr(dpr);
             };
@@ -660,16 +660,10 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
                 const charToUse = characterParticles && char ? char : undefined;
                 let count = overrideCount ?? speedTracker.current.getParticleCount();
 
-                if (preset === "emoji" && !overrideCount) {
+                if (preset !== "confetti" && !overrideCount) {
                     count = Math.floor(Math.random() * 3) + 1
-                }
-
-                if (preset === "confetti" && !overrideCount) {
+                } else {
                     count = Math.floor(Math.random() * 5) + 1
-                }
-
-                if (preset === "letters" && !overrideCount) {
-                    count = Math.floor(Math.random() * 3) + 1
                 }
 
                 const speed = overrideSpeed ?? speedTracker.current.getSpeedMultiplier();
@@ -766,7 +760,11 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
                     ref={canvasRef}
                     aria-hidden="true"
                     className="pointer-events-none absolute left-0 z-10"
-                    style={{ top: -CANVAS_OVERHANG }}
+                    style={{
+                        top: -CANVAS_OVERHANG,
+                        left: -CANVAS_OVERHANG
+
+                    }}
                 />
                 <input
                     ref={inputRef}

@@ -495,6 +495,8 @@ describe('Typing speed tracker', () => {
 
 describe('Texture caching in ParticleEngine', () => {
     it('reuses cached canvas instead of creating a new one for same glyph', async () => {
+        const _random = Math.random;
+        Math.random = () => 0.5;
         const createElementSpy = vi.spyOn(document, 'createElement');
         const user = userEvent.setup();
         renderInput({ particlePreset: 'letters', triggerMode: 'keypress' });
@@ -506,6 +508,7 @@ describe('Texture caching in ParticleEngine', () => {
         );
         expect(canvasCalls.length).toBeLessThan(6);
         createElementSpy.mockRestore();
+        Math.random = _random;
     });
 });
 
