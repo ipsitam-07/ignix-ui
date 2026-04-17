@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { cn } from '../../../utils/cn';
 
-const CANVAS_OVERHANG = 1500;
+const CANVAS_OVERHANG_TOP = 1500;
+const CANVAS_OVERHANG_LEFT = 300
 
 //Types
 
@@ -343,10 +344,10 @@ class ParticleEngine {
             const p = getPresetParticle(preset, char, this.customEmoji);
 
             const velocityMultiplier = preset === "emoji"
-                ? 2 * speedMultiplier * (2.5 + Math.random() * 2.5)
-                : 2 * speedMultiplier;
+                ? 2 * speedMultiplier * (2.0 + Math.random() * 2.0)
+                : 2 * speedMultiplier * (1.0 + Math.random() * 1.0);
 
-            const spreadFactor = (preset === "stars" || preset === "confetti") ? 1.4 : preset === "letters" ? 1.8 : 1.2;
+            const spreadFactor = (preset === "stars" || preset === "confetti") ? 1.4 : preset === "letters" ? 2.5 : 1.2;
             const vel = getDirectionVelocity(direction, velocityMultiplier, spreadFactor);
 
             const maxLifeMs = preset === "letters"
@@ -535,8 +536,8 @@ function getCursorPixelPosition(
     const scrollLeft = input.scrollLeft || 0;
 
     return {
-        x: inputRect.left - containerRect.left + paddingLeft + textWidth - scrollLeft + CANVAS_OVERHANG,
-        y: inputRect.top - containerRect.top + inputRect.height / 2 + CANVAS_OVERHANG,
+        x: inputRect.left - containerRect.left + paddingLeft + textWidth - scrollLeft + CANVAS_OVERHANG_LEFT,
+        y: inputRect.top - containerRect.top + inputRect.height / 2 + CANVAS_OVERHANG_TOP,
     };
 }
 
@@ -614,10 +615,10 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
             const resize = () => {
                 const dpr = window.devicePixelRatio || 1;
                 const rect = container.getBoundingClientRect();
-                canvas.width = (rect.width + CANVAS_OVERHANG * 2) * dpr;
-                canvas.height = (rect.height + CANVAS_OVERHANG * 2) * dpr;
-                canvas.style.width = `${rect.width + CANVAS_OVERHANG * 2}px`;
-                canvas.style.height = `${rect.height + CANVAS_OVERHANG * 2}px`;
+                canvas.width = (rect.width + CANVAS_OVERHANG_LEFT * 2) * dpr;
+                canvas.height = (rect.height + CANVAS_OVERHANG_TOP * 2) * dpr;
+                canvas.style.width = `${rect.width + CANVAS_OVERHANG_LEFT * 2}px`;
+                canvas.style.height = `${rect.height + CANVAS_OVERHANG_TOP * 2}px`;
                 engine.setDpr(dpr);
             };
             resize();
@@ -761,8 +762,8 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
                     aria-hidden="true"
                     className="pointer-events-none absolute left-0 z-10"
                     style={{
-                        top: -CANVAS_OVERHANG,
-                        left: -CANVAS_OVERHANG
+                        top: -CANVAS_OVERHANG_TOP,
+                        left: -CANVAS_OVERHANG_LEFT
 
                     }}
                 />
