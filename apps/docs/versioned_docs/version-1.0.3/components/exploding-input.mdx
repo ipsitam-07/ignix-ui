@@ -8,7 +8,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import ExplodingInputDemo from '@site/src/components/Demo/ExplodingInputDemo';
 
-The `ExplodingInput` component is a delightful, interactive input field that renders performant canvas-based particle explosions as the user types. It features typing-speed detection, cursor tracking, physics-based animations, and optional audio effects, all optimized using `requestAnimationFrame`, reduced-motion media queries, and off-screen texture rendering.
+The **ExplodingInput** component is a delightful, interactive input field that renders performant canvas-based particle explosions as the user types.
 
 <ExplodingInputDemo />
 
@@ -25,7 +25,8 @@ The `ExplodingInput` component is a delightful, interactive input field that ren
     import * as React from 'react';
 import { cn } from '../../../utils/cn';
 
-const CANVAS_OVERHANG = 1500;
+const CANVAS_OVERHANG_TOP = 1500;
+const CANVAS_OVERHANG_LEFT = 300
 
 //Types
 
@@ -367,10 +368,10 @@ class ParticleEngine {
             const p = getPresetParticle(preset, char, this.customEmoji);
 
             const velocityMultiplier = preset === "emoji"
-                ? 2 * speedMultiplier * (2.5 + Math.random() * 2.5)
-                : 2 * speedMultiplier;
+                ? 2 * speedMultiplier * (2.0 + Math.random() * 2.0)
+                : 2 * speedMultiplier * (1.0 + Math.random() * 1.0);
 
-            const spreadFactor = (preset === "stars" || preset === "confetti") ? 1.4 : preset === "letters" ? 1.8 : 1.2;
+            const spreadFactor = (preset === "stars" || preset === "confetti") ? 1.4 : preset === "letters" ? 2.5 : 1.2;
             const vel = getDirectionVelocity(direction, velocityMultiplier, spreadFactor);
 
             const maxLifeMs = preset === "letters"
@@ -559,8 +560,8 @@ function getCursorPixelPosition(
     const scrollLeft = input.scrollLeft || 0;
 
     return {
-        x: inputRect.left - containerRect.left + paddingLeft + textWidth - scrollLeft + CANVAS_OVERHANG,
-        y: inputRect.top - containerRect.top + inputRect.height / 2 + CANVAS_OVERHANG,
+        x: inputRect.left - containerRect.left + paddingLeft + textWidth - scrollLeft + CANVAS_OVERHANG_LEFT,
+        y: inputRect.top - containerRect.top + inputRect.height / 2 + CANVAS_OVERHANG_TOP,
     };
 }
 
@@ -638,10 +639,10 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
             const resize = () => {
                 const dpr = window.devicePixelRatio || 1;
                 const rect = container.getBoundingClientRect();
-                canvas.width = (rect.width + CANVAS_OVERHANG * 2) * dpr;
-                canvas.height = (rect.height + CANVAS_OVERHANG * 2) * dpr;
-                canvas.style.width = `${rect.width + CANVAS_OVERHANG * 2}px`;
-                canvas.style.height = `${rect.height + CANVAS_OVERHANG * 2}px`;
+                canvas.width = (rect.width + CANVAS_OVERHANG_LEFT * 2) * dpr;
+                canvas.height = (rect.height + CANVAS_OVERHANG_TOP * 2) * dpr;
+                canvas.style.width = `${rect.width + CANVAS_OVERHANG_LEFT * 2}px`;
+                canvas.style.height = `${rect.height + CANVAS_OVERHANG_TOP * 2}px`;
                 engine.setDpr(dpr);
             };
             resize();
@@ -785,8 +786,8 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
                     aria-hidden="true"
                     className="pointer-events-none absolute left-0 z-10"
                     style={{
-                        top: -CANVAS_OVERHANG,
-                        left: -CANVAS_OVERHANG
+                        top: -CANVAS_OVERHANG_TOP,
+                        left: -CANVAS_OVERHANG_LEFT
 
                     }}
                 />
@@ -834,17 +835,15 @@ export default function App() {
 
 ## Props
 
-The `ExplodingInput` accepts all standard standard HTML `<input>` attributes, plus the following specialized configuration options:
-
 | Prop                 | Type                                                                     | Default     | Description                                                                 |
 |----------------------|--------------------------------------------------------------------------|-------------|-----------------------------------------------------------------------------|
-| `triggerMode`        | `"keypress" \| "submit" \| "focus" \| "clear" \| "custom"`               | `"keypress"`| Determines what action triggers the explosion.                              |
-| `particlePreset`     | `"confetti" \| "sparks" \| "stars" \| "bubbles" \| "letters" \| "emoji"` | `"confetti"`| Specifies the visual style of the spawned particles.                        |
-| `customEmoji`        | `string[]`                                                               | `DEFAULT_EMOJI` | An array of emoji characters to use when `particlePreset="emoji"`.      |
-| `characterParticles` | `boolean`                                                                | `false`     | If true, the typed character itself becomes the explosion particle.         |
-| `direction`          | `"up" \| "down" \| "left" \| "right" \| "radial" \| "burst"`             | `"up"`      | Sets the direction velocity of the particle spread.                         |
-| `cursorTrail`        | `boolean`                                                                | `false`     | Whether to spawn a trailing spark effect continuously while focused.        |
-| `validate`           | `(value: string) => boolean`                                             | `undefined` | A function that changes particle color to green/red based on validity.      |
-| `maxParticles`       | `number`                                                                 | `400`       | The maximum number of canvas particles alive at once before pooling starts. |
-| `audio`              | `"pop" \| "whoosh" \| "sparkle" \| string`                               | `undefined` | Triggers a sound effect hook. Can be a builtin preset or a URL to an `.mp3`/`.wav`. |
-| `explodeRef`         | `React.Ref<ExplodingInputHandle>`                                        | `undefined` | Ref used to manually trigger the `explode()` instance method.               |
+| `triggerMode`        | `"keypress" \| "submit" \| "focus" \| "clear" \| "custom"`               | `"keypress"`| Modes that trigger the explosion                          |
+| `particlePreset`     | `"confetti" \| "sparks" \| "stars" \| "bubbles" \| "letters" \| "emoji"` | `"confetti"`| Type of spawned particles                               |
+| `customEmoji`        | `string[]`                                                               | `DEFAULT_EMOJI` | Array of emoji characters                               |
+| `characterParticles` | `boolean`                                                                | `false`     | If true, the typed character itself becomes the explosion particle        |
+| `direction`          | `"up" \| "down" \| "left" \| "right" \| "radial" \| "burst"`             | `"up"`      | Direction of the particle spread                        |
+| `cursorTrail`        | `boolean`                                                                | `false`     | Trailing spark effect continuously while focused        |
+| `validate`           | `(value: string) => boolean`                                             | `undefined` | Changes particle color to green/red based on validity     |
+| `maxParticles`       | `number`                                                                 | `400`       | Max canvas particles alive at once before pooling starts |
+| `audio`              | `"pop" \| "whoosh" \| "sparkle" \| string`                               | `undefined` | Triggers a sound effect hook |
+| `explodeRef`         | `React.Ref<ExplodingInputHandle>`                                        | `undefined` | Ref used to manually trigger the `explode()` instance method              |
