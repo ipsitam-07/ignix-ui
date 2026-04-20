@@ -392,7 +392,7 @@ export const AdvancedTable: React.FC<AdvancedTableProps> = ({
         </div>
 
         <div className="w-full max-w-full overflow-x-auto">
-          <table 
+          <table
             className="min-w-[640px] w-full border-collapse text-sm [&_td]:border-none [&_th]:border-x-0 [&_th]:border-t-0"
             style={{ display: "table", width: "100%" }}
           >
