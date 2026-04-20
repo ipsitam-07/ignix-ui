@@ -196,7 +196,12 @@ class AudioManager {
     }
 
     private getCtx(): AudioContext {
-        if (!this.ctx) this.ctx = new AudioContext();
+        if (!this.ctx) {
+            if (typeof window === "undefined" || !window.AudioContext) {
+                throw new Error("Web Audio API is not available");
+            }
+            this.ctx = new AudioContext();
+        }
         return this.ctx;
     }
 
@@ -390,11 +395,16 @@ class ParticleEngine {
     }
 
     private getTexture(p: Particle): HTMLCanvasElement {
-        const key = `${p.content}-${p.color}-${p.size}-${this.dpr}`;
+        const roundedSize = Math.round(p.size);
+        const key = `${p.content}-${p.color}-${roundedSize}-${this.dpr}`;
         if (this.textureCache.has(key)) return this.textureCache.get(key)!;
 
+        if (this.textureCache.size >= 50) {
+            this.textureCache.clear();
+        }
+
         const offCanvas = document.createElement("canvas");
-        const renderSize = p.size * 1.5;
+        const renderSize = roundedSize * 1.5;
         offCanvas.width = renderSize * this.dpr;
         offCanvas.height = renderSize * this.dpr;
 
@@ -402,7 +412,7 @@ class ParticleEngine {
         offCtx.scale(this.dpr, this.dpr);
 
         offCtx.fillStyle = p.color;
-        offCtx.font = `${p.size}px sans-serif`;
+        offCtx.font = `${roundedSize}px sans-serif`;
         offCtx.textAlign = "center";
         offCtx.textBaseline = "middle";
 
@@ -498,6 +508,7 @@ class ParticleEngine {
 
     dispose() {
         this.clear();
+        this.textureCache.clear();
     }
 }
 
@@ -572,6 +583,7 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
             onChange,
             onFocus,
             onKeyDown,
+            onBlur,
             ...props
         },
         ref
@@ -740,12 +752,13 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
             [triggerMode, cursorTrail, reducedMotion, fireExplosion, fireTrailParticle, onFocus]
         );
 
-        const handleBlur = React.useCallback(() => {
+        const handleBlur = React.useCallback((e: React.FocusEvent<HTMLInputElement>) => {
             if (trailTimer.current) {
                 clearTimeout(trailTimer.current);
                 trailTimer.current = null;
             }
-        }, []);
+            onBlur?.(e);
+        }, [onBlur]);
 
         React.useEffect(() => {
             return () => {

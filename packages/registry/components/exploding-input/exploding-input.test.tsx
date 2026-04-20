@@ -6,7 +6,7 @@ import {
     waitFor,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi, describe, it, expect } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ExplodingInput, ExplodingInputHandle } from './index';
 
 // Canvas
@@ -37,6 +37,14 @@ class MockCanvasRenderingContext2D {
 }
 
 const mockCtx = new MockCanvasRenderingContext2D();
+
+beforeEach(() => {
+    vi.clearAllMocks();
+});
+
+afterEach(() => {
+    vi.useRealTimers();
+});
 
 HTMLCanvasElement.prototype.getContext = vi.fn(() => mockCtx) as any;
 
@@ -220,8 +228,7 @@ describe('triggerMode: submit', () => {
         renderInput({ triggerMode: 'submit', onKeyDown });
         const input = getInput();
         await user.type(input, 'test');
-        await waitFor(() => expect(mockCtx.clearRect).toHaveBeenCalled());
-        mockCtx.clearRect.mockClear();
+        expect(mockCtx.clearRect).not.toHaveBeenCalled();
         await user.keyboard('{Enter}');
         await waitFor(() => expect(mockCtx.clearRect).toHaveBeenCalled());
     });
@@ -267,8 +274,7 @@ describe('triggerMode: clear', () => {
         const user = userEvent.setup();
         renderInput({ triggerMode: 'clear' });
         await user.type(getInput(), 'hi');
-        await waitFor(() => expect(mockCtx.clearRect).toHaveBeenCalled());
-        mockCtx.clearRect.mockClear();
+        expect(mockCtx.clearRect).not.toHaveBeenCalled();
         await user.clear(getInput());
         await waitFor(() => expect(mockCtx.clearRect).toHaveBeenCalled());
     });
@@ -277,8 +283,7 @@ describe('triggerMode: clear', () => {
         const user = userEvent.setup();
         renderInput({ triggerMode: 'clear' });
         await user.type(getInput(), 'abc');
-        await waitFor(() => expect(mockCtx.clearRect).toHaveBeenCalled());
-        mockCtx.clearRect.mockClear();
+        expect(mockCtx.clearRect).not.toHaveBeenCalled();
         await user.type(getInput(), '{backspace}');
         await waitFor(() => expect(mockCtx.clearRect).toHaveBeenCalled());
     });

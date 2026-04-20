@@ -46,11 +46,11 @@ const ExplodingInputDemo = () => {
 
   const codeString = `import { ExplodingInput } from '@ignix-ui/exploding-input';
 
-    <ExplodingInput
-      placeholder="${getPlaceholder()}"${renderPropsCode()}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-    />
+  <ExplodingInput
+    placeholder="${getPlaceholder()}"${renderPropsCode()}
+    value={value}
+    onChange={(e) => setValue(e.target.value)}
+  />
 `;
 
   return (
