@@ -320,7 +320,7 @@ class ParticleEngine {
     constructor(canvas: HTMLCanvasElement, maxParticles: number) {
         this.canvas = canvas;
         this.ctx2d = canvas.getContext("2d")!;
-        this.maxParticles = maxParticles;
+        this.maxParticles = Math.max(0, Math.floor(maxParticles || 0));
     }
 
     setDpr(dpr: number) {
@@ -338,6 +338,7 @@ class ParticleEngine {
         colorOverride?: string,
         char?: string
     ) {
+        if (this.maxParticles <= 0) return;
         for (let i = 0; i < count; i++) {
             if (this.particles.length >= this.maxParticles) {
                 this.particles.shift();
