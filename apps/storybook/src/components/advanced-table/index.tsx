@@ -602,10 +602,10 @@ export const AdvancedTable: React.FC<AdvancedTableProps> = ({
   }, [enablePagination, totalPages]);
 
   return (
-    <div className={cn("w-full max-w-full space-y-4  p-4", className)}>
+    <div className={cn("w-full max-w-full flex flex-col rounded-lg border border-border bg-background shadow-sm", className)}>
       {/* Enhanced Filter and Controls Section */}
       {(enableFiltering || enablePagination) && (
-        <div className="flex flex-col gap-4 p-4 bg-muted/30 rounded-lg border border-border">
+        <div className="flex flex-col gap-4 p-4 border-b border-border bg-muted/20">
           {/* Filter Section */}
           {enableFiltering && (
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
@@ -638,7 +638,7 @@ export const AdvancedTable: React.FC<AdvancedTableProps> = ({
 
           {/* Pagination Controls */}
           {enablePagination && (
-            <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-border">
+            <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-border">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-foreground">Rows per page:</span>
                 <select
@@ -660,8 +660,8 @@ export const AdvancedTable: React.FC<AdvancedTableProps> = ({
       )}
 
       {/* Summary and responsive table container */}
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+      <div className="flex flex-col">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-xs text-muted-foreground bg-muted/5 border-b border-border">
           <span>
             Showing {startRowIndex}-{endRowIndex} of {totalFilteredCount} matching rows (total dataset: {totalCount})
           </span>
@@ -672,8 +672,11 @@ export const AdvancedTable: React.FC<AdvancedTableProps> = ({
           )}
         </div>
 
-        <div className="w-full max-w-full overflow-x-auto rounded-lg border border-border bg-background">
-          <table className="min-w-[640px] w-full border-collapse text-sm">
+        <div className="w-full max-w-full overflow-x-auto">
+          <table
+            className="min-w-[640px] w-full border-collapse text-sm [&_td]:border-none [&_th]:border-x-0 [&_th]:border-t-0"
+            style={{ display: "table", width: "100%" }}
+          >
             <thead className="bg-muted">
               <tr>
                 {effectiveColumns.map((column) => {
@@ -720,7 +723,7 @@ export const AdvancedTable: React.FC<AdvancedTableProps> = ({
 
         {/* Pagination controls */}
         {enablePagination && totalPages > 1 && (
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-t border-border bg-muted/10">
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
