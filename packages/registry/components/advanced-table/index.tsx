@@ -599,10 +599,10 @@ export const AdvancedTable: React.FC<AdvancedTableProps> = ({
       } else {
         // If clicking the same column, toggle direction
         const newDirection = sortDirection === "asc" ? "desc" : "asc";
-        setSortDirection(newDirection);        
+        setSortDirection(newDirection);
       }
     },
-    [enableSorting, columns,sortKey, sortDirection]
+    [enableSorting, columns, sortKey, sortDirection]
   );
 
   /**
@@ -683,7 +683,7 @@ export const AdvancedTable: React.FC<AdvancedTableProps> = ({
           {enableFiltering && (
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
               <div className="relative flex-1 w-full sm:max-w-md">
-                <div className="relative [&>div.group]:mb-0">
+                <div className="relative [&>div.group]:mb-4 mt-4">
                   <AnimatedInput
                     placeholder={filterPlaceholder}
                     variant="clean"
