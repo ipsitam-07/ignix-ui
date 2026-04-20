@@ -599,6 +599,12 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
         const trailTimer = React.useRef<number | null>(null);
         const prevValueRef = React.useRef("");
 
+        React.useEffect(() => {
+            if (typeof props.value === 'string') {
+                prevValueRef.current = props.value;
+            }
+        }, [props.value]);
+
         React.useImperativeHandle(ref, () => inputRef.current!);
         React.useImperativeHandle(explodeRef, () => ({
             explode: () => fireExplosion(undefined, 40, 2.5),
@@ -740,6 +746,7 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
                 }
 
                 if (cursorTrail && !reducedMotion) {
+                    if (trailTimer.current) clearTimeout(trailTimer.current);
                     const trail = () => {
                         fireTrailParticle();
                         trailTimer.current = window.setTimeout(trail, 80);
