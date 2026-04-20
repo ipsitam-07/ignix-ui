@@ -137,13 +137,13 @@ describe('Rendering', () => {
     });
 
     it('renders a <canvas> element', () => {
-        const { container } = renderInput();
-        expect(container.querySelector('canvas')).toBeInTheDocument();
+        const { baseElement } = renderInput();
+        expect(baseElement.querySelector('canvas')).toBeInTheDocument();
     });
 
     it('canvas has aria-hidden="true"', () => {
-        const { container } = renderInput();
-        expect(container.querySelector('canvas')).toHaveAttribute('aria-hidden', 'true');
+        const { baseElement } = renderInput();
+        expect(baseElement.querySelector('canvas')).toHaveAttribute('aria-hidden', 'true');
     });
 
     it('passes through standard input props (placeholder, disabled)', () => {

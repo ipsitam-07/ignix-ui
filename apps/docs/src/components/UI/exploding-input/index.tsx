@@ -1,8 +1,6 @@
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '../../../utils/cn';
-
-const CANVAS_OVERHANG_TOP = 1500;
-const CANVAS_OVERHANG_LEFT = 300
 
 //Types
 
@@ -109,7 +107,7 @@ function getPresetParticle(
             return {
                 content: randomFrom(customEmoji?.length ? customEmoji : DEFAULT_EMOJI),
                 color: "#000000",
-                size: 28 + Math.random() * 20,
+                size: 22 + Math.random() * 14,
             };
     }
 }
@@ -343,10 +341,10 @@ class ParticleEngine {
             const p = getPresetParticle(preset, char, this.customEmoji);
 
             const velocityMultiplier = preset === "emoji"
-                ? 2 * speedMultiplier * (2.0 + Math.random() * 2.0)
+                ? 2.5 * speedMultiplier * (1.5 + Math.random() * 1.5)
                 : 2 * speedMultiplier * (1.0 + Math.random() * 1.0);
 
-            const spreadFactor = (preset === "stars" || preset === "confetti") ? 1.4 : preset === "letters" ? 2.5 : 1.2;
+            const spreadFactor = (preset === "emoji" || preset === "letters") ? 2.5 : (preset === "stars" || preset === "confetti") ? 1.4 : 1.2;
             const vel = getDirectionVelocity(direction, velocityMultiplier, spreadFactor);
 
             const maxLifeMs = preset === "letters"
@@ -519,11 +517,9 @@ function getMeasureSpan(input: HTMLInputElement): HTMLSpanElement {
 }
 
 function getCursorPixelPosition(
-    input: HTMLInputElement,
-    container: HTMLElement
+    input: HTMLInputElement
 ): { x: number; y: number } {
     const inputRect = input.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
 
     const span = getMeasureSpan(input);
     const pos = input.selectionStart ?? input.value.length;
@@ -535,8 +531,8 @@ function getCursorPixelPosition(
     const scrollLeft = input.scrollLeft || 0;
 
     return {
-        x: inputRect.left - containerRect.left + paddingLeft + textWidth - scrollLeft + CANVAS_OVERHANG_LEFT,
-        y: inputRect.top - containerRect.top + inputRect.height / 2 + CANVAS_OVERHANG_TOP,
+        x: inputRect.left + paddingLeft + textWidth - scrollLeft,
+        y: inputRect.top + inputRect.height / 2,
     };
 }
 
@@ -581,6 +577,7 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
         ref
     ) => {
         const reducedMotion = usePrefersReducedMotion();
+        const [mounted, setMounted] = React.useState(false);
         const containerRef = React.useRef<HTMLDivElement>(null);
         const canvasRef = React.useRef<HTMLCanvasElement>(null);
         const inputRef = React.useRef<HTMLInputElement>(null);
@@ -595,6 +592,8 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
             explode: () => fireExplosion(undefined, 40, 2.5),
         }));
 
+        React.useEffect(() => { setMounted(true); }, []);
+
         React.useEffect(() => {
             if (engineRef.current) {
                 engineRef.current.customEmoji = customEmoji ?? [];
@@ -602,10 +601,9 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
         }, [customEmoji]);
 
         React.useEffect(() => {
-            if (reducedMotion) return;
+            if (reducedMotion || !mounted) return;
             const canvas = canvasRef.current;
-            const container = containerRef.current;
-            if (!canvas || !container) return;
+            if (!canvas) return;
 
             const engine = new ParticleEngine(canvas, maxParticles);
             engine.customEmoji = customEmoji ?? [];
@@ -613,24 +611,22 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
 
             const resize = () => {
                 const dpr = window.devicePixelRatio || 1;
-                const rect = container.getBoundingClientRect();
-                canvas.width = (rect.width + CANVAS_OVERHANG_LEFT * 2) * dpr;
-                canvas.height = (rect.height + CANVAS_OVERHANG_TOP * 2) * dpr;
-                canvas.style.width = `${rect.width + CANVAS_OVERHANG_LEFT * 2}px`;
-                canvas.style.height = `${rect.height + CANVAS_OVERHANG_TOP * 2}px`;
+                canvas.width = window.innerWidth * dpr;
+                canvas.height = window.innerHeight * dpr;
+                canvas.style.width = `${window.innerWidth}px`;
+                canvas.style.height = `${window.innerHeight}px`;
                 engine.setDpr(dpr);
             };
             resize();
 
-            const ro = new ResizeObserver(resize);
-            ro.observe(container);
+            window.addEventListener('resize', resize);
 
             return () => {
-                ro.disconnect();
+                window.removeEventListener('resize', resize);
                 engineRef.current?.dispose();
                 engineRef.current = null;
             };
-        }, [reducedMotion, maxParticles]);
+        }, [reducedMotion, maxParticles, mounted]);
 
         React.useEffect(() => {
             if (!audio || reducedMotion) {
@@ -653,9 +649,9 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
 
         const fireExplosion = React.useCallback(
             (char?: string, overrideCount?: number, overrideSpeed?: number) => {
-                if (reducedMotion || !engineRef.current || !inputRef.current || !containerRef.current) return;
+                if (reducedMotion || !engineRef.current || !inputRef.current) return;
 
-                const pos = getCursorPixelPosition(inputRef.current, containerRef.current);
+                const pos = getCursorPixelPosition(inputRef.current);
                 const preset = characterParticles && char ? "letters" : particlePreset;
                 const charToUse = characterParticles && char ? char : undefined;
                 let count = overrideCount ?? speedTracker.current.getParticleCount();
@@ -676,8 +672,8 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
         );
 
         const fireTrailParticle = React.useCallback(() => {
-            if (reducedMotion || !engineRef.current || !inputRef.current || !containerRef.current) return;
-            const pos = getCursorPixelPosition(inputRef.current, containerRef.current);
+            if (reducedMotion || !engineRef.current || !inputRef.current) return;
+            const pos = getCursorPixelPosition(inputRef.current);
             const color = particlePreset === "emoji" ? undefined : getValidationColor();
             engineRef.current.spawn(pos.x, pos.y, 1, "sparks", "radial", 0.3, color);
         }, [reducedMotion, particlePreset, getValidationColor]);
@@ -756,16 +752,14 @@ const ExplodingInput = React.forwardRef<HTMLInputElement, ExplodingInputProps>(
 
         return (
             <div ref={containerRef} className="relative inline-block w-full overflow-visible">
-                <canvas
-                    ref={canvasRef}
-                    aria-hidden="true"
-                    className="pointer-events-none absolute left-0 z-10"
-                    style={{
-                        top: -CANVAS_OVERHANG_TOP,
-                        left: -CANVAS_OVERHANG_LEFT
-
-                    }}
-                />
+                {mounted && typeof document !== "undefined" && createPortal(
+                    <canvas
+                        ref={canvasRef}
+                        aria-hidden="true"
+                        className="pointer-events-none fixed inset-0 z-50"
+                    />,
+                    document.body
+                )}
                 <input
                     ref={inputRef}
                     type={type}

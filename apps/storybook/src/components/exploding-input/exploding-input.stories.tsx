@@ -64,6 +64,15 @@ It supports multiple interactive modes, customized presets, directional animatio
             description: "Maximum particles on screen at once to avoid lag.",
         },
     },
+    decorators: [
+        (Story) => (
+            <div className="flex min-h-[500px] w-full items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 p-8 dark:border-slate-800 dark:bg-slate-900/50">
+                <div className="w-full max-w-md">
+                    <Story />
+                </div>
+            </div>
+        ),
+    ],
 };
 export default meta;
 
@@ -89,7 +98,7 @@ export const BurstFire: Story = {
     },
 };
 
-export const RainyDay: Story = {
+export const Clear: Story = {
     args: {
         placeholder: "Type then backspace everything...",
         triggerMode: "clear",
@@ -120,18 +129,24 @@ export const ValidationPlayground: Story = {
         };
 
         return (
-            <div className="space-y-4">
-                <ExplodingInput
-                    {...args}
-                    placeholder="Enter a secure password (8+ chars, 1 number)..."
-                    triggerMode="keypress"
-                    particlePreset="confetti"
-                    direction="radial"
-                    validate={validate}
-                    audio="pop"
-                />
-                <p className={`text-xs font-semibold ${isValid ? 'text-green-500' : 'text-slate-400'}`}>
-                    {isValid ? "✨ Password looks strong!" : "Enter 8 characters with at least one number."}
+            <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+                <div className="space-y-1">
+                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Create Password
+                    </label>
+                    <ExplodingInput
+                        {...args}
+                        placeholder="8+ chars, 1 number..."
+                        triggerMode="keypress"
+                        particlePreset="confetti"
+                        direction="radial"
+                        validate={validate}
+                        audio="pop"
+                        type="password"
+                    />
+                </div>
+                <p className={`text-sm font-medium transition-colors ${isValid ? 'text-emerald-500' : 'text-slate-500 dark:text-slate-400'}`}>
+                    {isValid ? "✨ Password meets requirements!" : "Need 8 characters and 1 number."}
                 </p>
             </div>
         );
@@ -153,11 +168,11 @@ export const CustomControl: Story = {
         const explodeRef = useRef<ExplodingInputHandle>(null);
 
         return (
-            <div className="flex gap-3 items-center w-full">
+            <div className="flex w-full items-center gap-3">
                 <ExplodingInput
                     {...args}
                     explodeRef={explodeRef}
-                    placeholder="Control explicitly..."
+                    placeholder="Explicit control..."
                     triggerMode="custom"
                     particlePreset="bubbles"
                     direction="burst"
@@ -165,7 +180,7 @@ export const CustomControl: Story = {
                 />
                 <button
                     onClick={() => explodeRef.current?.explode()}
-                    className="shrink-0 px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg shadow-sm hover:bg-indigo-700 active:scale-95 transition-all"
+                    className="shrink-0 rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
                 >
                     Fire!
                 </button>
@@ -182,5 +197,47 @@ export const CuratedEmoji: Story = {
         customEmoji: ["💖", "✨", "🔥", "🦄"],
         direction: "up",
         audio: "sparkle",
+    },
+};
+
+export const AllVariants: Story = {
+    render: (args) => {
+        const explodeRef = useRef<ExplodingInputHandle>(null);
+        return (
+            <div className="flex w-full flex-col gap-6">
+                <div className="space-y-1">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Confetti Up (Keypress)</label>
+                    <ExplodingInput {...args} placeholder="Type to pop..." triggerMode="keypress" particlePreset="confetti" direction="up" audio="pop" />
+                </div>
+                <div className="space-y-1">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Sparks Radial (Focus Trail)</label>
+                    <ExplodingInput {...args} placeholder="Click to focus..." triggerMode="focus" particlePreset="sparks" cursorTrail direction="radial" audio="sparkle" />
+                </div>
+                <div className="space-y-1">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Emoji Down (Clear mode)</label>
+                    <ExplodingInput {...args} placeholder="Type, then backspace all..." triggerMode="clear" particlePreset="emoji" direction="down" audio="pop" />
+                </div>
+                <div className="space-y-1">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Letters Burst (Keypress)</label>
+                    <ExplodingInput {...args} placeholder="Type to spawn characters..." triggerMode="keypress" characterParticles direction="burst" audio="whoosh" />
+                </div>
+                <div className="space-y-1">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Stars Left (Submit / Enter)</label>
+                    <ExplodingInput {...args} placeholder="Type and press Enter..." triggerMode="submit" particlePreset="stars" direction="left" audio="sparkle" />
+                </div>
+                <div className="space-y-1 flex flex-col">
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Bubbles Right (Custom Trigger)</label>
+                    <div className="flex gap-2">
+                        <ExplodingInput {...args} explodeRef={explodeRef} placeholder="Wait for click..." triggerMode="custom" particlePreset="bubbles" direction="right" audio="pop" />
+                        <button
+                            onClick={() => explodeRef.current?.explode()}
+                            className="shrink-0 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                        >
+                            Fire
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
     },
 };
