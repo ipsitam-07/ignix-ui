@@ -35,23 +35,44 @@ const ExplodingInputDemo = () => {
 
   const renderPropsCode = () => {
     let propsStr = '';
-    propsStr += `\n      particlePreset="${preset}"`;
-    propsStr += `\n      triggerMode="${triggerMode}"`;
-    propsStr += `\n      direction="${direction}"`;
-    if (audio !== 'none') propsStr += `\n      audio="${audio}"`;
-    if (characterParticles) propsStr += `\n      characterParticles={true}`;
-    if (cursorTrail) propsStr += `\n      cursorTrail={true}`;
+    propsStr += `\n  particlePreset="${preset}"`;
+    propsStr += `\n  triggerMode="${triggerMode}"`;
+    propsStr += `\n  direction="${direction}"`;
+    if (audio !== 'none') propsStr += `\n  audio="${audio}"`;
+    if (characterParticles) propsStr += `\n  characterParticles={true}`;
+    if (cursorTrail) propsStr += `\n  cursorTrail={true}`;
     return propsStr;
   };
 
-  const codeString = `import { ExplodingInput } from '@ignix-ui/exploding-input';
+  const codeString = triggerMode === 'custom'
+    ? `import React, { useRef } from 'react';
+import { ExplodingInput, type ExplodingInputHandle } from '@ignix-ui/exploding-input';
+import { Button } from '@ignix-ui/button';
 
-  <ExplodingInput
-    placeholder="${getPlaceholder()}"${renderPropsCode()}
-    value={value}
-    onChange={(e) => setValue(e.target.value)}
-  />
-`;
+export default function Demo() {
+  const explodeRef = useRef<ExplodingInputHandle>(null);
+
+  return (
+    <div className="flex items-center gap-2">
+      <ExplodingInput
+        explodeRef={explodeRef}
+        placeholder="${getPlaceholder()}"${renderPropsCode().replace(/\n/g, '\n      ')}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      />
+      <Button onClick={() => explodeRef.current?.explode()}>
+        Fire!
+      </Button>
+    </div>
+  );
+}`
+    : `import { ExplodingInput } from '@ignix-ui/exploding-input';
+
+<ExplodingInput
+  placeholder="${getPlaceholder()}"${renderPropsCode()}
+  value={value}
+  onChange={(e) => setValue(e.target.value)}
+/>`;
 
   return (
     <div className="flex flex-col space-y-4 mb-8">
