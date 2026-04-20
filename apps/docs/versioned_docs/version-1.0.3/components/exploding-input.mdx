@@ -863,6 +863,6 @@ export default function App() {
 | `direction`          | `"up" \| "down" \| "left" \| "right" \| "radial" \| "burst"`             | `"up"`      | Direction of the particle spread                                    |
 | `cursorTrail`        | `boolean`                                                                | `false`     | Trailing spark effect continuously while focused                    |
 | `validate`           | `(value: string) => boolean`                                             | `undefined` | Changes particle color to green/red based on validity               |
-| `maxParticles`       | `number`                                                                 | `400`       | Max canvas particles alive at once before pooling starts            |
+| `maxParticles`       | `number`                                                                 | `400`       | Max canvas particles alive at once                                  |
 | `audio`              | `"pop" \| "whoosh" \| "sparkle" \| string`                               | `undefined` | Triggers a sound effect hook                                        |
 | `explodeRef`         | `React.Ref<ExplodingInputHandle>`                                        | `undefined` | Ref used to manually trigger the `explode()` instance method        |
