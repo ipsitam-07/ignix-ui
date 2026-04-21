@@ -55,8 +55,10 @@ export async function runCommand(factory: () => Command, args: string[]) {
   try {
     await program.parseAsync(['node', 'cli', cmd.name(), ...args]);
   } catch (error) {
-    if (error.message && error.message.startsWith('process.exit')) return;
-    if (error.name === 'CommanderError') return;
+    if (error instanceof Error) {
+      if (error.message && error.message.startsWith('process.exit')) return;
+      if (error.name === 'CommanderError') return;
+    }
     throw error;
   }
 }
