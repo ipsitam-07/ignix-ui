@@ -186,17 +186,22 @@ export function createAddCommand() {
 
             // interactive only in human mode
             if (identifiers.length === 0 && !ctx.isYes) {
+              if (availableThemes.length === 0) {
+                logger.warn('No themes available in the registry.');
+                break;
+              }
+
               const response = await prompts({
-                type: 'multiselect',
-                name: 'themes',
-                message: chalk.green('Select themes to install:'),
+                type: 'select',
+                name: 'theme',
+                message: chalk.green('Select a theme to install:'),
                 choices: availableThemes.map((t) => ({
                   title: t.name,
                   value: t.id.toLowerCase(),
                 })),
               });
 
-              identifiers = response.themes || [];
+              identifiers = response.theme ? [response.theme] : [];
             }
 
             // no selection

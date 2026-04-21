@@ -110,16 +110,9 @@ async function showThemeMenu(): Promise<void> {
       }
     }
 
-    console.log(''); // Add spacing before next menu
+    console.log('');
   }
 }
-
-// export const themesCommand = new Command()
-//   .name('themes')
-//   .description(chalk.hex('#FF7F50')('Manage, export, and validate themes.'))
-//   .action(async () => {
-//     await showThemeMenu();
-//   });
 
 export function createThemesCommand() {
   return new Command()
@@ -140,12 +133,10 @@ export function createThemesCommand() {
       try {
         process.chdir(ctx.cwd);
 
-        // 🔇 silent logs for JSON mode
         if (ctx.isJson) {
           logger.setSilent(true);
         }
 
-        // machine-mode: list themes
         if (ctx.isYes && ctx.isJson) {
           const themeService = new ThemeService();
           themeService.setSilent?.(true);
@@ -171,7 +162,6 @@ export function createThemesCommand() {
           return;
         }
 
-        // normal interactive mode
         await showThemeMenu();
       } catch (error) {
         if (ctx.isJson) {

@@ -159,9 +159,9 @@ async function startInteractiveCLI(): Promise<void> {
             hint: '- Space to select. Return to submit',
           });
 
-          const identifiers = response.components ? [response.components] : [];
+          const identifiers = response.components || [];
 
-          if (identifiers && identifiers.length > 0) {
+          if (identifiers.length > 0) {
             await createAddCommand().parseAsync(['node', 'ignix', 'component', ...identifiers]);
           } else {
             logger.info('No components selected.');
