@@ -1,3 +1,4 @@
 npx lint-staged
 
 pnpm vitest packages/registry
+pnpm --filter @mindfiredigital/ignix-cli test

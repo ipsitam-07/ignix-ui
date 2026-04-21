@@ -10,7 +10,7 @@ type InputValues = {
 
 export function InputBasicDemo(): ReactElement {
   const [value, setValue] = useState<string>('');
-  
+
   return (
     <AnimatedInput
       placeholder="Type something..."

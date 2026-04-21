@@ -60,6 +60,9 @@ jobs:
       - name: Run Unit tests
         run: pnpm vitest packages/registry/components
 
+      - name: Run CLI tests
+        run: pnpm --filter @mindfiredigital/ignix-cli test
+
       - name: Log scope status
         run: echo "🔍 CI job executed because valid scope was found in commit message"
 
