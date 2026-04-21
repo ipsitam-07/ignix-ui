@@ -88,9 +88,13 @@ async function showThemeMenu(): Promise<void> {
   }
 }
 
-export const templateCommand = new Command()
-  .name('template')
-  .description(chalk.hex('#FF7F50')('Select the Template category'))
-  .action(async () => {
-    await showThemeMenu();
-  });
+export function createTemplateCommand() {
+  return new Command()
+    .name('template')
+    .description(chalk.hex('#FF7F50')('Select the Template category'))
+    .action(async () => {
+      await showThemeMenu();
+    });
+}
+
+export const templateCommand = createTemplateCommand();

@@ -73,121 +73,125 @@ function extractVersionFromArgs(args: string[] | undefined): string | undefined 
   return undefined;
 }
 
-export const mcpStatusCommand = new Command()
-  .name('status')
-  .description('Check MCP configuration status across all clients')
-  .option('--json', 'Machine output')
-  .action(async (opts) => {
-    const clients = [
-      { name: 'Cursor', clientId: 'cursor' },
-      { name: 'Claude Desktop', clientId: 'claude' },
-      { name: 'VS Code', clientId: 'vscode' },
-      { name: 'Windsurf', clientId: 'windsurf' },
-    ];
+export function createMcpStatusCommand() {
+  return new Command()
+    .name('status')
+    .description('Check MCP configuration status across all clients')
+    .option('--json', 'Machine output')
+    .action(async (opts) => {
+      const clients = [
+        { name: 'Cursor', clientId: 'cursor' },
+        { name: 'Claude Desktop', clientId: 'claude' },
+        { name: 'VS Code', clientId: 'vscode' },
+        { name: 'Windsurf', clientId: 'windsurf' },
+      ];
 
-    const statuses: ClientStatus[] = [];
-    const latestVersion = await getLatestVersion();
+      const statuses: ClientStatus[] = [];
+      const latestVersion = await getLatestVersion();
 
-    for (const client of clients) {
-      const configPath = getConfigPath(client.clientId);
-      if (!configPath) {
-        statuses.push({
-          name: client.name,
-          configured: false,
-          status: 'error',
-          message: `${client.name} → Unknown client type`,
-        });
-        continue;
-      }
-
-      const fullPath = path.resolve(configPath);
-      const exists = await fs.pathExists(fullPath);
-
-      if (!exists) {
-        statuses.push({
-          name: client.name,
-          configured: false,
-          status: 'not-found',
-          message: `${client.name} → ${configPath} (not found)`,
-        });
-        continue;
-      }
-
-      try {
-        const config = (await fs.readJSON(fullPath)) as ConfigFile;
-        const mcpServers = config.mcpServers || config.servers || {};
-        const ignixConfig = mcpServers.ignix;
-
-        if (!ignixConfig) {
+      for (const client of clients) {
+        const configPath = getConfigPath(client.clientId);
+        if (!configPath) {
           statuses.push({
             name: client.name,
             configured: false,
-            status: 'not-found',
-            message: `${client.name} → Ignix MCP not configured`,
+            status: 'error',
+            message: `${client.name} → Unknown client type`,
           });
           continue;
         }
 
-        const version = extractVersionFromArgs(ignixConfig.args);
-        let status: 'ok' | 'outdated' = 'ok';
+        const fullPath = path.resolve(configPath);
+        const exists = await fs.pathExists(fullPath);
 
-        // FIX: Only check for outdated if we have a valid version and not 'latest'
-        if (version && latestVersion && version !== 'latest' && version !== '1.x') {
-          const cleanVersion = version.replace('^', '');
-          if (semver.lt(cleanVersion, latestVersion)) {
-            status = 'outdated';
+        if (!exists) {
+          statuses.push({
+            name: client.name,
+            configured: false,
+            status: 'not-found',
+            message: `${client.name} → ${configPath} (not found)`,
+          });
+          continue;
+        }
+
+        try {
+          const config = (await fs.readJSON(fullPath)) as ConfigFile;
+          const mcpServers = config.mcpServers || config.servers || {};
+          const ignixConfig = mcpServers.ignix;
+
+          if (!ignixConfig) {
+            statuses.push({
+              name: client.name,
+              configured: false,
+              status: 'not-found',
+              message: `${client.name} → Ignix MCP not configured`,
+            });
+            continue;
           }
+
+          const version = extractVersionFromArgs(ignixConfig.args);
+          let status: 'ok' | 'outdated' = 'ok';
+
+          // FIX: Only check for outdated if we have a valid version and not 'latest'
+          if (version && latestVersion && version !== 'latest' && version !== '1.x') {
+            const cleanVersion = version.replace('^', '');
+            if (semver.lt(cleanVersion, latestVersion)) {
+              status = 'outdated';
+            }
+          }
+
+          statuses.push({
+            name: client.name,
+            configured: true,
+            version,
+            status,
+            message: `${client.name} → ✅ configured${version ? ` (v${version})` : ''}`,
+          });
+        } catch (error) {
+          statuses.push({
+            name: client.name,
+            configured: false,
+            status: 'error',
+            message: `${client.name} → ❌ Error reading config: ${getErrorMessage(error)}`,
+          });
         }
-
-        statuses.push({
-          name: client.name,
-          configured: true,
-          version,
-          status,
-          message: `${client.name} → ✅ configured${version ? ` (v${version})` : ''}`,
-        });
-      } catch (error) {
-        statuses.push({
-          name: client.name,
-          configured: false,
-          status: 'error',
-          message: `${client.name} → ❌ Error reading config: ${getErrorMessage(error)}`,
-        });
       }
-    }
 
-    if (opts.json) {
-      console.log(JSON.stringify({ success: true, clients: statuses }, null, 2));
-    } else {
-      console.log(chalk.bold('\n🔍 Ignix MCP Status\n'));
+      if (opts.json) {
+        console.log(JSON.stringify({ success: true, clients: statuses }, null, 2));
+      } else {
+        console.log(chalk.bold('\n🔍 Ignix MCP Status\n'));
 
-      statuses.forEach((status) => {
-        if (status.status === 'ok') {
-          console.log(chalk.green(status.message));
-        } else if (status.status === 'outdated') {
+        statuses.forEach((status) => {
+          if (status.status === 'ok') {
+            console.log(chalk.green(status.message));
+          } else if (status.status === 'outdated') {
+            console.log(
+              chalk.yellow(
+                `⚠️  ${status.name} → config exists but server version is outdated (${status.version} → ${latestVersion})`
+              )
+            );
+          } else {
+            console.log(chalk.red(`❌ ${status.message}`));
+          }
+        });
+
+        const configuredCount = statuses.filter((s) => s.configured).length;
+        console.log(chalk.gray(`\nConfigured: ${configuredCount}/${statuses.length} clients`));
+
+        if (statuses.some((s) => s.status === 'outdated')) {
           console.log(
-            chalk.yellow(
-              `⚠️  ${status.name} → config exists but server version is outdated (${status.version} → ${latestVersion})`
-            )
+            chalk.cyan('\n💡 Run `npx ignix mcp init --universal` to update all clients\n')
           );
-        } else {
-          console.log(chalk.red(`❌ ${status.message}`));
         }
-      });
 
-      const configuredCount = statuses.filter((s) => s.configured).length;
-      console.log(chalk.gray(`\nConfigured: ${configuredCount}/${statuses.length} clients`));
-
-      if (statuses.some((s) => s.status === 'outdated')) {
-        console.log(
-          chalk.cyan('\n💡 Run `npx ignix mcp init --universal` to update all clients\n')
-        );
+        if (configuredCount === 0) {
+          console.log(
+            chalk.cyan('\n💡 Run `npx ignix mcp init --universal` to configure all clients\n')
+          );
+        }
       }
+    });
+}
 
-      if (configuredCount === 0) {
-        console.log(
-          chalk.cyan('\n💡 Run `npx ignix mcp init --universal` to configure all clients\n')
-        );
-      }
-    }
-  });
+export const mcpStatusCommand = createMcpStatusCommand();

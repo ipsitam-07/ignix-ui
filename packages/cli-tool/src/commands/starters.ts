@@ -157,15 +157,12 @@ export const startersCommandNextjsApp = new Command()
         logger.success = silent;
       }
 
-      // 🔽 existing logic continues here
-      // const spinner = ora('Scaffolding Next.js app...').start();
       const noop = () => {
         return;
       };
       const spinner = ctx.isJson
         ? { start: noop, succeed: noop, fail: noop, text: '' }
         : ora('Scaffolding Next.js app...').start();
-      // try {
       const root = process.cwd();
 
       // 1. Validate that we're in an empty directory or prompt
@@ -220,13 +217,7 @@ export const startersCommandNextjsApp = new Command()
 
       // 16. Install dependencies
       spinner.text = 'Installing dependencies...';
-      // const packageManager = await getPackageManager();
-      // await execa(packageManager, ['install'], {
-      //   cwd: root,
-      //   stdio: ctx.isJson ? 'ignore' : 'inherit',
-      // });
       const packageManager = await getPackageManager();
-
       const installArgs =
         packageManager === 'npm' ? ['install', '--legacy-peer-deps'] : ['install'];
 
@@ -246,16 +237,6 @@ export const startersCommandNextjsApp = new Command()
         logger.info(`2. Open ${chalk.cyan('http://localhost:3000')} in your browser`);
         logger.info(`3. Add components: ${chalk.cyan('npx ignix add <component-name>')}`);
       }
-      // logger.info('\nNext steps:');
-      // logger.info(`1. Start dev server: ${chalk.cyan(`${packageManager} run dev`)}`);
-      // logger.info(`2. Open ${chalk.cyan('http://localhost:3000')} in your browser`);
-      // logger.info(`3. Add components: ${chalk.cyan('npx ignix add <component-name>')}`);
-      // }
-      // catch (e) {
-      //   spinner.fail('Failed to scaffold Next.js app');
-      //   if (e instanceof Error) logger.error(e.message);
-      //   process.exit(1);
-      // }
     } catch (e) {
       if (ctx.isJson) {
         console.log(
@@ -307,9 +288,6 @@ export const startersCommandViteReact = new Command()
         logger.success = silent;
       }
 
-      // 🔽 existing logic continues here
-
-      // const spinner = ora('Scaffolding Vite + React app...').start();
       const noop = () => {
         return;
       };
@@ -317,7 +295,6 @@ export const startersCommandViteReact = new Command()
         ? { start: noop, succeed: noop, fail: noop, text: '' }
         : ora('Scaffolding Vite + React app...').start();
 
-      // try {
       const root = process.cwd();
 
       // 1. Validate that we're in an empty directory or prompt
@@ -372,13 +349,7 @@ export const startersCommandViteReact = new Command()
 
       // 17. Install dependencies
       spinner.text = 'Installing dependencies...';
-      // const packageManager = await getPackageManager();
-      // await execa(packageManager, ['install'], {
-      //   cwd: root,
-      //   stdio: ctx.isJson ? 'ignore' : 'inherit',
-      // });
       const packageManager = await getPackageManager();
-
       const installArgs =
         packageManager === 'npm' ? ['install', '--legacy-peer-deps'] : ['install'];
 
@@ -398,16 +369,6 @@ export const startersCommandViteReact = new Command()
         logger.info(`2. Open ${chalk.cyan('http://localhost:5173')} in your browser`);
         logger.info(`3. Add components: ${chalk.cyan('npx ignix add <component-name>')}`);
       }
-      // logger.info('\nNext steps:');
-      // logger.info(`1. Start dev server: ${chalk.cyan(`${packageManager} run dev`)}`);
-      // logger.info(`2. Open ${chalk.cyan('http://localhost:5173')} in your browser`);
-      // logger.info(`3. Add components: ${chalk.cyan('npx ignix add <component-name>')}`);
-
-      // } catch (e) {
-      //   spinner.fail('Failed to scaffold Vite + React app');
-      //   if (e instanceof Error) logger.error(e.message);
-      //   process.exit(1);
-      // }
     } catch (e) {
       if (ctx.isJson) {
         console.log(

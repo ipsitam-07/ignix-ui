@@ -7,219 +7,182 @@ import { logger } from '../utils/logger';
 import { DependencyService } from '../services/DependencyService';
 import prompts from 'prompts';
 import { ThemeService } from '../services/ThemeService';
+import { loadConfig } from '../utils/config';
 
 const DEFAULT_CONFIG_PATH = 'ignix.config.js';
 
-export const initCommand = new Command()
-  .name('init')
-  .description(chalk.bold(chalk.hex('#FF7A3D')('Initialize Ignix UI in your project.')))
-  .option('-y, --yes', 'Skip prompts')
-  .option('-s, --silent', 'Silent mode')
-  .option('--json', 'Machine output')
-  .option('--cwd <path>', 'Working directory', '.')
-  .action(async (opts) => {
-    const ctx = {
-      isYes: !!opts.yes,
-      isJson: !!opts.json,
-      cwd: path.resolve(opts.cwd || '.'),
-      silent: !!opts.silent,
-    };
+export function createInitCommand() {
+  return new Command()
+    .name('init')
+    .description(chalk.bold(chalk.hex('#FF7A3D')('Initialize Ignix UI in your project.')))
+    .option('-y, --yes', 'Skip prompts')
+    .option('-s, --silent', 'Silent mode')
+    .option('--json', 'Machine output')
+    .option('--cwd <path>', 'Working directory', '.')
+    .action(async (opts) => {
+      const ctx = {
+        isYes: !!opts.yes,
+        isJson: !!opts.json,
+        cwd: path.resolve(opts.cwd || '.'),
+        silent: !!opts.silent,
+      };
 
-    const originalCwd = process.cwd();
-    process.chdir(ctx.cwd);
+      const originalCwd = process.cwd();
+      process.chdir(ctx.cwd);
 
-    type NoopSpinner = {
-      start: () => void;
-      stop: () => void;
-      succeed: (msg?: string) => void;
-      fail: (msg?: string) => void;
-      text: string;
-    };
+      type NoopSpinner = {
+        start: () => void;
+        stop: () => void;
+        succeed: (msg?: string) => void;
+        fail: (msg?: string) => void;
+        text: string;
+      };
 
-    const noop = (): void => {
-      return;
-    };
-
-    const spinner: ReturnType<typeof ora> | NoopSpinner = ctx.isJson
-      ? {
-          start: noop,
-          stop: noop,
-          succeed: noop,
-          fail: noop,
-          text: '',
-        }
-      : ora('Initializing Ignix UI...').start();
-
-    if (ctx.isJson) {
-      const silent = (_msg?: unknown): void => {
+      const noop = (): void => {
         return;
       };
 
-      logger.info = silent;
-      logger.success = silent;
-      logger.warn = silent;
-      logger.error = silent;
-    }
+      const spinner: ReturnType<typeof ora> | NoopSpinner = ctx.isJson
+        ? {
+            start: noop,
+            stop: noop,
+            succeed: noop,
+            fail: noop,
+            text: '',
+          }
+        : ora('Initializing Ignix UI...').start();
 
-    try {
-      // 1. Validate environment
-      await validateEnvironment();
+      if (ctx.isJson) {
+        logger.setSilent(true);
+      }
 
-      // 2. Create project structure
-      await createProjectStructure();
-
-      // 3. Create config files
-      await createConfigFiles();
-
-      // 4. Set up Ignix UI alias
-      await setupIgnixUIAlias();
-
-      // 5. Create directories
-      const configPath = path.resolve(process.cwd(), DEFAULT_CONFIG_PATH);
-
-      // Read the config file as text first to determine its format
-      const configContent = await fs.readFile(configPath, 'utf-8');
-      const isESM =
-        configContent.includes('export default') || configContent.includes('export const');
-
-      let config;
       try {
-        if (isESM) {
-          // For ESM, we need to use dynamic import with file:// URL
-          const fileUrl = `file://${configPath}${
-            path.extname(configPath) === '.mjs' ? '' : '?t=' + Date.now()
-          }`;
-          const module = await import(fileUrl);
-          config = module.default || module;
-        } else {
-          // For CommonJS
-          delete require.cache[require.resolve(configPath)];
-          // Create a temporary file with the config content
-          const tempFile = path.join(process.cwd(), 'temp-config.cjs');
-          await fs.writeFile(
-            tempFile,
-            `module.exports = ${configContent.replace(/^module\.exports\s*=\s*|\s*;?\s*$/g, '')};`
-          );
-          config = require(tempFile);
-          // Clean up the temporary file
-          await fs.remove(tempFile).catch((e) => {
-            logger.warn(`Failed to remove temporary file: ${e}`);
+        // 1. Validate environment
+        await validateEnvironment();
+
+        // 2. Create project structure
+        await createProjectStructure();
+
+        // 3. Create config files
+        await createConfigFiles();
+
+        // 4. Set up Ignix UI alias
+        await setupIgnixUIAlias();
+
+        // 5. Create directories
+        const config = await loadConfig();
+
+        const { componentsDir, themesDir } = config;
+        await fs.ensureDir(path.resolve(componentsDir));
+        await fs.ensureDir(path.resolve(themesDir));
+        logger.success('Created required directories.');
+
+        // Ask about theming setup
+        let setupTheming = true;
+
+        if (!ctx.isYes) {
+          const themingResponse = await prompts({
+            type: 'select',
+            name: 'setupTheming',
+            message: 'Do you want to set up the Ignix theming system? (Recommended)',
+            choices: [
+              { title: 'Yes', value: true },
+              { title: 'No', value: false },
+            ],
           });
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-        logger.error(`Failed to load config: ${errorMessage}`);
-        throw error;
-      }
 
-      const { componentsDir, themesDir } = config;
-      await fs.ensureDir(path.resolve(componentsDir));
-      await fs.ensureDir(path.resolve(themesDir));
-      logger.success('Created required directories.');
-
-      // Ask about theming setup
-      let setupTheming = true;
-
-      if (!ctx.isYes) {
-        const themingResponse = await prompts({
-          type: 'select',
-          name: 'setupTheming',
-          message: 'Do you want to set up the Ignix theming system? (Recommended)',
-          choices: [
-            { title: 'Yes', value: true },
-            { title: 'No', value: false },
-          ],
-        });
-
-        setupTheming = themingResponse.setupTheming;
-      }
-
-      if (setupTheming === true) {
-        spinner.text = 'Setting up theming system...';
-        const themeService = new ThemeService();
-
-        if (ctx.isJson) {
-          themeService.setSilent(true);
+          setupTheming = themingResponse.setupTheming;
         }
 
-        // 1. Ask user to select a preset
-        spinner.text = 'Fetching theme presets...';
-        const availableThemes = await themeService.getAvailableThemes();
-        spinner.stop();
+        if (setupTheming === true) {
+          spinner.text = 'Setting up theming system...';
+          const themeService = new ThemeService();
 
-        if (availableThemes.length > 0) {
-          let themeId = null;
+          if (ctx.isJson) {
+            themeService.setSilent(true);
+          }
 
-          if (!ctx.isYes) {
-            const presetResponse = await prompts({
-              type: 'select',
-              name: 'themeId',
-              message: 'Select a default theme preset to install:',
-              choices: [
-                ...availableThemes.map((t) => ({ title: t.name, value: t.id })),
-                { title: 'None for now', value: null },
-              ],
-            });
+          // 1. Ask user to select a preset
+          spinner.text = 'Fetching theme presets...';
+          const availableThemes = await themeService.getAvailableThemes();
+          spinner.stop();
 
-            themeId = presetResponse?.themeId;
-            if (themeId) {
-              spinner.start('Installing selected theme preset...');
-              await themeService.install(presetResponse.themeId);
+          if (availableThemes.length > 0) {
+            let themeId = null;
+
+            if (!ctx.isYes) {
+              const presetResponse = await prompts({
+                type: 'select',
+                name: 'themeId',
+                message: 'Select a default theme preset to install:',
+                choices: [
+                  ...availableThemes.map((t) => ({ title: t.name, value: t.id })),
+                  { title: 'None for now', value: null },
+                ],
+              });
+
+              themeId = presetResponse?.themeId;
+              if (themeId) {
+                spinner.start('Installing selected theme preset...');
+                await themeService.install(presetResponse.themeId);
+              }
             }
           }
         }
-      }
 
-      // 2. Install dependencies
-      spinner.text = 'Installing required dependencies...';
-      const depService = new DependencyService();
-      await depService.install(['@mindfiredigital/ignix-ui'], false, ctx.isJson);
-      await depService.install(['tailwindcss', 'postcss', 'autoprefixer'], true, ctx.isJson);
+        // 2. Install dependencies
+        spinner.text = 'Installing required dependencies...';
+        const depService = new DependencyService();
+        await depService.install(['@mindfiredigital/ignix-ui'], false, ctx.isJson);
+        await depService.install(['tailwindcss', 'postcss', 'autoprefixer'], true, ctx.isJson);
 
-      spinner.succeed(chalk.green('Ignix UI initialized successfully!'));
-      logger.info('\nNext steps:');
-      logger.info(
-        `1. Wrap your app in the <ThemeProvider> from ${chalk.cyan("'./themes/ThemeProvider'")}`
-      );
-      logger.info(
-        `2. Add components with ${chalk.cyan('npx ignix add component <component-name>')}`
-      );
-      logger.info(`3. Explore themes with ${chalk.cyan('npx ignix themes list')}`);
-
-      if (ctx.isJson) {
-        console.log(
-          JSON.stringify(
-            {
-              success: true,
-              initialized: true,
-            },
-            null,
-            2
-          )
+        spinner.succeed(chalk.green('Ignix UI initialized successfully!'));
+        logger.info('\nNext steps:');
+        logger.info(
+          `1. Wrap your app in the <ThemeProvider> from ${chalk.cyan("'./themes/ThemeProvider'")}`
         );
-      }
-    } catch (error) {
-      spinner.fail?.('Initialization failed.');
-
-      if (ctx.isJson) {
-        console.log(
-          JSON.stringify(
-            {
-              success: false,
-              error: error instanceof Error ? error.message : 'Unknown error',
-            },
-            null,
-            2
-          )
+        logger.info(
+          `2. Add components with ${chalk.cyan('npx ignix add component <component-name>')}`
         );
-      } else {
-        if (error instanceof Error) logger.error(error.message);
-      }
+        logger.info(`3. Explore themes with ${chalk.cyan('npx ignix themes list')}`);
 
-      process.exit(1);
-    }
-    process.chdir(originalCwd);
-  });
+        if (ctx.isJson) {
+          console.log(
+            JSON.stringify(
+              {
+                success: true,
+                initialized: true,
+              },
+              null,
+              2
+            )
+          );
+        }
+      } catch (error) {
+        spinner.fail?.('Initialization failed.');
+
+        if (ctx.isJson) {
+          console.log(
+            JSON.stringify(
+              {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error',
+              },
+              null,
+              2
+            )
+          );
+        } else {
+          if (error instanceof Error) logger.error(error.message);
+        }
+
+        process.exit(1);
+      }
+      process.chdir(originalCwd);
+    });
+}
+
+export const initCommand = createInitCommand();
 
 // Helper functions
 async function validateEnvironment() {

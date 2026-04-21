@@ -1,11 +1,11 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import prompts from 'prompts';
-import { addCommand } from './commands/add';
-import { initCommand } from './commands/init';
-import { listCommand } from './commands/list';
-import { themesCommand } from './commands/theme';
-import { doctorCommand } from './commands/doctor';
+import { createAddCommand } from './commands/add';
+import { createInitCommand } from './commands/init';
+import { createListCommand } from './commands/list';
+import { createThemesCommand } from './commands/theme';
+import { createDoctorCommand } from './commands/doctor';
 import {
   startersCommandMonorepo,
   startersCommandNextjsApp,
@@ -13,10 +13,10 @@ import {
 } from './commands/starters';
 import { logger } from './utils/logger';
 import { RegistryService } from './services/RegistryService';
-import { templateCommand } from './commands/template';
-import { infoCommand } from './commands/info'; // Add this import
-import { mcpInitCommand } from './commands/mcp-init';
-import { mcpStatusCommand } from './commands/mcp-status';
+import { createTemplateCommand } from './commands/template';
+import { createInfoCommand } from './commands/info';
+import { createMcpInitCommand } from './commands/mcp-init';
+import { createMcpStatusCommand } from './commands/mcp-status';
 
 const program = new Command();
 
@@ -25,25 +25,19 @@ const isMcpMode = process.argv.includes('mcp');
 
 program.version(chalk.red('1.0.0'));
 // Register Commands
-program.addCommand(initCommand);
-program.addCommand(addCommand);
-program.addCommand(listCommand);
-program.addCommand(themesCommand);
+program.addCommand(createInitCommand());
+program.addCommand(createAddCommand());
+program.addCommand(createListCommand());
+program.addCommand(createThemesCommand());
 program.addCommand(startersCommandMonorepo);
 program.addCommand(startersCommandNextjsApp);
 program.addCommand(startersCommandViteReact);
-program.addCommand(templateCommand);
-program.addCommand(doctorCommand);
-program.addCommand(infoCommand);
+program.addCommand(createTemplateCommand());
+program.addCommand(createDoctorCommand());
+program.addCommand(createInfoCommand());
 
 const mcpCommand = new Command('mcp').description('Ignix MCP server');
 
-// // default: start server
-// mcpCommand.action(async () => {
-//   await startMcpServer();
-// });
-
-// init command
 mcpCommand
   .command('init')
   .description('Initialize MCP configuration')
@@ -68,7 +62,7 @@ mcpCommand
       args.push('--universal');
     }
 
-    await mcpInitCommand.parseAsync(args);
+    await createMcpInitCommand().parseAsync(args);
   });
 
 // status command
@@ -83,16 +77,8 @@ mcpCommand
       args.push('--json');
     }
 
-    await mcpStatusCommand.parseAsync(args);
+    await createMcpStatusCommand().parseAsync(args);
   });
-
-// explicit start command (optional)
-// mcpCommand
-//   .command('start')
-//   .description('Start Ignix MCP server')
-//   .action(async () => {
-//     await startMcpServer();
-//   });
 
 program.addCommand(mcpCommand);
 
@@ -142,11 +128,11 @@ async function startInteractiveCLI(): Promise<void> {
       }
 
       // Execute the selected command
-      console.log(''); // Add spacing
+      console.log('');
 
       switch (response.action) {
         case 'init': {
-          await initCommand.parseAsync(['node', 'ignix']);
+          await createInitCommand().parseAsync(['node', 'ignix']);
           break;
         }
         case 'add': {
@@ -176,18 +162,18 @@ async function startInteractiveCLI(): Promise<void> {
           const identifiers = response.components ? [response.components] : [];
 
           if (identifiers && identifiers.length > 0) {
-            await addCommand.parseAsync(['node', 'ignix', 'component', ...identifiers]);
+            await createAddCommand().parseAsync(['node', 'ignix', 'component', ...identifiers]);
           } else {
             logger.info('No components selected.');
           }
           break;
         }
         case 'list': {
-          await listCommand.parseAsync(['node', 'ignix', 'component']);
+          await createListCommand().parseAsync(['node', 'ignix', 'component']);
           break;
         }
         case 'themes': {
-          await themesCommand.parseAsync(['node', 'ignix']);
+          await createThemesCommand().parseAsync(['node', 'ignix']);
           break;
         }
 
@@ -213,7 +199,7 @@ async function startInteractiveCLI(): Promise<void> {
           break;
         }
         case 'templates': {
-          await templateCommand.parseAsync(['node', 'ignix', 'templates']);
+          await createTemplateCommand().parseAsync(['node', 'ignix', 'templates']);
           break;
         }
         case 'mcp': {
@@ -230,7 +216,13 @@ async function startInteractiveCLI(): Promise<void> {
           });
 
           if (mcpResponse.action === 'universal') {
-            await mcpInitCommand.parseAsync(['node', 'ignix', 'mcp', 'init', '--universal']);
+            await createMcpInitCommand().parseAsync([
+              'node',
+              'ignix',
+              'mcp',
+              'init',
+              '--universal',
+            ]);
           } else if (mcpResponse.action === 'specific') {
             const clientResponse = await prompts({
               type: 'select',
@@ -244,7 +236,7 @@ async function startInteractiveCLI(): Promise<void> {
               ],
             });
             if (clientResponse.client) {
-              await mcpInitCommand.parseAsync([
+              await createMcpInitCommand().parseAsync([
                 'node',
                 'ignix',
                 'mcp',
@@ -254,7 +246,7 @@ async function startInteractiveCLI(): Promise<void> {
               ]);
             }
           } else if (mcpResponse.action === 'status') {
-            await mcpStatusCommand.parseAsync(['node', 'ignix', 'mcp', 'status']);
+            await createMcpStatusCommand().parseAsync(['node', 'ignix', 'mcp', 'status']);
           }
           break;
         }
@@ -269,17 +261,26 @@ async function startInteractiveCLI(): Promise<void> {
   }
 }
 
+export { program };
+
 // Check if running in interactive mode or with arguments
-if (process.argv.length <= 2 && !isMachineMode && !isMcpMode) {
-  // No arguments provided - start interactive mode
-  startInteractiveCLI().catch((error) => {
-    console.error(chalk.red('Fatal error:'), error);
-    process.exit(1);
-  });
-} else {
-  // Arguments provided - run as normal CLI
-  if (!isMachineMode) {
-    showWelcome();
+async function main() {
+  if (process.argv.length <= 2 && !isMachineMode && !isMcpMode) {
+    // No arguments provided - start interactive mode
+    await startInteractiveCLI().catch((error) => {
+      console.error(chalk.red('Fatal error:'), error);
+      process.exit(1);
+    });
+  } else {
+    // Arguments provided - run as normal CLI
+    if (!isMachineMode) {
+      showWelcome();
+    }
+    await program.parseAsync();
   }
-  program.parse();
+}
+
+// Only run if this file is the entry point
+if (require.main === module) {
+  main();
 }
