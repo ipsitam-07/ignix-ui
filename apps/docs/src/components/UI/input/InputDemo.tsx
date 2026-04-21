@@ -12,7 +12,7 @@ export function InputBasicDemo(): ReactElement {
   const [value, setValue] = useState<string>('');
 
   return (
-    <div className="pt-8 pb-4">
+    <div className="pt-10 pb-4">
       <AnimatedInput
         placeholder="Type something..."
         variant="clean"
@@ -36,7 +36,7 @@ export function InputAdvancedDemo(): ReactElement {
   };
 
   return (
-    <div className="pt-8 pb-4 flex flex-col gap-4">
+    <div className="pt-10 pb-4 flex flex-col gap-4">
       <AnimatedInput
         placeholder="Border Beam"
         variant="borderBeam"
