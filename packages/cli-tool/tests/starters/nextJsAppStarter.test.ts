@@ -43,19 +43,19 @@ describe('NextJsAppStarter', () => {
     );
   });
 
-  it('createTailwindConfig writes tailwind.config.js', async () => {
+  it('createTailwindConfig is a no-op in v4', async () => {
     await NextJsAppStarter.createTailwindConfig(root);
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(fs.writeFile).not.toHaveBeenCalledWith(
       expect.stringContaining('tailwind.config.js'),
-      expect.stringContaining('module.exports')
+      expect.anything()
     );
   });
 
-  it('createPostCSSConfig writes postcss.config.js', async () => {
+  it('createPostCSSConfig writes postcss.config.js with v4 plugin', async () => {
     await NextJsAppStarter.createPostCSSConfig(root);
     expect(fs.writeFile).toHaveBeenCalledWith(
       expect.stringContaining('postcss.config.js'),
-      expect.stringContaining('tailwindcss')
+      expect.stringContaining('@tailwindcss/postcss')
     );
   });
 
@@ -85,11 +85,11 @@ describe('NextJsAppStarter', () => {
     expect(fs.writeFile).toHaveBeenCalled();
   });
 
-  it('createGlobalStyles writes globals.css', async () => {
+  it('createGlobalStyles writes globals.css with v4 syntax', async () => {
     await NextJsAppStarter.createGlobalStyles(root);
     expect(fs.writeFile).toHaveBeenCalledWith(
       expect.stringContaining('globals.css'),
-      expect.stringContaining('@tailwind')
+      expect.stringContaining('@import "tailwindcss"')
     );
   });
 

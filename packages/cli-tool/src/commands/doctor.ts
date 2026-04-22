@@ -1,4 +1,3 @@
-// Create new file: commands/doctor.ts
 import { Command } from 'commander';
 import path from 'path';
 import fs from 'fs-extra';

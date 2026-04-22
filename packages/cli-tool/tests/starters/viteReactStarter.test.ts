@@ -42,19 +42,19 @@ describe('ViteReactStarter', () => {
     );
   });
 
-  it('createTailwindConfig writes tailwind.config.js', async () => {
+  it('createTailwindConfig is a no-op in v4', async () => {
     await ViteReactStarter.createTailwindConfig(root);
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(fs.writeFile).not.toHaveBeenCalledWith(
       expect.stringContaining('tailwind.config.js'),
-      expect.stringContaining('export default')
+      expect.anything()
     );
   });
 
-  it('createPostCSSConfig writes postcss.config.js', async () => {
+  it('createPostCSSConfig is a no-op in v4', async () => {
     await ViteReactStarter.createPostCSSConfig(root);
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(fs.writeFile).not.toHaveBeenCalledWith(
       expect.stringContaining('postcss.config.js'),
-      expect.stringContaining('export default')
+      expect.anything()
     );
   });
 
@@ -82,14 +82,14 @@ describe('ViteReactStarter', () => {
   it('createSrcDirectory sets up src directory structure', async () => {
     await ViteReactStarter.createSrcDirectory(root);
     expect(fs.ensureDir).toHaveBeenCalled();
-    expect(fs.writeFile).toHaveBeenCalledTimes(2); // main.tsx, App.tsx
+    expect(fs.writeFile).toHaveBeenCalledTimes(2);
   });
 
-  it('createGlobalStyles writes index.css', async () => {
+  it('createGlobalStyles writes index.css with v4 syntax', async () => {
     await ViteReactStarter.createGlobalStyles(root);
     expect(fs.writeFile).toHaveBeenCalledWith(
       expect.stringContaining('index.css'),
-      expect.stringContaining('@tailwind')
+      expect.stringContaining('@import "tailwindcss"')
     );
   });
 

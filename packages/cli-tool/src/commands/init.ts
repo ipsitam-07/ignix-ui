@@ -134,7 +134,7 @@ export function createInitCommand() {
         spinner.text = 'Installing required dependencies...';
         const depService = new DependencyService();
         await depService.install(['@mindfiredigital/ignix-ui'], false, ctx.isJson);
-        await depService.install(['tailwindcss', 'postcss', 'autoprefixer'], true, ctx.isJson);
+        await depService.install(['tailwindcss', '@tailwindcss/postcss'], true, ctx.isJson);
 
         spinner.succeed(chalk.green('Ignix UI initialized successfully!'));
         logger.info('\nNext steps:');
@@ -408,8 +408,10 @@ async function updateGlobalStyles() {
     ) {
       // Merge: keep Tailwind directives and add custom.css content
       const tailwindDirectives =
-        existingContent.match(/@(?:tailwind|import)[^;]+;?/g)?.join('\n') || '';
-      const restOfContent = existingContent.replace(/@(?:tailwind|import)[^;]+;?\n?/g, '').trim();
+        existingContent.match(/@(?:tailwind|import|theme)[^;{]+(?:{[^}]*}|;?)/g)?.join('\n') || '';
+      const restOfContent = existingContent
+        .replace(/@(?:tailwind|import|theme)[^;{]+(?:{[^}]*}|;?)\n?/g, '')
+        .trim();
 
       // Extract @import 'tailwindcss' from custom.css if present
       const customCssWithoutTailwind = customCssContent

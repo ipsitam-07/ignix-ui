@@ -47,14 +47,13 @@ export async function createViteReactPackageJson(root: string): Promise<void> {
       '@typescript-eslint/eslint-plugin': '^7.18.0',
       '@typescript-eslint/parser': '^7.18.0',
       '@vitejs/plugin-react': '^4.3.1',
-      autoprefixer: '^10.4.20',
+      '@tailwindcss/vite': '^4.0.0',
       eslint: '^8.57.1',
       'eslint-plugin-react-hooks': '^4.6.2',
       'eslint-plugin-react-refresh': '^0.4.11',
-      postcss: '^8.4.41',
       prettier: '^3.3.3',
       'prettier-plugin-tailwindcss': '^0.6.6',
-      tailwindcss: '^3.4.14',
+      tailwindcss: '^4.0.0',
       typescript: '^5.6.2',
       vite: '^5.4.2',
     },
@@ -117,11 +116,12 @@ export async function createViteReactTsconfig(root: string): Promise<void> {
 export async function createViteConfig(root: string): Promise<void> {
   const viteConfig = `import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwind from '@tailwindcss/vite';
 import path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwind()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -152,63 +152,14 @@ export default defineConfig({
   await fs.writeFile(path.join(root, 'vite.config.ts'), viteConfig);
 }
 
-// 5. Create Tailwind CSS configuration with Ignix plugin
-export async function createTailwindConfig(root: string): Promise<void> {
-  const tailwindConfig = `/** @type {import('tailwindcss').Config} */
-export default {
-  darkMode: ['class', '[data-theme="dark"]'],
-  content: [
-    './index.html',
-    './src/**/*.{js,ts,jsx,tsx}',
-    './node_modules/@mindfiredigital/ignix-ui/**/*.{js,ts,jsx,tsx}',
-  ],
-  theme: {
-    extend: {
-      colors: {
-        background: 'var(--background)',
-        foreground: 'var(--foreground)',
-        primary: {
-          DEFAULT: 'var(--primary)',
-          foreground: 'var(--primary-foreground)',
-        },
-        secondary: {
-          DEFAULT: 'var(--secondary)',
-          foreground: 'var(--secondary-foreground)',
-        },
-        muted: {
-          DEFAULT: 'var(--muted)',
-          foreground: 'var(--muted-foreground)',
-        },
-        accent: {
-          DEFAULT: 'var(--accent)',
-          foreground: 'var(--accent-foreground)',
-        },
-        destructive: {
-          DEFAULT: 'var(--destructive)',
-          foreground: 'var(--destructive-foreground)',
-        },
-        border: 'var(--border)',
-        input: 'var(--input)',
-        ring: 'var(--ring)',
-      },
-    },
-  },
-  plugins: [],
-};
-`;
-  await fs.writeFile(path.join(root, 'tailwind.config.js'), tailwindConfig);
+// 5. Tailwind config is no longer needed in v4 for standard setups
+export async function createTailwindConfig(_root: string): Promise<void> {
+  // No-op for Tailwind v4
 }
 
-// 6. Create PostCSS configuration
-export async function createPostCSSConfig(root: string): Promise<void> {
-  const postcssConfig = `export default {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
-};
-`;
-  await fs.writeFile(path.join(root, 'postcss.config.js'), postcssConfig);
+// 6. PostCSS config is optional in v4 with Vite plugin
+export async function createPostCSSConfig(_root: string): Promise<void> {
+  // No-op for Tailwind v4
 }
 
 // 7. Create ESLint configuration
@@ -347,46 +298,60 @@ export default App;
 export async function createGlobalStyles(root: string): Promise<void> {
   const srcDir = path.join(root, 'src');
   await fs.ensureDir(srcDir);
-  const indexCss = `@tailwind base;
-@tailwind components;
-@tailwind utilities;
+  const indexCss = `@import "tailwindcss";
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-  }
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-  }
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --primary: 210 40% 98%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 212.7 26.8% 83.9%;
 }
 
 @layer base {

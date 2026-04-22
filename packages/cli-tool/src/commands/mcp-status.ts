@@ -19,7 +19,6 @@ async function getLatestVersion(): Promise<string | null> {
   }
 }
 
-// FIX: Proper Claude Desktop path for all platforms
 function getClaudeConfigPath(): string {
   if (process.platform === 'win32') {
     // Windows: %APPDATA%\Claude\claude_desktop_config.json
@@ -43,7 +42,7 @@ function getConfigPath(client: string): string {
   const configPaths: Record<string, string> = {
     cursor: '.cursor/mcp.json',
     vscode: '.vscode/mcp.json',
-    claude: getClaudeConfigPath(), // FIX: Use proper path
+    claude: getClaudeConfigPath(),
     windsurf: '.windsurf/mcp.json',
     jetbrains: '.idea/mcp.json',
   };
@@ -64,7 +63,6 @@ function extractVersionFromArgs(args: string[] | undefined): string | undefined 
 
   if (versionArg && typeof versionArg === 'string') {
     const version = versionArg.replace('@mindfiredigital/ignix-mcp-server@', '');
-    // FIX: Clean up version display
     if (version === '^1') return '1.x';
     if (version === 'latest') return 'latest';
     return version;
@@ -131,10 +129,10 @@ export function createMcpStatusCommand() {
           const version = extractVersionFromArgs(ignixConfig.args);
           let status: 'ok' | 'outdated' = 'ok';
 
-          // FIX: Only check for outdated if we have a valid version and not 'latest'
           if (version && latestVersion && version !== 'latest' && version !== '1.x') {
-            const cleanVersion = version.replace('^', '');
-            if (semver.lt(cleanVersion, latestVersion)) {
+            const cleanVersion = semver.valid(version.replace(/^[~^]/, ''));
+            const cleanLatestVersion = semver.valid(latestVersion);
+            if (cleanVersion && cleanLatestVersion && semver.lt(cleanVersion, cleanLatestVersion)) {
               status = 'outdated';
             }
           }

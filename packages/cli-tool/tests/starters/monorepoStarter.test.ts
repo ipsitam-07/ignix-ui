@@ -41,11 +41,14 @@ describe('MonorepoStarter', () => {
     expect(fs.writeFile).toHaveBeenCalled();
   });
 
-  it('scaffoldNextApp sets up nextjs app in monorepo', async () => {
+  it('scaffoldNextApp sets up nextjs app in monorepo with v4 syntax', async () => {
     await MonorepoStarter.scaffoldNextApp(root);
     expect(fs.ensureDir).toHaveBeenCalled();
     expect(fs.writeJSON).toHaveBeenCalled();
-    expect(fs.writeFile).toHaveBeenCalled();
+    expect(fs.writeFile).toHaveBeenCalledWith(
+      expect.stringContaining('globals.css'),
+      expect.stringContaining('@import "tailwindcss"')
+    );
   });
 
   it('createIgnixConfig writes ignix.config.js', async () => {
