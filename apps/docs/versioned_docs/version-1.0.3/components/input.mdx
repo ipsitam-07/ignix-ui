@@ -9,40 +9,11 @@ import TabItem from '@theme/TabItem';
 import { AnimatedInput } from '@site/src/components/UI/input';
 import { useState } from 'react';
 import { InputBasicDemo, InputAdvancedDemo } from '@site/src/components/UI/input/InputDemo';
-
-
-## Overview
+import InputDemo from '@site/src/components/Demo/InputDemo';
 
 The AnimatedInput component provides a rich collection of animated input fields with various effects and styles. Each variant offers unique animations for both the input field and its label, creating engaging user interactions.
 
-## Preview
-
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-    <div className="p-4 border rounded-lg space-y-4">
-      <InputBasicDemo />
-    </div>
-  </TabItem>
-  <TabItem value="code" label="Code">
-    ```tsx
-    import AnimatedInput from '@ignix-ui/input';
-    import { useState } from 'react';
-
-    function InputDemo() {
-      const [value, setValue] = useState('');
-      
-      return (
-        <AnimatedInput
-          placeholder="Type something..."
-          variant="clean"
-          value={value}
-          onChange={setValue}
-        />
-      );
-    }
-    ```
-  </TabItem>
-</Tabs>
+<InputDemo />
 
 ## Installation
 
@@ -1652,8 +1623,23 @@ function BasicInput() {
 }
 ```
 
-import InputDemo from '@site/src/components/Demo/InputDemo';
 
-## Variants
+## Props
 
-<InputDemo />
+| Prop | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `placeholder` | `string` | - | The placeholder text for the input and label |
+| `variant` | `string` | - | The animation variant to use (e.g., `clean`, `shimmer`, `neon`, `glassmorphism`, etc.) |
+| `value` | `string` | - | The current value of the input |
+| `onChange` | `(value: string) => void` | - | Callback function triggered when the input value changes |
+| `type` | `string` | `"text"` | The HTML input type (e.g., "text", "password", "email") |
+| `size` | `"sm" \| "md" \| "lg"` | `"md"` | The size of the input field |
+| `disabled` | `boolean` | `false` | Whether the input is disabled |
+| `error` | `string` | - | Error message to display below the input |
+| `success` | `boolean` | - | Whether to show a success state |
+| `icon` | `React.ElementType` | - | Optional leading icon to display |
+| `showPasswordToggle` | `boolean` | `false` | Whether to show a toggle button for password visibility (if type is "password") |
+| `inputClassName` | `string` | `""` | Additional CSS classes for the input element |
+| `labelClassName` | `string` | `""` | Additional CSS classes for the label element |
+| `onFocus` | `() => void` | - | Callback triggered on focus |
+| `onBlur` | `() => void` | - | Callback triggered on blur |
