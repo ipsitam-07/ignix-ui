@@ -10,48 +10,9 @@ import { Badge } from '@site/src/components/UI/badge';
 import { Mail } from 'lucide-react';
 import BadgeDemo from '@site/src/components/Demo/BadgeDemo';
 
-## Overview
-
 Badges are small status descriptors that can be used to highlight specific information, such as notification counts, status indicators, or labels. They can include text, numbers, or just a dot indicator.
 
-## Preview
-
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-    <div className="flex items-center gap-8 border rounded-lg p-4">
-      <div className="relative inline-flex items-center">
-        <Mail className="h-11 w-11" />
-        <Badge text="3" type="primary" />
-      </div>
-      <div className="relative inline-flex items-center">
-        <span className="text-lg font-medium">Notifications</span>
-        <Badge text="99+" type="error" variant="pulse" />
-      </div>
-    </div>
-  </TabItem>
-  <TabItem value="code" label="Code">
-    ```tsx
-    import { Badge } from '@ignix-ui/badge';
-    import { Mail } from 'lucide-react';
-
-
-    function BadgeDemo() {
-      return (
-        <div className="flex items-center gap-8">
-          <div className="relative inline-flex items-center">
-            <Mail className="h-6 w-6" />
-            <Badge text="3" type="primary" />
-          </div>
-          <div className="relative inline-flex items-center">
-            <span className="text-lg font-medium">Notifications</span>
-            <Badge text="99+" type="error" variant="pulse" />
-          </div>
-        </div>
-      );
-    }
-    ```
-  </TabItem>
-</Tabs>
+<BadgeDemo />
 
 ## Installation
 
@@ -248,6 +209,12 @@ function BasicBadge() {
 }
 ```
 
-## Variants
+## Props
 
-<BadgeDemo />
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `text` | `string` | - | Text or number to display inside the badge |
+| `type` | `"primary" \| "secondary" \| "success" \| "warning" \| "error"` | `"primary"` | Visual style variant of the badge |
+| `variant` | `"pulse" \| "bounce" \| "tinypop"` | `"tinypop"` | Animation variant applied to the badge |
+| `className` | `string` | - | Additional CSS classes for the badge |
+| `children` | `React.ReactNode` | - | Component the badge will be attached to |
