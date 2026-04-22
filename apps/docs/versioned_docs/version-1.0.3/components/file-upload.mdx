@@ -10,15 +10,15 @@ import { FileUpload } from '@site/src/components/UI/file-upload';
 import { FileUploadFullDemo, FileUploadMinimalDemo } from '@site/src/components/Demo/FileUploadDemo';
 import { Upload, ImageIcon, FileText, Film, Music, Settings, AlertCircle, CheckCircle, Trash2, Loader2, X } from 'lucide-react';
 
-## Overview
-
 The FileUpload component provides a modern, accessible interface for uploading files with support for drag-and-drop, file validation, previews, and progress tracking.
+
+<FileUploadFullDemo />
 
 ## Installation
 <Tabs>
   <TabItem value="cli" label="CLI" default>
     ```bash
-    ignix add component fileUpload
+    ignix add component fileupload
     ```
   </TabItem>
   <TabItem value="manual" label="Manual">
@@ -1010,52 +1010,48 @@ export default FileUpload;
 ## Usage
 
 ```tsx
-// Import the component:
 import { FileUpload } from '@ignix-ui/fileupload';
 ```
 
 ### Basic File Upload
 <FileUploadMinimalDemo />
 
-### Drag and Drop File Upload
-<FileUploadFullDemo />
-
  ### Custom Validation
 ```tsx 
-        function CustomValidationUpload() { 
-            const validateFile = (file: File) => { 
-                    // Custom validation rules const errors: string[] = [];    // Check file name length
-                if (file.name.length > 50) {
-                    errors.push('File name must be less than 50 characters');
-                }
-
-                // Check for special characters
-                if (/[<>:"/\\|?*]/.test(file.name)) {
-                    errors.push('File name contains invalid characters');
-                }
-
-                // Custom size limit based on file type
-                if (file.type.startsWith('image/') && file.size > 2 * 1024 * 1024) {
-                    errors.push('Images must be smaller than 2MB');
-                }
-
-                return {
-                    isValid: errors.length === 0,
-                    error: errors.join(', ')
-                };
-            };
-
-            return (
-                <FileUpload
-                    mode="both"
-                    multiple={true}
-                    buttonText="Upload with Custom Rules"
-                    dropzoneText="Files will be validated against custom rules"
-                    validateFile={validateFile}
-                    accept={""}
-                />
-            );
+function CustomValidationUpload() { 
+    const validateFile = (file: File) => { 
+        // Custom validation rules const errors: string[] = [];   
+        if (file.name.length > 50) {
+            errors.push('File name must be less than 50 characters');
         }
+
+        // Check for special characters
+        if (/[<>:"/\\|?*]/.test(file.name)) {
+            errors.push('File name contains invalid characters');
+        }
+
+        // Custom size limit based on file type
+        if (file.type.startsWith('image/') && file.size > 2 * 1024 * 1024) {
+            errors.push('Images must be smaller than 2MB');
+        }
+
+        return {
+            isValid: errors.length === 0,
+            error: errors.join(', ')
+        };
+    };
+
+    return (
+        <FileUpload
+            mode="both"
+            multiple={true}
+            buttonText="Upload with Custom Rules"
+            dropzoneText="Files will be validated against custom rules"
+            validateFile={validateFile}
+            accept={""}
+        />
+    );
+}
 ```
 
 ## Props
