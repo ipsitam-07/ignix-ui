@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import prompts from 'prompts';
 import { createAddCommand } from '../src/commands/add';
 import { RegistryService } from '../src/services/RegistryService';
 import { ComponentService } from '../src/services/ComponentService';
@@ -43,6 +44,7 @@ setupTestMocks();
 
 beforeEach(() => {
   resetTestState();
+  vi.mocked(prompts).mockResolvedValue({});
 
   vi.mocked(RegistryService).mockImplementation(
     () =>
@@ -81,6 +83,28 @@ describe('add command', () => {
       expect(output.installed).toContain('button');
       expect(output.dependencies).toEqual(expect.arrayContaining(['icon', 'ripple']));
     });
+
+    it('installs multiple components by name', async () => {
+      await runCommand(createAddCommand, ['component', 'button', 'input', '--json']);
+
+      const output = parseJsonOutput();
+      expect(output.success).toBe(true);
+      expect(output.installed).toContain('button');
+      expect(output.installed).toContain('input');
+    });
+
+    it('skips unknown components and logs a warning', async () => {
+      await runCommand(createAddCommand, ['component', 'unknown-comp']);
+      expect(logger.warn).toHaveBeenCalledWith("Component 'unknown-comp' not found. Skipping.");
+    });
+
+    it('exits with code 1 in JSON mode when no component is selected', async () => {
+      await runCommand(createAddCommand, ['component', '--json']);
+      const output = parseJsonOutput();
+      expect(output.success).toBe(false);
+      expect(output.error).toBe('No components selected.');
+      expect(exitCode).toBe(1);
+    });
   });
 
   describe('themes', () => {
@@ -98,6 +122,32 @@ describe('add command', () => {
       expect(output.success).toBe(true);
       expect(output.installed).toContain('dark');
     });
+
+    it('warns when no themes are available in the registry', async () => {
+      vi.mocked(ThemeService).mockImplementation(
+        () =>
+          ({
+            getAvailableThemes: vi.fn().mockResolvedValue([]),
+            setSilent: vi.fn(),
+          } as any)
+      );
+
+      await runCommand(createAddCommand, ['theme']);
+      expect(logger.warn).toHaveBeenCalledWith('No themes available in the registry.');
+    });
+
+    it('skips unknown theme IDs and reports them', async () => {
+      await runCommand(createAddCommand, ['theme', 'unknown-theme']);
+      expect(logger.warn).toHaveBeenCalledWith("Theme 'unknown-theme' not found. Skipping.");
+    });
+
+    it('exits with code 1 in JSON mode when no theme is selected', async () => {
+      await runCommand(createAddCommand, ['theme', '--json']);
+      const output = parseJsonOutput();
+      expect(output.success).toBe(false);
+      expect(output.error).toBe('No themes selected.');
+      expect(exitCode).toBe(1);
+    });
   });
 
   describe('templates', () => {
@@ -114,6 +164,14 @@ describe('add command', () => {
       const output = parseJsonOutput();
       expect(output.success).toBe(true);
       expect(output.installed).toContain('landing');
+    });
+
+    it('exits with code 1 in JSON mode when no template is selected', async () => {
+      await runCommand(createAddCommand, ['template', '--json']);
+      const output = parseJsonOutput();
+      expect(output.success).toBe(false);
+      expect(output.error).toBe('No templates selected.');
+      expect(exitCode).toBe(1);
     });
   });
 

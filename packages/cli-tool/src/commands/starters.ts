@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import ora from 'ora';
 import path from 'path';
 import chalk from 'chalk';
+import prompts from 'prompts';
 import { logger } from '../utils/logger';
 import { getPackageManager } from '../utils/getPackageManager';
 import {
@@ -24,9 +25,10 @@ import {
   ensureRootFiles,
   ensureRootTsconfig,
   ensureTsconfigPackage,
-  scaffoldComponentsPackage,
+  scaffoldUiPackage,
   scaffoldConfigPackage,
   scaffoldNextApp,
+  createIgnixConfig as createIgnixConfigMonorepo,
 } from '../services/starter-template/MonorepoStarter';
 import {
   validateEmptyDirectory as validateEmptyDirectoryVite,
@@ -66,6 +68,20 @@ export const startersCommandMonorepo = new Command()
       cwd: path.resolve(opts.cwd || '.'),
     };
 
+    if (!ctx.isYes && !ctx.isJson) {
+      const response = await prompts({
+        type: 'confirm',
+        name: 'value',
+        message: `Scaffold a Turborepo + pnpm monorepo in ${chalk.cyan(ctx.cwd)}?`,
+        initial: true,
+      });
+
+      if (!response.value) {
+        logger.info('Aborted.');
+        return;
+      }
+    }
+
     const originalCwd = process.cwd();
 
     try {
@@ -85,7 +101,7 @@ export const startersCommandMonorepo = new Command()
         return;
       };
       const spinner = ctx.isJson
-        ? { start: noop, succeed: noop, fail: noop, text: '' }
+        ? { start: noop, succeed: noop, fail: noop, stop: noop, text: '' }
         : ora('Scaffolding monorepo...').start();
 
       const root = process.cwd();
@@ -93,11 +109,14 @@ export const startersCommandMonorepo = new Command()
       await ensureRootFiles(root);
       await ensureRootTsconfig(root);
       await scaffoldConfigPackage(root);
-      await scaffoldComponentsPackage(root);
+      await scaffoldUiPackage(root);
       await ensureTsconfigPackage(root);
       await scaffoldNextApp(root);
+      await createIgnixConfigMonorepo(root);
 
+      if (!ctx.isJson) spinner.stop();
       await execa('pnpm', ['install'], { cwd: root, stdio: ctx.isJson ? 'ignore' : 'inherit' });
+      if (!ctx.isJson) spinner.start('Finalizing monorepo...');
 
       spinner.succeed('Monorepo scaffolded successfully.');
 
@@ -142,6 +161,20 @@ export const startersCommandNextjsApp = new Command()
       cwd: path.resolve(opts?.cwd || '.'),
     };
 
+    if (!ctx.isYes && !ctx.isJson) {
+      const response = await prompts({
+        type: 'confirm',
+        name: 'value',
+        message: `Scaffold a Next.js app in ${chalk.cyan(ctx.cwd)}?`,
+        initial: true,
+      });
+
+      if (!response.value) {
+        logger.info('Aborted.');
+        return;
+      }
+    }
+
     const originalCwd = process.cwd();
 
     try {
@@ -161,7 +194,7 @@ export const startersCommandNextjsApp = new Command()
         return;
       };
       const spinner = ctx.isJson
-        ? { start: noop, succeed: noop, fail: noop, text: '' }
+        ? { start: noop, succeed: noop, fail: noop, stop: noop, text: '' }
         : ora('Scaffolding Next.js app...').start();
       const root = process.cwd();
 
@@ -208,12 +241,16 @@ export const startersCommandNextjsApp = new Command()
       await createReadme(root);
 
       // 15. Initialize Git repository
-      spinner.text = 'Initializing Git repository...';
+      if (!ctx.isJson) {
+        spinner.text = 'Initializing Git repository...';
+        spinner.stop();
+      }
       await execa('git', ['init'], { cwd: root, stdio: ctx.isJson ? 'ignore' : 'inherit' }).catch(
         () => {
           logger.warn('Git initialization failed, but continuing...');
         }
       );
+      if (!ctx.isJson) spinner.start('Scaffolding Next.js app...');
 
       // 16. Install dependencies
       spinner.text = 'Installing dependencies...';
@@ -221,10 +258,15 @@ export const startersCommandNextjsApp = new Command()
       const installArgs =
         packageManager === 'npm' ? ['install', '--legacy-peer-deps'] : ['install'];
 
+      if (!ctx.isJson) {
+        spinner.text = `Installing dependencies with ${packageManager}...`;
+        spinner.stop();
+      }
       await execa(packageManager, installArgs, {
         cwd: root,
         stdio: ctx.isJson ? 'ignore' : 'inherit',
       });
+      if (!ctx.isJson) spinner.start('Finalizing...');
 
       spinner.succeed(chalk.green('Next.js app scaffolded successfully!'));
       if (ctx.isJson) {
@@ -273,6 +315,20 @@ export const startersCommandViteReact = new Command()
       cwd: path.resolve(opts?.cwd || '.'),
     };
 
+    if (!ctx.isYes && !ctx.isJson) {
+      const response = await prompts({
+        type: 'confirm',
+        name: 'value',
+        message: `Scaffold a Vite React app in ${chalk.cyan(ctx.cwd)}?`,
+        initial: true,
+      });
+
+      if (!response.value) {
+        logger.info('Aborted.');
+        return;
+      }
+    }
+
     const originalCwd = process.cwd();
 
     try {
@@ -292,7 +348,7 @@ export const startersCommandViteReact = new Command()
         return;
       };
       const spinner = ctx.isJson
-        ? { start: noop, succeed: noop, fail: noop, text: '' }
+        ? { start: noop, succeed: noop, fail: noop, stop: noop, text: '' }
         : ora('Scaffolding Vite + React app...').start();
 
       const root = process.cwd();
@@ -340,12 +396,16 @@ export const startersCommandViteReact = new Command()
       await createViteEnvTypes(root);
 
       // 16. Initialize Git repository
-      spinner.text = 'Initializing Git repository...';
+      if (!ctx.isJson) {
+        spinner.text = 'Initializing Git repository...';
+        spinner.stop();
+      }
       await execa('git', ['init'], { cwd: root, stdio: ctx.isJson ? 'ignore' : 'inherit' }).catch(
         () => {
           logger.warn('Git initialization failed, but continuing...');
         }
       );
+      if (!ctx.isJson) spinner.start('Scaffolding Vite + React app...');
 
       // 17. Install dependencies
       spinner.text = 'Installing dependencies...';
@@ -353,10 +413,15 @@ export const startersCommandViteReact = new Command()
       const installArgs =
         packageManager === 'npm' ? ['install', '--legacy-peer-deps'] : ['install'];
 
+      if (!ctx.isJson) {
+        spinner.text = `Installing dependencies with ${packageManager}...`;
+        spinner.stop();
+      }
       await execa(packageManager, installArgs, {
         cwd: root,
         stdio: ctx.isJson ? 'ignore' : 'inherit',
       });
+      if (!ctx.isJson) spinner.start('Finalizing...');
 
       spinner.succeed(chalk.green('Vite + React app scaffolded successfully!'));
       if (ctx.isJson) {

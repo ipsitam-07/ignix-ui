@@ -72,7 +72,7 @@ export function createAddCommand() {
                 })),
               });
 
-              if (installResponse.component) {
+              if (installResponse && installResponse.component) {
                 selectedItems = [installResponse.component];
               }
             } else {
@@ -93,6 +93,9 @@ export function createAddCommand() {
 
                 if (!component) {
                   skipped.push(id);
+                  if (!ctx.isJson) {
+                    logger.warn(`Component '${id}' not found. Skipping.`);
+                  }
                   continue;
                 }
 
@@ -105,18 +108,18 @@ export function createAddCommand() {
             if (!selectedItems || selectedItems.length === 0) {
               if (ctx.isJson) {
                 const result = {
-                  success: installed.length > 0,
+                  success: false,
                   requested: identifiers,
                   installed,
                   dependencies: Array.from(dependencySet),
                   skipped,
+                  error: 'No components selected.',
                 };
 
                 console.log(JSON.stringify(result, null, 2));
 
                 // 🔥 EXIT CODE LOGIC
-                const nothingInstalled = installed.length === 0;
-                process.exit(nothingInstalled ? 1 : 0);
+                process.exit(1);
               } else {
                 logger.warn('No component selected. Exiting.');
               }
@@ -201,7 +204,7 @@ export function createAddCommand() {
                 })),
               });
 
-              identifiers = response.theme ? [response.theme] : [];
+              identifiers = response && response.theme ? [response.theme] : [];
             }
 
             // no selection
@@ -212,6 +215,7 @@ export function createAddCommand() {
                   requested: [],
                   installed: [],
                   skipped: [],
+                  error: 'No themes selected.',
                 };
 
                 console.log(JSON.stringify(result, null, 2));
@@ -229,6 +233,9 @@ export function createAddCommand() {
 
               if (!match) {
                 skipped.push(id);
+                if (!ctx.isJson) {
+                  logger.warn(`Theme '${id}' not found. Skipping.`);
+                }
                 continue;
               }
 
@@ -298,7 +305,8 @@ export function createAddCommand() {
                   })),
               });
 
-              identifiers = installResponse.template ? [installResponse.template] : [];
+              identifiers =
+                installResponse && installResponse.template ? [installResponse.template] : [];
             }
 
             // nothing selected
@@ -309,6 +317,7 @@ export function createAddCommand() {
                   requested: [],
                   installed: [],
                   skipped: [],
+                  error: 'No templates selected.',
                 };
 
                 console.log(JSON.stringify(result, null, 2));
@@ -326,6 +335,9 @@ export function createAddCommand() {
 
               if (!match) {
                 skipped.push(id);
+                if (!ctx.isJson) {
+                  logger.warn(`Template '${id}' not found. Skipping.`);
+                }
                 continue;
               }
 

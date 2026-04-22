@@ -110,5 +110,49 @@ describe('mcp commands', () => {
       const cursor = output.clients.find((c: any) => c.name === 'Cursor');
       expect(cursor.status).toBe('ok');
     });
+
+    it('displays human-readable status for configured and outdated clients', async () => {
+      const { consoleOutput } = await import('./helpers');
+
+      vi.mocked(fs.pathExists).mockImplementation((path: any) => {
+        if (path.toString().includes('.cursor/mcp.json')) return Promise.resolve(true);
+        if (path.toString().includes('.vscode/mcp.json')) return Promise.resolve(true);
+        return Promise.resolve(false);
+      });
+
+      vi.mocked(fs.readJSON).mockImplementation((path: any) => {
+        if (path.toString().includes('.cursor/mcp.json')) {
+          return Promise.resolve({
+            mcpServers: { ignix: { args: ['@mindfiredigital/ignix-mcp-server@1.0.0'] } },
+          });
+        }
+        if (path.toString().includes('.vscode/mcp.json')) {
+          return Promise.resolve({
+            mcpServers: { ignix: { args: ['@mindfiredigital/ignix-mcp-server@1.1.0'] } },
+          });
+        }
+        return Promise.resolve({});
+      });
+
+      await runCommand(createMcpStatusCommand, []);
+
+      const output = consoleOutput.join('\n');
+      expect(output).toContain('Ignix MCP Status');
+      expect(output).toContain('Cursor → config exists but server version is outdated');
+      expect(output).toContain('VS Code → ✅ configured');
+      expect(output).toContain('Configured: 2/4 clients');
+    });
+
+    it('reports error reading config in human mode', async () => {
+      const { consoleOutput } = await import('./helpers');
+
+      vi.mocked(fs.pathExists).mockResolvedValue(true as never);
+      vi.mocked(fs.readJSON).mockRejectedValue(new Error('JSON parse error') as never);
+
+      await runCommand(createMcpStatusCommand, []);
+
+      const output = consoleOutput.join('\n');
+      expect(output).toContain('Error reading config: JSON parse error');
+    });
   });
 });

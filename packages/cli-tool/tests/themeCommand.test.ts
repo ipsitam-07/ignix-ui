@@ -3,6 +3,7 @@ import { createThemesCommand } from '../src/commands/theme';
 import { ThemeService } from '../src/services/ThemeService';
 import { logger } from '../src/utils/logger';
 import prompts from 'prompts';
+import path from 'path';
 import {
   setupTestMocks,
   resetTestState,
@@ -10,6 +11,7 @@ import {
   parseJsonOutput,
   exitCode,
   consoleOutput,
+  chdirSpy,
 } from './helpers';
 
 // --- Mocks ---
@@ -76,9 +78,83 @@ describe('theme command', () => {
     expect(logger.success).toHaveBeenCalledWith(expect.stringContaining('Theme dark installed'));
   });
 
+  it('allows viewing theme info', async () => {
+    vi.mocked(prompts)
+      .mockResolvedValueOnce({ action: 'info' })
+      .mockResolvedValueOnce({ themeId: 'dark' })
+      .mockResolvedValueOnce({ action: 'exit' });
+
+    await runCommand(createThemesCommand, []);
+
+    const output = consoleOutput.join('\n');
+    expect(output).toContain('Dark Theme');
+    expect(output).toContain('ID: dark');
+    expect(output).toContain('Theme Configuration:');
+    expect(output).toContain('#000');
+  });
+
+  it('shows warning when listing with no themes available', async () => {
+    vi.mocked(ThemeService).mockImplementation(
+      () =>
+        ({
+          getAvailableThemes: vi.fn().mockResolvedValue([]),
+          setSilent: vi.fn(),
+        } as any)
+    );
+
+    vi.mocked(prompts)
+      .mockResolvedValueOnce({ action: 'list' })
+      .mockResolvedValueOnce({ action: 'exit' });
+
+    await runCommand(createThemesCommand, []);
+    expect(logger.warn).toHaveBeenCalledWith('No themes available.');
+  });
+
+  it('shows warning when installing with no themes available', async () => {
+    vi.mocked(ThemeService).mockImplementation(
+      () =>
+        ({
+          getAvailableThemes: vi.fn().mockResolvedValue([]),
+          setSilent: vi.fn(),
+        } as any)
+    );
+
+    vi.mocked(prompts)
+      .mockResolvedValueOnce({ action: 'install' })
+      .mockResolvedValueOnce({ action: 'exit' });
+
+    await runCommand(createThemesCommand, []);
+    expect(logger.warn).toHaveBeenCalledWith('No themes available to install.');
+  });
+
+  it('shows warning when viewing info with no themes available', async () => {
+    vi.mocked(ThemeService).mockImplementation(
+      () =>
+        ({
+          getAvailableThemes: vi.fn().mockResolvedValue([]),
+          setSilent: vi.fn(),
+        } as any)
+    );
+
+    vi.mocked(prompts)
+      .mockResolvedValueOnce({ action: 'info' })
+      .mockResolvedValueOnce({ action: 'exit' });
+
+    await runCommand(createThemesCommand, []);
+    expect(logger.warn).toHaveBeenCalledWith('No themes available.');
+  });
+
+  it('respects the --cwd flag', async () => {
+    vi.mocked(prompts).mockResolvedValue({ action: 'exit' });
+
+    const targetCwd = '/tmp/custom-path';
+    await runCommand(createThemesCommand, ['--cwd', targetCwd]);
+
+    expect(chdirSpy).toHaveBeenCalledWith(path.resolve(targetCwd));
+  });
+
   describe('machine-mode list', () => {
     it('outputs JSON list of themes', async () => {
-      // themes --yes --json
       await runCommand(createThemesCommand, ['--yes', '--json']);
 
       const output = parseJsonOutput();

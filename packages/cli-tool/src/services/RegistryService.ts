@@ -79,53 +79,6 @@ export class RegistryService {
   }
 
   //------------------------------------------------------------
-  // TEMPLATE REGISTRY
-  //------------------------------------------------------------
-  private async fetchAvailableTemplate(): Promise<ComponentRegistry> {
-    if (this.templateRegistry) {
-      logger.info('[Registry] Using cached template registry');
-      return this.templateRegistry;
-    }
-
-    const config = await loadConfig();
-
-    logger.info(`[Registry] Fetching templates from: ${config.templateLayoutUrl}`);
-
-    let spinner: ReturnType<typeof ora> | null = null;
-    if (!this.silent) {
-      spinner = ora('Fetching template registry...').start();
-    }
-
-    try {
-      const response = await axios.get<ComponentRegistry>(config.templateLayoutUrl);
-
-      spinner?.succeed('Template registry fetched.');
-
-      logger.info(`[Registry] Templates loaded: ${Object.keys(response.data.components).length}`);
-
-      this.templateRegistry = response.data;
-      return this.templateRegistry;
-    } catch (err) {
-      spinner?.fail('Failed to fetch template registry.');
-
-      logger.error('[Registry] Template fetch failed');
-      logger.error(`URL: ${config.templateLayoutUrl}`);
-
-      if (err instanceof Error) {
-        logger.error(`Reason: ${err.message}`);
-
-        if (process.env.DEBUG === 'true') {
-          logger.error(`Stack: ${err.stack}`);
-        }
-      } else {
-        logger.error(`Reason: ${String(err)}`);
-      }
-
-      throw new Error('Failed to fetch template registry');
-    }
-  }
-
-  //------------------------------------------------------------
   // PUBLIC METHODS
   //------------------------------------------------------------
   public async getTemplateConfig(name: string): Promise<ComponentConfig | undefined> {
@@ -137,7 +90,7 @@ export class RegistryService {
       (c) =>
         (c.id?.toLowerCase() === name.toLowerCase() ||
           c.name.toLowerCase() === name.toLowerCase()) &&
-        c.files?.main?.type === 'template' // ✅ KEY FIX
+        c.files?.main?.type === 'template'
     );
 
     if (!item) {
@@ -150,9 +103,7 @@ export class RegistryService {
   public async getAvailableTemplates(): Promise<ComponentConfig[]> {
     const registry = await this.fetchRegistry();
 
-    return Object.values(registry.components).filter(
-      (c) => c.files?.main?.type === 'template' // ✅ FILTER
-    );
+    return Object.values(registry.components).filter((c) => c.files?.main?.type === 'template');
   }
 
   public async getComponentConfig(name: string): Promise<ComponentConfig | undefined> {

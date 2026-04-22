@@ -1,4 +1,3 @@
-// packages/ignix-mcp-server/src/commands/mcp-status.ts
 import { Command } from 'commander';
 import fs from 'fs-extra';
 import path from 'path';
@@ -152,7 +151,9 @@ export function createMcpStatusCommand() {
             name: client.name,
             configured: false,
             status: 'error',
-            message: `${client.name} → ❌ Error reading config: ${getErrorMessage(error)}`,
+            message: `${client.name} → ❌ Error reading config: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
           });
         }
       }
