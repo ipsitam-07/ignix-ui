@@ -10,43 +10,8 @@ import { Avatar, AvatarGroup } from '@site/src/components/UI/avatar';
 import { AvatarDemo, AvatarGroupDemo, AvatarUploadDemo, AvatarAdvancedDemo } from '@site/src/components/Demo/AvatarDemo';
 import { User, Mail, Star, Camera, Settings, Users, Bell } from 'lucide-react';
 
-
-## Overview
-
 The avatar component displays user profile pictures, initials, or icons with support for various shapes, sizes, and status indicators.
-
-## Preview
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-    <div className="p-4 border rounded-lg">
-      <div className="flex flex-wrap gap-6 items-center justify-center">
-        <Avatar 
-          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop" 
-          alt="User avatar" 
-          size='2xl'
-        />
-      </div>
-    </div>
-  </TabItem>
-  <TabItem value="code" label="Code">
-    ```tsx
-    import { Avatar } from '@ignix-ui/avatar';
-    import { User } from 'lucide-react';
-
-    function MyComponent() {
-      return (
-        <div className="flex gap-6 items-center">
-          <Avatar 
-            src="https://example.com/avatar.jpg" 
-            alt="User avatar" 
-            size='2xl'
-          />
-        </div>
-      );
-    }
-    ```
-  </TabItem>
-</Tabs>
+<AvatarDemo />
 
 ## Installation
 <Tabs>
@@ -503,6 +468,42 @@ Import the component:
 ```tsx
 import { Avatar, AvatarGroup } from '@ignix-ui/avatar';
 ```
+
+### Basic Usage
+
+The `Avatar` component can be used to display user profile images with fallbacks.
+
+<Tabs>
+  <TabItem value="preview" label="Preview" default>
+    <div className="p-4 border rounded-lg">
+      <div className="flex flex-wrap gap-6 items-center justify-center">
+        <Avatar 
+          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop" 
+          alt="User avatar" 
+          size='2xl'
+        />
+      </div>
+    </div>
+  </TabItem>
+  <TabItem value="code" label="Code">
+    ```tsx
+    import { Avatar } from '@ignix-ui/avatar';
+
+    function BasicAvatar() {
+      return (
+        <Avatar 
+          src="https://example.com/avatar.jpg" 
+          alt="User avatar" 
+          size='2xl'
+        />
+      );
+    }
+    ```
+  </TabItem>
+</Tabs>
+
+
+## Examples
 
 ### Avatar with Status Indicator
 <Tabs>
