@@ -9,67 +9,9 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@site/src/components/UI/accordion';
 
-## Overview
-
 A vertically stacked set of interactive headings that each reveal a section of content.
 
-## Preview
-
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-<div className="flex flex-col space-y-4 mb-8">
-  <Accordion type="single" collapsible className="w-full">
-    <AccordionItem value="item-1">
-      <AccordionTrigger>Is it accessible?</AccordionTrigger>
-      <AccordionContent>
-        Yes. It adheres to the WAI-ARIA design pattern.
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="item-2">
-      <AccordionTrigger>Is it styled?</AccordionTrigger>
-      <AccordionContent>
-        Yes. It comes with default styles that matches the other components' aesthetics.
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="item-3">
-      <AccordionTrigger>Is it animated?</AccordionTrigger>
-      <AccordionContent>
-        Yes! It's animated by default, but you can disable it if you prefer.
-      </AccordionContent>
-    </AccordionItem>
-  </Accordion>
-</div>
-</TabItem>
-<TabItem value="code" label="Code">
-```tsx
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent }
-from '@ignix-ui/accordion';
-
-<div className="flex flex-col space-y-4 mb-8">
-  <Accordion type="single" collapsible className="w-full">
-    <AccordionItem value="item-1">
-      <AccordionTrigger>Is it accessible?</AccordionTrigger>
-      <AccordionContent>
-        Yes. It adheres to the WAI-ARIA design pattern.
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="item-2">
-      <AccordionTrigger>Is it styled?</AccordionTrigger>
-      <AccordionContent>
-        Yes. It comes with default styles that matches the other components' aesthetics.
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="item-3">
-      <AccordionTrigger>Is it animated?</AccordionTrigger>
-      <AccordionContent>
-        Yes! It's animated by default, but you can disable it if you prefer.
-      </AccordionContent>
-    </AccordionItem>
-  </Accordion>
-</div>
-```
-</TabItem>
-</Tabs>
+<AccordionDemo />
 
 ## Installation
 
@@ -227,7 +169,7 @@ Import the components:
 
 ```tsx
 import * as React from 'react';
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './components/ui';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@ignix-ui/accordion';
 ```
 
 ### Basic Example
@@ -247,6 +189,49 @@ export function AccordionDemo() {
 }
 ```
 
-## Variants
+## Props
 
-<AccordionDemo />
+### Accordion
+
+The root component that contains all the accordion items.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `type` | `"single" \| "multiple"` | - | Determines whether one or multiple items can be opened at the same time. |
+| `value` | `string \| string[]` | - | The controlled value of the item(s) to expand. |
+| `defaultValue` | `string \| string[]` | - | The value of the item(s) to expand by default when initially rendered. |
+| `onValueChange` | `(value: string \| string[]) => void` | - | Event handler called when the expanded state of an item changes. |
+| `collapsible` | `boolean` | `false` | When `type` is "single", allows all items to be closed. |
+| `disabled` | `boolean` | `false` | When true, prevents the user from interacting with the accordion and all its items. |
+| `dir` | `"ltr" \| "rtl"` | `"ltr"` | The reading direction of the accordion. |
+| `orientation` | `"vertical" \| "horizontal"` | `"vertical"` | The orientation of the accordion. |
+
+### AccordionItem
+
+Contains all the parts of a single accordion item.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `string` | - | A unique value for the item. |
+| `disabled` | `boolean` | `false` | When true, prevents the user from interacting with the item. |
+| `className` | `string` | - | Additional CSS classes for the item. |
+
+### AccordionTrigger
+
+Toggles the collapsed state of an item.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | - | Additional CSS classes for the trigger. |
+| `children` | `React.ReactNode` | - | The content of the trigger. |
+
+### AccordionContent
+
+Contains the content of an accordion item that is revealed when the item is expanded.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `AnimationVariants` | `"fade"` | The animation variant applied when the content is revealed. |
+| `className` | `string` | - | Additional CSS classes for the content container. |
+| `children` | `React.ReactNode` | - | The content to be displayed. |
+

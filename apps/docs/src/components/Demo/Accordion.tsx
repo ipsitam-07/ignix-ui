@@ -24,6 +24,8 @@ const AccordionDemo = () => {
   const [variant, setVariant] = useState('fade');
 
   const codeString = `
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@ignix-ui/accordion';
+
 <Accordion type="single" collapsible className="w-full">
   <AccordionItem value="item-1">
     <AccordionTrigger>Is it accessible?</AccordionTrigger>

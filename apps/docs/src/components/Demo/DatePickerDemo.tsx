@@ -641,6 +641,7 @@ export const DatePickerPlayground = () => {
     return (
         <DemoSection
             title=""
+            description=""
         >
             <div className="space-y-8">
                 {/* Controls */}
