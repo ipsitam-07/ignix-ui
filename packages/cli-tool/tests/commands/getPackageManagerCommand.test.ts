@@ -4,7 +4,7 @@ vi.mock('@antfu/ni', () => ({
   detect: vi.fn(),
 }));
 
-import { getPackageManager } from '../src/utils/getPackageManager';
+import { getPackageManager } from '../../src/utils/getPackageManager';
 import { detect } from '@antfu/ni';
 
 describe('getPackageManager', () => {

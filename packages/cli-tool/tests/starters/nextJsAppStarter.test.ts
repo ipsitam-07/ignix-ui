@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fs from 'fs-extra';
-import * as NextJsAppStarter from '../src/services/starter-template/NextJsAppStarter';
+import * as NextJsAppStarter from '../../src/services/starter-template/NextJsAppStarter';
 
 vi.mock('fs-extra');
 vi.mock('../../utils/logger');

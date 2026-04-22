@@ -2,14 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import axios from 'axios';
 import fs from 'fs-extra';
 import path from 'path';
-import { ThemeService } from '../src/services/ThemeService';
-import { loadConfig } from '../src/utils/config';
-import { logger } from '../src/utils/logger';
+import { ThemeService } from '../../src/services/ThemeService';
+import { loadConfig } from '../../src/utils/config';
+import { logger } from '../../src/utils/logger';
 
 vi.mock('axios');
 vi.mock('fs-extra');
-vi.mock('../src/utils/config');
-vi.mock('../src/utils/logger');
+vi.mock('../../src/utils/config');
+vi.mock('../../src/utils/logger');
 
 const mockConfig = {
   themeUrl: 'https://example.com/themes.json',

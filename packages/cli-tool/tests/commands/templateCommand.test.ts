@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createTemplateCommand } from '../src/commands/template';
-import { TemplateService } from '../src/services/TemplateService';
-import { RegistryService } from '../src/services/RegistryService';
-import { logger } from '../src/utils/logger';
+import { createTemplateCommand } from '../../src/commands/template';
+import { TemplateService } from '../../src/services/TemplateService';
+import { RegistryService } from '../../src/services/RegistryService';
+import { logger } from '../../src/utils/logger';
 import prompts from 'prompts';
-import { setupTestMocks, resetTestState, runCommand, consoleOutput } from './helpers';
+import { setupTestMocks, resetTestState, runCommand, consoleOutput } from '../helpers';
 
 // --- Mocks ---
 vi.mock('prompts');
-vi.mock('../src/services/TemplateService');
-vi.mock('../src/services/RegistryService');
+vi.mock('../../src/services/TemplateService');
+vi.mock('../../src/services/RegistryService');
 
 setupTestMocks();
 

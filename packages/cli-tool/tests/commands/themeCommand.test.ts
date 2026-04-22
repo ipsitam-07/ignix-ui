@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createThemesCommand } from '../src/commands/theme';
-import { ThemeService } from '../src/services/ThemeService';
-import { logger } from '../src/utils/logger';
+import { createThemesCommand } from '../../src/commands/theme';
+import { ThemeService } from '../../src/services/ThemeService';
+import { logger } from '../../src/utils/logger';
 import prompts from 'prompts';
 import path from 'path';
 import {
@@ -12,11 +12,11 @@ import {
   exitCode,
   consoleOutput,
   chdirSpy,
-} from './helpers';
+} from '../helpers';
 
 // --- Mocks ---
 vi.mock('prompts');
-vi.mock('../src/services/ThemeService');
+vi.mock('../../src/services/ThemeService');
 
 // --- Helpers ---
 const mockThemes = [

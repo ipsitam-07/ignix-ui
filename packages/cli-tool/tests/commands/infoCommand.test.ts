@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createInfoCommand } from '../src/commands/info';
-import { RegistryService } from '../src/services/RegistryService';
-import { logger } from '../src/utils/logger';
+import { createInfoCommand } from '../../src/commands/info';
+import { RegistryService } from '../../src/services/RegistryService';
+import { logger } from '../../src/utils/logger';
 import {
   setupTestMocks,
   resetTestState,
@@ -9,10 +9,10 @@ import {
   parseJsonOutput,
   exitCode,
   consoleOutput,
-} from './helpers';
+} from '../helpers';
 
 // --- Mocks ---
-vi.mock('../src/services/RegistryService');
+vi.mock('../../src/services/RegistryService');
 
 // --- Helpers ---
 const mockAvailableComponents = [

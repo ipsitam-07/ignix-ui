@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fs from 'fs-extra';
-import * as ViteReactStarter from '../src/services/starter-template/ViteReactStarter';
+import * as ViteReactStarter from '../../src/services/starter-template/ViteReactStarter';
 
 vi.mock('fs-extra');
 

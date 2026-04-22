@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { logger } from '../src/utils/logger';
+import { logger } from '../../src/utils/logger';
 import { Command } from 'commander';
 
 let consoleOutput: string[] = [];
@@ -21,7 +21,7 @@ describe('stub commands', () => {
 
   describe('validate command', () => {
     it('logs "Validation is coming soon!" warning', async () => {
-      const { validateCommand } = await import('../src/commands/validate');
+      const { validateCommand } = await import('../../src/commands/validate');
 
       const program = new Command();
       program.addCommand(validateCommand);
@@ -39,7 +39,7 @@ describe('stub commands', () => {
 
   describe('wizard command', () => {
     it('logs "Wizards are coming soon!" warning', async () => {
-      const { wizardCommand } = await import('../src/commands/wizard');
+      const { wizardCommand } = await import('../../src/commands/wizard');
 
       const program = new Command();
       program.addCommand(wizardCommand);

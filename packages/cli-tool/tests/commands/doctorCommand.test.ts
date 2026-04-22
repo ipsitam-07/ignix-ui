@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createDoctorCommand } from '../src/commands/doctor';
+import { createDoctorCommand } from '../../src/commands/doctor';
 import fs from 'fs-extra';
 import {
   setupTestMocks,
@@ -8,7 +8,7 @@ import {
   parseJsonOutput,
   exitCode,
   consoleOutput,
-} from './helpers';
+} from '../helpers';
 
 // --- Mocks ---
 vi.mock('fs-extra');

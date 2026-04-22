@@ -1,20 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createInitCommand } from '../src/commands/init';
-import { loadConfig } from '../src/utils/config';
-import { ThemeService } from '../src/services/ThemeService';
-import { DependencyService } from '../src/services/DependencyService';
-import { logger } from '../src/utils/logger';
+import { createInitCommand } from '../../src/commands/init';
+import { loadConfig } from '../../src/utils/config';
+import { ThemeService } from '../../src/services/ThemeService';
+import { DependencyService } from '../../src/services/DependencyService';
+import { logger } from '../../src/utils/logger';
 import fs from 'fs-extra';
 import prompts from 'prompts';
-import { setupTestMocks, resetTestState, runCommand, parseJsonOutput, exitCode } from './helpers';
+import { setupTestMocks, resetTestState, runCommand, parseJsonOutput, exitCode } from '../helpers';
 
 // --- Mocks ---
 vi.mock('fs-extra');
 vi.mock('prompts');
-vi.mock('../src/services/ThemeService');
-vi.mock('../src/services/DependencyService');
+vi.mock('../../src/services/ThemeService');
+vi.mock('../../src/services/DependencyService');
 
-vi.mock('../src/utils/config', () => ({
+vi.mock('../../src/utils/config', () => ({
   loadConfig: vi.fn(),
 }));
 

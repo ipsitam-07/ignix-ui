@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import axios from 'axios';
-import { RegistryService } from '../src/services/RegistryService';
-import { loadConfig } from '../src/utils/config';
-import { logger } from '../src/utils/logger';
+import { RegistryService } from '../../src/services/RegistryService';
+import { loadConfig } from '../../src/utils/config';
+import { logger } from '../../src/utils/logger';
 
 vi.mock('axios');
-vi.mock('../src/utils/config');
-vi.mock('../src/utils/logger');
+vi.mock('../../src/utils/config');
+vi.mock('../../src/utils/logger');
 
 const mockConfig = {
   registryUrl: 'https://example.com/registry.json',
@@ -112,7 +112,7 @@ describe('RegistryService', () => {
 
     it('returns undefined if not found or not a template', async () => {
       vi.mocked(axios.get).mockResolvedValue({ data: mockRegistry });
-      const config = await service.getTemplateConfig('button'); // it's a component
+      const config = await service.getTemplateConfig('button');
       expect(config).toBeUndefined();
     });
   });
@@ -122,7 +122,6 @@ describe('RegistryService', () => {
       service.setSilent(true);
       vi.mocked(axios.get).mockResolvedValue({ data: mockRegistry });
       await service.getAvailableComponents();
-      // ora is not mocked but we check that it doesn't crash
     });
   });
 });

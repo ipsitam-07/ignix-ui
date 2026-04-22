@@ -4,11 +4,11 @@ import chalk from 'chalk';
 describe('logger', () => {
   let logSpy: any;
   let errorSpy: any;
-  let logger: typeof import('../src/utils/logger').logger;
+  let logger: typeof import('../../src/utils/logger').logger;
 
   beforeEach(async () => {
     vi.resetModules();
-    const mod = await import('../src/utils/logger');
+    const mod = await import('../../src/utils/logger');
     logger = mod.logger;
     logger._silent = false;
 

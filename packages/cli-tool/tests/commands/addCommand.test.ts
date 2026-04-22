@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import prompts from 'prompts';
-import { createAddCommand } from '../src/commands/add';
-import { RegistryService } from '../src/services/RegistryService';
-import { ComponentService } from '../src/services/ComponentService';
-import { ThemeService } from '../src/services/ThemeService';
-import { TemplateService } from '../src/services/TemplateService';
-import { logger } from '../src/utils/logger';
+import { createAddCommand } from '../../src/commands/add';
+import { RegistryService } from '../../src/services/RegistryService';
+import { ComponentService } from '../../src/services/ComponentService';
+import { ThemeService } from '../../src/services/ThemeService';
+import { TemplateService } from '../../src/services/TemplateService';
+import { logger } from '../../src/utils/logger';
 import path from 'path';
 import {
   setupTestMocks,
@@ -14,14 +14,14 @@ import {
   parseJsonOutput,
   exitCode,
   chdirSpy,
-} from './helpers';
+} from '../helpers';
 
 // --- Mocks ---
 vi.mock('prompts');
-vi.mock('../src/services/ComponentService');
-vi.mock('../src/services/RegistryService');
-vi.mock('../src/services/ThemeService');
-vi.mock('../src/services/TemplateService');
+vi.mock('../../src/services/ComponentService');
+vi.mock('../../src/services/RegistryService');
+vi.mock('../../src/services/ThemeService');
+vi.mock('../../src/services/TemplateService');
 
 // --- Helpers ---
 const mockAvailableComponents = [

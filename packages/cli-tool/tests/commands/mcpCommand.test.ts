@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { createMcpInitCommand } from '../src/commands/mcp-init';
-import { createMcpStatusCommand } from '../src/commands/mcp-status';
+import { createMcpInitCommand } from '../../src/commands/mcp-init';
+import { createMcpStatusCommand } from '../../src/commands/mcp-status';
 import fs from 'fs-extra';
-import { setupTestMocks, resetTestState, runCommand, parseJsonOutput, exitCode } from './helpers';
+import { setupTestMocks, resetTestState, runCommand, parseJsonOutput, exitCode } from '../helpers';
 
 // --- Mocks ---
 vi.mock('fs-extra', () => ({
@@ -112,7 +112,7 @@ describe('mcp commands', () => {
     });
 
     it('displays human-readable status for configured and outdated clients', async () => {
-      const { consoleOutput } = await import('./helpers');
+      const { consoleOutput } = await import('../helpers');
 
       vi.mocked(fs.pathExists).mockImplementation((path: any) => {
         if (path.toString().includes('.cursor/mcp.json')) return Promise.resolve(true);
@@ -144,7 +144,7 @@ describe('mcp commands', () => {
     });
 
     it('reports error reading config in human mode', async () => {
-      const { consoleOutput } = await import('./helpers');
+      const { consoleOutput } = await import('../helpers');
 
       vi.mocked(fs.pathExists).mockResolvedValue(true as never);
       vi.mocked(fs.readJSON).mockRejectedValue(new Error('JSON parse error') as never);

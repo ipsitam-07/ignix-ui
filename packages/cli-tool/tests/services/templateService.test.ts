@@ -1,18 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import axios from 'axios';
 import fs from 'fs-extra';
-import { TemplateService } from '../src/services/TemplateService';
-import { RegistryService } from '../src/services/RegistryService';
-import { DependencyService } from '../src/services/DependencyService';
-import { ComponentService } from '../src/services/ComponentService';
-import { loadConfig } from '../src/utils/config';
+import { TemplateService } from '../../src/services/TemplateService';
+import { RegistryService } from '../../src/services/RegistryService';
+import { DependencyService } from '../../src/services/DependencyService';
+import { ComponentService } from '../../src/services/ComponentService';
+import { loadConfig } from '../../src/utils/config';
 
 vi.mock('axios');
 vi.mock('fs-extra');
-vi.mock('../src/utils/config');
-vi.mock('../src/services/RegistryService');
-vi.mock('../src/services/DependencyService');
-vi.mock('../src/services/ComponentService');
+vi.mock('../../src/utils/config');
+vi.mock('../../src/services/RegistryService');
+vi.mock('../../src/services/DependencyService');
+vi.mock('../../src/services/ComponentService');
 
 const mockConfig = {
   registryUrl: 'https://example.com/registry.json',

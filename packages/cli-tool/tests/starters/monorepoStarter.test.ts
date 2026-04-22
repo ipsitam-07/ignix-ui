@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fs from 'fs-extra';
-import * as MonorepoStarter from '../src/services/starter-template/MonorepoStarter';
+import * as MonorepoStarter from '../../src/services/starter-template/MonorepoStarter';
 
 vi.mock('fs-extra');
 

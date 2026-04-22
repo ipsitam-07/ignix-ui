@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createListCommand } from '../src/commands/list';
-import { RegistryService } from '../src/services/RegistryService';
-import { ThemeService } from '../src/services/ThemeService';
-import { logger } from '../src/utils/logger';
+import { createListCommand } from '../../src/commands/list';
+import { RegistryService } from '../../src/services/RegistryService';
+import { ThemeService } from '../../src/services/ThemeService';
+import { logger } from '../../src/utils/logger';
 import {
   setupTestMocks,
   resetTestState,
@@ -10,11 +10,11 @@ import {
   parseJsonOutput,
   exitCode,
   consoleOutput,
-} from './helpers';
+} from '../helpers';
 
 // --- Mocks ---
-vi.mock('../src/services/RegistryService');
-vi.mock('../src/services/ThemeService');
+vi.mock('../../src/services/RegistryService');
+vi.mock('../../src/services/ThemeService');
 
 // --- Helpers ---
 const mockComponents = [

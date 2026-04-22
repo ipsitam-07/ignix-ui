@@ -3,10 +3,10 @@ import {
   startersCommandMonorepo,
   startersCommandNextjsApp,
   startersCommandViteReact,
-} from '../src/commands/starters';
-import * as MonorepoStarter from '../src/services/starter-template/MonorepoStarter';
-import * as NextJsAppStarter from '../src/services/starter-template/NextJsAppStarter';
-import * as ViteReactStarter from '../src/services/starter-template/ViteReactStarter';
+} from '../../src/commands/starters';
+import * as MonorepoStarter from '../../src/services/starter-template/MonorepoStarter';
+import * as NextJsAppStarter from '../../src/services/starter-template/NextJsAppStarter';
+import * as ViteReactStarter from '../../src/services/starter-template/ViteReactStarter';
 import prompts from 'prompts';
 
 vi.mock('ora', () => ({
@@ -27,10 +27,10 @@ vi.mock('execa', () => ({
   execa: vi.fn().mockResolvedValue({ stdout: 'success' }),
 }));
 
-vi.mock('../src/services/starter-template/MonorepoStarter');
-vi.mock('../src/services/starter-template/NextJsAppStarter');
-vi.mock('../src/services/starter-template/ViteReactStarter');
-vi.mock('../src/utils/logger');
+vi.mock('../../src/services/starter-template/MonorepoStarter');
+vi.mock('../../src/services/starter-template/NextJsAppStarter');
+vi.mock('../../src/services/starter-template/ViteReactStarter');
+vi.mock('../../src/utils/logger');
 
 describe('Starters Commands', () => {
   const originalExit = process.exit;
