@@ -7,9 +7,9 @@ import { createListCommand } from './commands/list';
 import { createThemesCommand } from './commands/theme';
 import { createDoctorCommand } from './commands/doctor';
 import {
-  startersCommandMonorepo,
-  startersCommandNextjsApp,
-  startersCommandViteReact,
+  createStartersCommandMonorepo,
+  createStartersCommandNextjsApp,
+  createStartersCommandViteReact,
 } from './commands/starters';
 import { logger } from './utils/logger';
 import { RegistryService } from './services/RegistryService';
@@ -29,9 +29,9 @@ program.addCommand(createInitCommand());
 program.addCommand(createAddCommand());
 program.addCommand(createListCommand());
 program.addCommand(createThemesCommand());
-program.addCommand(startersCommandMonorepo);
-program.addCommand(startersCommandNextjsApp);
-program.addCommand(startersCommandViteReact);
+program.addCommand(createStartersCommandMonorepo());
+program.addCommand(createStartersCommandNextjsApp());
+program.addCommand(createStartersCommandViteReact());
 program.addCommand(createTemplateCommand());
 program.addCommand(createDoctorCommand());
 program.addCommand(createInfoCommand());
@@ -190,11 +190,26 @@ async function startInteractiveCLI(): Promise<void> {
             initial: 0,
           });
           if (resp.starter === 'vite-react') {
-            await startersCommandViteReact.parseAsync(['node', 'ignix', 'starters', 'vite-react']);
+            await createStartersCommandViteReact().parseAsync([
+              'node',
+              'ignix',
+              'starters',
+              'vite-react',
+            ]);
           } else if (resp.starter === 'monorepo') {
-            await startersCommandMonorepo.parseAsync(['node', 'ignix', 'starters', 'monorepo']);
+            await createStartersCommandMonorepo().parseAsync([
+              'node',
+              'ignix',
+              'starters',
+              'monorepo',
+            ]);
           } else if (resp.starter === 'nextjs-app') {
-            await startersCommandNextjsApp.parseAsync(['node', 'ignix', 'starters', 'nextjs-app']);
+            await createStartersCommandNextjsApp().parseAsync([
+              'node',
+              'ignix',
+              'starters',
+              'nextjs-app',
+            ]);
           }
           break;
         }

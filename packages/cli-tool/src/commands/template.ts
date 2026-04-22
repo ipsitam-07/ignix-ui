@@ -96,5 +96,3 @@ export function createTemplateCommand() {
       await showThemeMenu();
     });
 }
-
-export const templateCommand = createTemplateCommand();

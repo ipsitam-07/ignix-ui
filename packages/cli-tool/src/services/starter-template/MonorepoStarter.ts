@@ -49,7 +49,7 @@ export async function ensureRootTsconfig(root: string) {
     compilerOptions: {
       target: 'ES2021',
       module: 'ESNext',
-      moduleResolution: 'Bundler',
+      moduleResolution: 'bundler',
       strict: true,
       jsx: 'react-jsx',
       resolveJsonModule: true,
