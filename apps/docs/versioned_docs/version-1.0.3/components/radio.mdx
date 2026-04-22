@@ -21,7 +21,7 @@ A customizable radio component with multiple variants, sizes, and animations
     ignix add component radio
     ```
   </TabItem>
-  <TabItem value="manual" label="MANUAL" >
+  <TabItem value="manual" label="manual" >
 ```tsx
 import * as React from "react";
 import * as RadixRadio from "@radix-ui/react-radio-group";
@@ -380,12 +380,12 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
 Import the component:
 
 ```tsx
-import { RadioGroup } from '@src/components/ui/radio';
+import { RadioGroup } from '@ignix-ui/radio';
 ```
 
 ### RadioGroup
 ```tsx
-import { RadioGroup } from "./components/ui/radio";
+import { useState } from "react";
 
 function App() {
   const [value, setValue] = useState("one");
