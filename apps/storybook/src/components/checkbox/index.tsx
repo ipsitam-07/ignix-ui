@@ -157,7 +157,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
                 />
 
                 <motion.svg
-                    className="h-full w-full text-white"
+                    className="h-full w-full text-white pointer-events-none"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -211,6 +211,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
                         className={cn(
                             checkboxVariants({ variant, size }),
                             'relative overflow-hidden flex-shrink-0',
+                            'data-[state=checked]:bg-transparent',
                             error && 'border-destructive',
                             className
                         )}
@@ -228,14 +229,14 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
 
                         {/* Nina animation layers */}
                         <motion.div
-                            className="absolute inset-0 bg-primary"
+                            className="absolute inset-0 bg-primary pointer-events-none"
                             initial={{ scale: 0 }}
                             animate={{ scale: internalChecked ? 1 : 0 }}
                             transition={{ duration: 0.3, ease: [0.75, 0, 0.125, 1] }}
                         />
 
                         <motion.svg
-                            className="relative h-full w-full text-white z-10"
+                            className="relative h-full w-full text-white z-10 pointer-events-none"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"

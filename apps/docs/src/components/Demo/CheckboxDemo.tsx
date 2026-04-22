@@ -321,31 +321,61 @@ const handleChange = (option: string) => (checked: boolean) => {
 // Advanced Animation Demo
 const CheckboxAnimationDemo = () => {
     const [checkedStates, setCheckedStates] = useState<Record<string, boolean>>({});
+    const [selectedAnimation, setSelectedAnimation] = useState('bounce');
 
     const handleAnimationChange = (animation: string) => (checked: boolean) => {
         setCheckedStates(prev => ({ ...prev, [animation]: checked }));
+        setSelectedAnimation(animation);
     };
+
+    const codeString = `
+import { Checkbox } from '@ignix-ui/checkbox';
+
+<Checkbox 
+  variant="default"
+  size="lg"
+  animationVariant="${selectedAnimation}"
+  label="Animated Checkbox"
+  onChange={(checked) => console.log(checked)}
+/>
+`;
 
     return (
         <div className="space-y-6">
             <h3 className="text-lg font-semibold">Animation Variants</h3>
 
-            <div className="p-6 border rounded-lg">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    {checkboxAnimations.map((animation) => (
-                        <div key={animation.value} className="flex flex-col items-center gap-3">
-                            <Checkbox
-                                variant="default"
-                                size="lg"
-                                animationVariant={animation.value}
-                                label={animation.label}
-                                checked={checkedStates[animation.value] || false}
-                                onChange={handleAnimationChange(animation.value)}
-                            />
+            <Tabs>
+                <TabItem value="preview" label="Preview">
+                    <div className="p-6 border rounded-lg">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            {checkboxAnimations.map((animation) => (
+                                <div key={animation.value} className="flex flex-col items-center gap-3">
+                                    <div
+                                        onClick={() => setSelectedAnimation(animation.value)}
+                                    >
+                                        <Checkbox
+                                            variant="default"
+                                            size="lg"
+                                            animationVariant={animation.value}
+                                            label={animation.label}
+                                            checked={checkedStates[animation.value] || false}
+                                            onChange={handleAnimationChange(animation.value)}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-            </div>
+                    </div>
+                </TabItem>
+
+                <TabItem value="code" label="Code">
+                    <div className="mt-4">
+                        <CodeBlock language="tsx" className="text-sm">
+                            {codeString}
+                        </CodeBlock>
+                    </div>
+                </TabItem>
+            </Tabs>
         </div>
     );
 };

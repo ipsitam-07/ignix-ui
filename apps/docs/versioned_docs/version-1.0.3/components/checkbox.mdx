@@ -9,40 +9,9 @@ import TabItem from '@theme/TabItem';
 import { Checkbox } from '@site/src/components/UI/checkbox';
 import { CheckboxDemo, CheckboxGroupDemo, CheckboxAnimationDemo } from '@site/src/components/Demo/CheckboxDemo';
 
-## Overview
-
 The checkbox component allows users to select one or more items from a set, or toggle between two states.
 
-## Preview
-
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-    <div className="p-4 border rounded-lg">
-      <div className="space-y-4">
-        <Checkbox label="Basic checkbox" />
-        <br/>
-        <Checkbox label="Checked by default" defaultChecked />
-        <br/>
-        <Checkbox label="Disabled checkbox" disabled />
-      </div>
-    </div>
-  </TabItem>
-  <TabItem value="code" label="Code">
-    ```tsx
-    import { Checkbox } from '@ignix-ui/checkbox';
-
-    function MyComponent() {
-      return (
-        <div className="space-y-4">
-          <Checkbox label="Basic checkbox" />
-          <Checkbox label="Checked by default" defaultChecked />
-          <Checkbox label="Disabled checkbox" disabled />
-        </div>
-      );
-    }
-    ```
-  </TabItem>
-</Tabs>
+<CheckboxDemo />
 
 ## Installation
 
@@ -62,17 +31,6 @@ import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../../utils/cn';
-
-export interface CheckboxProps
-    extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'onChange'>,
-    VariantProps<typeof checkboxVariants> {
-    label?: string;
-    labelPosition?: 'left' | 'right';
-    error?: string;
-    asChild?: boolean;
-    animationVariant?: string;
-    onChange?: (checked: boolean) => void;
-}
 
 const checkboxVariants = cva(
     'peer inline-flex items-center justify-center rounded border-2 border-border bg-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
@@ -103,6 +61,17 @@ const checkboxVariants = cva(
         },
     }
 );
+
+export interface CheckboxProps
+    extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'onChange'>,
+    VariantProps<typeof checkboxVariants> {
+    label?: string;
+    labelPosition?: 'left' | 'right';
+    error?: string;
+    asChild?: boolean;
+    animationVariant?: string;
+    onChange?: (checked: boolean) => void;
+}
 
 const labelVariants = cva('transition-colors duration-200', {
     variants: {
@@ -214,7 +183,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
                 />
 
                 <motion.svg
-                    className="h-full w-full text-white"
+                    className="h-full w-full text-white pointer-events-none"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -239,10 +208,14 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
                     labelVariants({ size, disabled }),
                     'select-none'
                 )}
-                onClick={(e) => {
+                onClick={(e: React.MouseEvent<HTMLLabelElement>) => {
                     e.preventDefault();
                     if (!disabled) {
-                        handleChange({ target: { checked: !internalChecked } } as any);
+                        const newChecked = !internalChecked;
+                        if (checked === undefined) {
+                            setIsChecked(newChecked);
+                        }
+                        onChange?.(newChecked);
                     }
                 }}
             >
@@ -264,6 +237,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
                         className={cn(
                             checkboxVariants({ variant, size }),
                             'relative overflow-hidden flex-shrink-0',
+                            'data-[state=checked]:bg-transparent',
                             error && 'border-destructive',
                             className
                         )}
@@ -281,14 +255,14 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
 
                         {/* Nina animation layers */}
                         <motion.div
-                            className="absolute inset-0 bg-primary"
+                            className="absolute inset-0 bg-primary pointer-events-none"
                             initial={{ scale: 0 }}
                             animate={{ scale: internalChecked ? 1 : 0 }}
                             transition={{ duration: 0.3, ease: [0.75, 0, 0.125, 1] }}
                         />
 
                         <motion.svg
-                            className="relative h-full w-full text-white z-10"
+                            className="relative h-full w-full text-white z-10 pointer-events-none"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
@@ -312,7 +286,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             return (
                 <Slot
                     className={cn('inline-flex items-center gap-2', className)}
-                    ref={ref as any}
+                    ref={ref as React.Ref<HTMLInputElement>}
                 >
                     <div className={cn(
                         'inline-flex items-center gap-2',
@@ -369,7 +343,7 @@ const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
 
 Checkbox.displayName = 'Checkbox';
 
-export { Checkbox, checkboxVariants };
+export { Checkbox };
     ```
   </TabItem>
 </Tabs>
@@ -400,7 +374,8 @@ function BasicCheckbox() {
 }
 ```
 
-### Controlled
+### Controlled Checkbox
+
 The checkbox can be used in both controlled and uncontrolled modes:
 ```tsx
 // Controlled
@@ -418,9 +393,6 @@ function ControlledCheckbox() {
 ```
 
 ## Examples
-{/* Interactive Demo */}
-<CheckboxDemo />
-
 {/* Checkbox Groups */}
 <CheckboxGroupDemo />
 
