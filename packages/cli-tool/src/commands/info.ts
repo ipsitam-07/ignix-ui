@@ -102,6 +102,9 @@ export function createInfoCommand() {
         logger.error(error instanceof Error ? error.message : String(error));
         process.exit(1);
       } finally {
+        if (ctx.isJson) {
+          logger.setSilent(false);
+        }
         process.chdir(originalCwd);
       }
     });

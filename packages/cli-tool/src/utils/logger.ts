@@ -2,8 +2,12 @@ import chalk from 'chalk';
 
 export const logger = {
   _silent: false,
-  setSilent(silent: boolean): void {
+  setSilent(silent: boolean): () => void {
+    const previous = this._silent;
     this._silent = silent;
+    return () => {
+      this._silent = previous;
+    };
   },
   info(message: string): void {
     if (this._silent) return;

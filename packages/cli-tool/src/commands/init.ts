@@ -177,8 +177,9 @@ export function createInitCommand() {
         }
 
         process.exit(1);
+      } finally {
+        process.chdir(originalCwd);
       }
-      process.chdir(originalCwd);
     });
 }
 

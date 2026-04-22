@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import { logger } from '../../src/utils/logger';
 
@@ -36,6 +36,9 @@ describe('loadConfig', () => {
     vi.spyOn(logger, 'setSilent').mockImplementation(() => vi.fn());
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
   it('exits with code 1 when ignix.config.js does not exist', async () => {
     vi.mocked(fs.pathExists).mockResolvedValue(false as never);
 

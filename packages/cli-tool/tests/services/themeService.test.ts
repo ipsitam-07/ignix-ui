@@ -94,7 +94,9 @@ describe('ThemeService', () => {
 
     it('throws error if theme not found', async () => {
       vi.mocked(axios.get).mockResolvedValue({ data: mockThemes });
-      await service.install('unknown');
+      await expect(service.install('unknown')).rejects.toThrow(
+        "Theme preset 'unknown' not found in the registry."
+      );
       expect(logger.error).toHaveBeenCalledWith(
         "Theme preset 'unknown' not found in the registry."
       );

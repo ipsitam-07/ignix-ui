@@ -137,7 +137,7 @@ export function createThemesCommand() {
           logger.setSilent(true);
         }
 
-        if (ctx.isYes && ctx.isJson) {
+        if (ctx.isJson) {
           const themeService = new ThemeService();
           themeService.setSilent?.(true);
 

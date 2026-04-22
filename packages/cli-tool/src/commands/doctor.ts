@@ -25,6 +25,7 @@ export function createDoctorCommand() {
         config: false,
       };
 
+      const originalCwd = process.cwd();
       try {
         process.chdir(ctx.cwd);
 
@@ -39,17 +40,20 @@ export function createDoctorCommand() {
         // Check package.json
         const packageJson = await fs.readJson('package.json').catch(() => null);
 
+        const satisfiesMinVersion = (versionRange: string | undefined, minimum: string) => {
+          if (!versionRange) return false;
+          const minVersion = semver.minVersion(versionRange);
+          return minVersion ? semver.gte(minVersion, minimum) : false;
+        };
         if (packageJson) {
           // Check React
           const reactVersion =
             packageJson.dependencies?.react || packageJson.devDependencies?.react;
-          checks.reactVersion = reactVersion
-            ? semver.gte(reactVersion.replace('^', ''), '17.0.0')
-            : false;
+          checks.reactVersion = satisfiesMinVersion(reactVersion, '17.0.0');
 
           // Check TypeScript
           const tsVersion = packageJson.devDependencies?.typescript;
-          checks.typescript = tsVersion ? semver.gte(tsVersion.replace('^', ''), '4.5.0') : false;
+          checks.typescript = satisfiesMinVersion(tsVersion, '4.5.0');
 
           // Check Tailwind
           const tailwindVersion = packageJson.devDependencies?.tailwindcss;
@@ -115,6 +119,11 @@ export function createDoctorCommand() {
         }
         logger.error(error instanceof Error ? error.message : String(error));
         process.exit(1);
+      } finally {
+        if (ctx.isJson) {
+          logger.setSilent(false);
+        }
+        process.chdir(originalCwd);
       }
     });
 }

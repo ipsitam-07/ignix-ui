@@ -74,90 +74,94 @@ export function createMcpInitCommand() {
         opts.client = null;
       }
 
-      // VALIDATION: Check if client is valid when provided
-      if (opts.client && !VALID_CLIENTS.includes(opts.client as Client)) {
-        console.error(chalk.red(`❌ Error: Invalid client '${opts.client}'`));
-        console.log(chalk.gray(`\nValid clients: ${VALID_CLIENTS.join(', ')}`));
-        console.log(chalk.gray(`\nOr use --universal to configure all clients`));
-        process.exit(1);
-      }
+      try {
+        // VALIDATION: Check if client is valid when provided
+        if (opts.client && !VALID_CLIENTS.includes(opts.client as Client)) {
+          console.error(chalk.red(`❌ Error: Invalid client '${opts.client}'`));
+          console.log(chalk.gray(`\nValid clients: ${VALID_CLIENTS.join(', ')}`));
+          console.log(chalk.gray(`\nOr use --universal to configure all clients`));
+          process.exit(1);
+        }
 
-      // Handle 'all' as alias for '--universal'
-      if (opts.client === 'all') {
-        opts.universal = true;
-        opts.client = null;
-      }
+        // Handle 'all' as alias for '--universal'
+        if (opts.client === 'all') {
+          opts.universal = true;
+          opts.client = null;
+        }
 
-      const clients: Client[] = opts.universal
-        ? ['cursor', 'vscode', 'claude', 'windsurf']
-        : [opts.client as Client];
+        const clients: Client[] = opts.universal
+          ? ['cursor', 'vscode', 'claude', 'windsurf']
+          : [opts.client as Client];
 
-      const versionPin = opts.latest ? 'latest' : '^1';
+        const versionPin = opts.latest ? 'latest' : '^1';
 
-      // FIX: Always include '-y' for all clients
-      const ignixServer: MCPServerConfig = {
-        command: 'npx',
-        args: ['-y', `@mindfiredigital/ignix-mcp-server@${versionPin}`],
-      };
+        // FIX: Always include '-y' for all clients
+        const ignixServer: MCPServerConfig = {
+          command: 'npx',
+          args: ['-y', `@mindfiredigital/ignix-mcp-server@${versionPin}`],
+        };
 
-      if (opts.dryRun) {
-        console.log(chalk.yellow('\n🔍 DRY RUN - No files will be written\n'));
+        if (opts.dryRun) {
+          console.log(chalk.yellow('\n🔍 DRY RUN - No files will be written\n'));
+          for (const client of clients) {
+            const configPath = getConfigPath(client);
+            if (!configPath) {
+              console.log(chalk.yellow(`⚠️  ${client} requires manual setup`));
+              if (client === 'codex') {
+                console.log(chalk.gray(`   [mcp_servers.ignix]`));
+                console.log(chalk.gray(`   command = "npx"`));
+                console.log(
+                  chalk.gray(
+                    `   args = ["-y", "@mindfiredigital/ignix-mcp-server@${versionPin}"]\n`
+                  )
+                );
+              }
+              continue;
+            }
+            console.log(chalk.cyan(`\n📝 ${client}:`));
+            console.log(chalk.gray(`   Would create/update: ${configPath}`));
+            console.log(chalk.gray(`   Content:`));
+            console.log(JSON.stringify(getConfigContent(client, ignixServer), null, 2));
+            console.log('');
+          }
+          console.log(chalk.gray('✨ Run without --dry-run to apply changes\n'));
+
+          return;
+        }
+
+        console.log(chalk.bold('\n🚀 Initializing Ignix MCP Server\n'));
+        console.log(
+          chalk.cyan(
+            `Version pin: ${
+              versionPin === 'latest' ? 'latest (unpinned)' : '^1 (pinned major version)'
+            }\n`
+          )
+        );
+
         for (const client of clients) {
           const configPath = getConfigPath(client);
+
           if (!configPath) {
-            console.log(chalk.yellow(`⚠️  ${client} requires manual setup`));
             if (client === 'codex') {
-              console.log(chalk.gray(`   [mcp_servers.ignix]`));
-              console.log(chalk.gray(`   command = "npx"`));
+              console.log(chalk.yellow(`\n⚠️ Codex requires manual setup:`));
               console.log(
-                chalk.gray(`   args = ["-y", "@mindfiredigital/ignix-mcp-server@${versionPin}"]\n`)
+                chalk.gray(`[mcp_servers.ignix]\ncommand = "npx"\nargs = ["-y", "ignix", "mcp"]\n`)
               );
             }
             continue;
           }
-          console.log(chalk.cyan(`\n📝 ${client}:`));
-          console.log(chalk.gray(`   Would create/update: ${configPath}`));
-          console.log(chalk.gray(`   Content:`));
-          console.log(JSON.stringify(getConfigContent(client, ignixServer), null, 2));
-          console.log('');
-        }
-        console.log(chalk.gray('✨ Run without --dry-run to apply changes\n'));
 
+          await configureClient(client, configPath, ignixServer);
+        }
+
+        // Update package.json if needed
+        await updatePackageJson();
+
+        console.log(chalk.green('\n✅ MCP configuration complete!'));
+        console.log(chalk.gray('\nRestart your AI tool to start using Ignix UI.\n'));
+      } finally {
         delete process.env.MCP_INIT_RUNNING;
-
-        return;
       }
-
-      console.log(chalk.bold('\n🚀 Initializing Ignix MCP Server\n'));
-      console.log(
-        chalk.cyan(
-          `Version pin: ${
-            versionPin === 'latest' ? 'latest (unpinned)' : '^1 (pinned major version)'
-          }\n`
-        )
-      );
-
-      for (const client of clients) {
-        const configPath = getConfigPath(client);
-
-        if (!configPath) {
-          if (client === 'codex') {
-            console.log(chalk.yellow(`\n⚠️ Codex requires manual setup:`));
-            console.log(
-              chalk.gray(`[mcp_servers.ignix]\ncommand = "npx"\nargs = ["-y", "ignix", "mcp"]\n`)
-            );
-          }
-          continue;
-        }
-
-        await configureClient(client, configPath, ignixServer);
-      }
-
-      // Update package.json if needed
-      await updatePackageJson();
-
-      console.log(chalk.green('\n✅ MCP configuration complete!'));
-      console.log(chalk.gray('\nRestart your AI tool to start using Ignix UI.\n'));
     });
 }
 

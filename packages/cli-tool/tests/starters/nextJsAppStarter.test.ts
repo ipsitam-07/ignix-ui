@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fs from 'fs-extra';
 import * as NextJsAppStarter from '../../src/services/starter-template/NextJsAppStarter';
+import { logger } from '../../src/utils/logger';
 
 vi.mock('fs-extra');
-vi.mock('../../utils/logger');
+vi.mock('../../src/utils/logger');
 
 describe('NextJsAppStarter', () => {
   const root = '/mock/root';
@@ -15,6 +16,7 @@ describe('NextJsAppStarter', () => {
   it('validateEmptyDirectory logs warning if directory is not empty', async () => {
     vi.mocked(fs.readdir).mockResolvedValue(['some-file.txt'] as any);
     await NextJsAppStarter.validateEmptyDirectory(root);
+    expect(logger.warn).toHaveBeenCalled();
   });
 
   it('createNextAppPackageJson writes a valid package.json', async () => {
