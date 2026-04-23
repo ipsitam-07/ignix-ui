@@ -18,10 +18,10 @@ const meta: Meta<typeof Table> = {
 An animated, sortable data table built on Radix UI Themes with built-in pagination.
 
 **Key features:**
-- **Sorting** - click any column header to toggle \`asc ↔ desc\`; the \`applySort\` callback receives the key and new direction.
-- **Animation variants** - \`fade\`, \`slide\`, \`scale\`, \`flip\`, \`elastic\` via Framer Motion.
-- **Visual knobs** - \`showStripes\`, \`showBorders\`, \`showHoverEffects\`, \`glow\`, \`size\`, \`variant\`.
-- **Pagination** - integrated \`<Pagination />\` driven by \`currentPage\`, \`totalPages\`, and \`onPageChange\`.
+- **Sorting** – click any column header to toggle \`asc ↔ desc\`; the \`applySort\` callback receives the key and new direction.
+- **Animation variants** – \`fade\`, \`slide\`, \`scale\`, \`flip\`, \`elastic\` via Framer Motion.
+- **Visual knobs** – \`showStripes\`, \`showBorders\`, \`showHoverEffects\`, \`glow\`, \`size\`, \`variant\`.
+- **Pagination** – integrated \`<Pagination />\` driven by \`currentPage\`, \`totalPages\`, and \`onPageChange\`.
         `,
       },
     },
@@ -159,13 +159,14 @@ export const RichCellContent: Story = {
 };
 
 export const AnimationVariants: Story = {
-  name: "Animation variants",
+  name: "Animation variants – interactive",
   render: (args) => (
     <div className="w-full rounded-xl bg-white p-6 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
         <span className="rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-medium text-violet-700">
           animationVariant = {args.animationVariant ?? "fade"}
         </span>
+        <span className="text-xs text-gray-400">Sort a column or change pages to trigger the animation</span>
       </div>
       <ControlledTable {...args} />
     </div>
@@ -196,7 +197,7 @@ export const GhostVariant: Story = {
 };
 
 export const Minimal: Story = {
-  name: "Minimal",
+  name: "Minimal – no stripes, no borders",
   render: (args) => (
     <div className="w-full rounded-xl bg-white p-6 shadow-sm">
       <ControlledTable {...args} />
@@ -229,7 +230,7 @@ export const GlowEffect: Story = {
 };
 
 export const EmptyState: Story = {
-  name: "Empty state",
+  name: "Empty state – no data",
   render: (args) => (
     <div className="w-full rounded-xl bg-white p-6 shadow-sm">
       <Table
@@ -242,6 +243,7 @@ export const EmptyState: Story = {
         onPageChange={noop}
       />
       <div className="mt-4 flex flex-col items-center gap-2 py-8 text-center">
+        <span className="text-2xl">🗂️</span>
         <p className="text-sm font-medium text-gray-600">No records found</p>
         <p className="text-xs text-gray-400">Try adjusting your filters or adding new data.</p>
       </div>
@@ -254,9 +256,12 @@ export const EmptyState: Story = {
 };
 
 export const SinglePage: Story = {
-  name: "Single page",
+  name: "Single page – pagination hidden",
   render: (args) => (
-    <div className="w-full rounded-xl bg-white p-6 shadow-sm"> 
+    <div className="w-full rounded-xl bg-white p-6 shadow-sm">
+      <p className="mb-3 text-xs text-gray-400">
+        Only 2 rows — <code className="rounded bg-gray-100 px-1 py-0.5">totalPages=1</code> so pagination is hidden.
+      </p>
       <Table
         {...args}
         headings={headings}
@@ -277,7 +282,7 @@ export const SinglePage: Story = {
 };
 
 export const LargeDataset: Story = {
-  name: "Large dataset",
+  name: "Large dataset – 50 rows, paginated",
   render: (args) => {
     const bigData: TableProps["data"] = Array.from({ length: 50 }, (_, i) => ({
       name: `User ${String(i + 1).padStart(2, "0")}`,
@@ -300,5 +305,41 @@ export const LargeDataset: Story = {
     showBorders: true,
     showHoverEffects: true,
     animationVariant: "fade",
+  },
+};
+
+export const OnDarkBackground: Story = {
+  name: "On dark background",
+  render: (args) => (
+    <div className="w-full rounded-xl bg-gray-900 p-8 shadow-xl">
+      <ControlledTable {...args} />
+    </div>
+  ),
+  args: {
+    variant: "surface",
+    size: "md",
+    showStripes: true,
+    showBorders: true,
+    showHoverEffects: true,
+  },
+};
+
+export const CustomRowKeys: Story = {
+  name: "Custom rowKeyExtractor",
+  render: (args) => (
+    <div className="w-full rounded-xl bg-white p-6 shadow-sm">
+      <div className="mb-3 rounded-lg bg-blue-50 px-4 py-2 text-xs text-blue-700">
+        <code>rowKeyExtractor</code> returns <code>`user-$&#123;row.name&#125;`</code> — inspect the DOM to confirm stable keys.
+      </div>
+      <ControlledTable
+        {...args}
+        rowKeyExtractor={(row) => `user-${String(row.name).replace(/\s+/g, "-").toLowerCase()}`}
+      />
+    </div>
+  ),
+  args: {
+    variant: "surface",
+    size: "md",
+    showStripes: true,
   },
 };
