@@ -1699,6 +1699,25 @@
           "type": "template"
         }
       }
+    },
+    "data-table": {
+      "name": "data-table",
+      "description": "A Data table component that provides a flexible and interactive way to display tabular data with features like sorting, filtering, pagination, and customizable columns.",
+      "dependencies": [
+        "class-variance-authority",
+        "@radix-ui/react-icons", 
+        "framer-motion",
+        "@radix-ui/react-dropdown-menu"
+      ],
+      "componentDependencies": [
+        "checkbox"
+      ],
+      "files": {
+        "main": {
+          "path": "templates/pages/data-table/index.tsx",
+          "type": "template"
+        }
+      }
     }
   }
 }

@@ -4,11 +4,11 @@ import React, { createContext, useContext, useState } from "react";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import { InfoCircledIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons';
-import { useToast } from "../toast/use-toast";
 import AnimatedInput from "../input";
 import FileUpload from "../file-upload";
 import AnimatedTextarea from "../textarea";
 import { Button } from "../button";
+import { ToastContext } from "../toast";
 
 /* ================= TYPES ================= */
 
@@ -147,6 +147,11 @@ const isErrorField = (name: keyof FormData): name is keyof ValidationErrors => {
   return VALIDATION_FIELDS.includes(name as keyof ValidationErrors);
 };
 
+export function useSafeToast() {
+  // Returns null when called outside a ToastProvider — no hook rules violated
+  return useContext(ToastContext);
+}
+
 function ContactFormBase({
   children,
   onSubmit,
@@ -161,12 +166,7 @@ function ContactFormBase({
   const [data, setData] = useState<FormData>({});
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  let toast;
-  try {
-    toast = useToast();
-  } catch {
-    toast = null;
-  }
+  const toast = useSafeToast();
 
   const updateField = <K extends keyof FormData>(
     name: K,
