@@ -156,7 +156,13 @@ export async function scaffoldUiPackage(root: string) {
     path.join(base, 'tsconfig.json'),
     {
       extends: '@ignix/config/tsconfig/base.json',
-      compilerOptions: { outDir: 'dist' },
+      compilerOptions: {
+        outDir: 'dist',
+        baseUrl: '.',
+        paths: {
+          '@ignix-ui/*': ['./src/components/ui/*', './src/components/templates/*'],
+        },
+      },
       include: ['src'],
     },
     { spaces: 2 }

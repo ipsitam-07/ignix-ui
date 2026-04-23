@@ -79,6 +79,7 @@ export async function createNextAppTsconfig(root: string): Promise<void> {
       ],
       paths: {
         '@/*': ['./src/*'],
+        '@ignix-ui/*': ['./src/components/ui/*', './src/components/templates/*'],
       },
     },
     include: ['next-env.d.ts', '**/*.ts', '**/*.tsx', '.next/types/**/*.ts'],
