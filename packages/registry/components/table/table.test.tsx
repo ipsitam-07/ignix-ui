@@ -26,6 +26,8 @@ vi.mock("@radix-ui/themes", async () => {
     },
     Flex: ({ children, ...rest }: any) =>
       React.createElement("div", rest, children),
+    Text: ({ children, ...rest }: any) =>
+      React.createElement("span", rest, children),
     Table: {
       Root: ({ children, ...rest }: any) =>
         React.createElement("table", rest, children),
@@ -172,17 +174,16 @@ describe("Table - heading rendering", () => {
   });
 });
 
-
 describe("Table - row and cell rendering", () => {
   it("renders the correct number of rows (header + data rows)", () => {
     renderTable();
     expect(screen.getAllByRole("row")).toHaveLength(data.length + 1);
   });
 
-  it("renders unique cell text values", () => {
+  it("renders all cell text values", () => {
     renderTable();
-    ["Alice", "Engineer", "Bob", "Designer", "Inactive", "Carol", "Manager"].forEach(
-      (text) => expect(screen.getByText(text)).toBeInTheDocument()
+    ["Alice", "Engineer", "Active", "Bob", "Designer", "Inactive", "Carol", "Manager"].forEach(
+      (text) => expect(screen.getAllByText(text)[0]).toBeInTheDocument()
     );
   });
 
@@ -283,9 +284,15 @@ describe("Table - sorting", () => {
 });
 
 describe("Table - pagination integration", () => {
-  it("renders page number buttons when totalPages > 1", () => {
+  it("renders the Pagination component when totalPages > 1", () => {
     renderTable({ totalPages: 5, currentPage: 1 });
-    expect(screen.getByRole("button", { name: "2" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Next page")).toBeInTheDocument();
+    expect(screen.getByLabelText("Last page")).toBeInTheDocument();
+  });
+
+  it("does not render Pagination when totalPages is 1", () => {
+    renderTable({ totalPages: 1, currentPage: 1 });
+    expect(screen.queryByLabelText("Next page")).not.toBeInTheDocument();
   });
 
   it("calls onPageChange when a page button is clicked", async () => {
@@ -310,6 +317,13 @@ describe("Table - pagination integration", () => {
     renderTable({ currentPage: 5, totalPages: 5 });
     expect(screen.getByLabelText("Next page")).toBeDisabled();
     expect(screen.getByLabelText("Last page")).toBeDisabled();
+  });
+
+  it("passes siblingCount through to Pagination when provided", () => {
+    renderTable({ currentPage: 10, totalPages: 20, siblingCount: 2 } as any);
+    [8, 9, 10, 11, 12].forEach((n) =>
+      expect(screen.getByRole("button", { name: String(n) })).toBeInTheDocument()
+    );
   });
 });
 
@@ -372,6 +386,9 @@ describe("Table - rowKeyExtractor", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// Re-render / prop updates
+// ---------------------------------------------------------------------------
 describe("Table - prop updates", () => {
   it("updates displayed data when data prop changes", () => {
     const { rerender } = renderTable({
@@ -412,6 +429,14 @@ describe("Table - prop updates", () => {
       )
     ).not.toThrow();
     expect(screen.getByText("Email")).toBeInTheDocument();
+  });
+
+  it("hides pagination when totalPages drops to 1", () => {
+    const { rerender } = renderTable({ currentPage: 2, totalPages: 5 });
+    expect(screen.getByLabelText("Next page")).toBeInTheDocument();
+
+    rerender(<Table {...defaultProps} currentPage={1} totalPages={1} />);
+    expect(screen.queryByLabelText("Next page")).not.toBeInTheDocument();
   });
 });
 

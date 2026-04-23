@@ -74,7 +74,6 @@ function getRowKey(
   extractor?: (row: Record<string, React.ReactNode>, index: number) => string
 ) {
   if (extractor) return extractor(row, index);
-  // Default stable key: combine cell values
   return headings.map((h) => String(row[h.key] ?? "")).join("|") + `__${index}`;
 }
 
