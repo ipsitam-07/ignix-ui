@@ -1,21 +1,33 @@
 import React from "react";
-import { motion, Variants} from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { cn } from "../../../utils/cn";
 
-interface BadgeProps {
-    text: string;
+type BadgeBaseProps = {
+    text?: string;
     type?: "primary" | "secondary" | "success" | "warning" | "error";
     variant?: "pulse" | "bounce" | "tinypop";
     className?: string;
-    children?: React.ReactNode;
-}
+};
+
+type InlineBadgeProps = BadgeBaseProps & {
+    mode?: "inline";
+    children?: never;
+};
+
+type AttachedBadgeProps = BadgeBaseProps & {
+    mode: "attached";
+    children: React.ReactNode;
+};
+
+type BadgeProps = InlineBadgeProps | AttachedBadgeProps;
 
 const Badge: React.FC<BadgeProps> = ({
     text,
     type = "primary",
-    className,
     variant = "tinypop",
-    children
+    mode = "inline",
+    className,
+    children,
 }) => {
     const types = {
         primary: cn(
@@ -45,115 +57,87 @@ const Badge: React.FC<BadgeProps> = ({
         ),
     };
 
-    const getAnimationShadows = (type: string) => {
-        const shadowColors = {
-            primary: "var(--primary)",
-            secondary: "var(--secondary)",
-            success: "var(--success)",
-            warning: "var(--warning)",
-            error: "var(--destructive)",
-        };
-        return shadowColors[type as keyof typeof shadowColors] || shadowColors.primary;
-    };
-
-    const animationVariants:{'pulse': Variants, 'bounce': Variants, tinypop: Variants} = {
+    const animationVariants: Record<string, Variants> = {
         pulse: {
-            initial: {
-                scale: 1,
-                boxShadow: `0 0 0 0 rgba(${getAnimationShadows(type)}, 0.7)`,
-            },
+            initial: { scale: 1 },
             animate: {
                 scale: [1, 1.1, 1],
-                boxShadow: [
-                    `0 0 0 0 rgba(${getAnimationShadows(type)}, 0.7)`,
-                    `0 0 0 8px rgba(${getAnimationShadows(type)}, 0.1)`,
-                    `0 0 0 12px rgba(${getAnimationShadows(type)}, 0)`
-                ],
                 transition: {
                     duration: 2,
                     repeat: Infinity,
                     ease: "easeOut",
-                    times: [0, 0.5, 1]
                 },
             },
         },
         bounce: {
-            initial: { 
-                y: 0,
-                opacity: 1,
-                rotate: 0,
-                scale: 1 
-            },
+            initial: { y: 0, scale: 1 },
             animate: {
-                y: [0, -70, 0, 50, 0, 0, 0],
-                rotate: [0, -5, 0, -2, 0, -1, 0],
-                scale: [1, 1.2, 0.95, 1.1, 0.98, 1.05, 1],
+                y: [0, -6, 0],
+                scale: [1, 1.15, 1],
                 transition: {
-                    duration: 1.5,
+                    duration: 0.8,
                     repeat: Infinity,
-                    repeatType: 'loop',
                     ease: "easeOut",
-                    times: [0, 0.2, 0.4, 0.6, 0.75, 0.9, 1]
                 },
             },
         },
         tinypop: {
             initial: { scale: 1 },
             animate: {
-                scale: [1, 1.5, 1],
-                rotate: [0, 2, -2, 0],
+                scale: [1, 1.25, 1],
                 transition: {
-                    duration: 2,
+                    duration: 1.5,
                     repeat: Infinity,
                     ease: "easeInOut",
-                    times: [0, 0.3, 1]
-                }
-            },           
-        }
+                },
+            },
+        },
     };
 
-    return (
-        <div className="relative inline-flex items-center">
-            {children}
-            <motion.div
-                variants={animationVariants[variant]}
-                initial="initial"
-                animate="animate"
-                className={cn(
-                    "absolute -top-1 -right-1 sm:-top-2 sm:-right-2",
-                    "min-w-2 h-2 sm:min-w-6 sm:h-6",
-                    "rounded-full flex items-center justify-center",
-                    "text-xs sm:text-sm font-bold tracking-tight",
-                    "backdrop-blur-sm",
-                    "border border-white/20 dark:border-black/20",
-                    "transition-all duration-200",
-                    "px-1.5 sm:px-2",
-                    "z-10",
-                    "hover:scale-105 active:scale-95",
-                    "hover:shadow-xl transition-transform duration-200",
-                    types[type],
-                    className
-                )}
-                whileHover={{ 
-                    scale: 1.05,
-                    transition: { duration: 0.2 }
-                }}
-                whileTap={{ 
-                    scale: 0.95,
-                    transition: { duration: 0.1 }
-                }}
-            >
-                <span className="relative z-10 leading-none">
-                    {text}
-                </span>
-                
-                <div 
-                    className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent to-white/20 dark:to-white/10 pointer-events-none" 
-                    aria-hidden="true"
-                />
-            </motion.div>
-        </div>
+    const isAttached = mode === "attached";
+
+    // Base styles
+    const baseStyles = cn(
+        "flex items-center justify-center",
+        "rounded-full font-bold tracking-tight",
+        "text-xs sm:text-sm px-1.5 sm:px-2 h-5 sm:h-6 min-w-[20px]",
+
+        types[type],
+        className
     );
+
+    const positionStyles = isAttached
+        ? "absolute -top-1 -right-1 sm:-top-2 sm:-right-2"
+        : "relative -top-2 sm:-top-2";
+
+    const badgeContent = (
+        <motion.div
+            variants={animationVariants[variant]}
+            initial="initial"
+            animate="animate"
+            className={cn(baseStyles, positionStyles)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+        >
+            <span className="leading-none">{text}</span>
+
+            <div
+                className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent to-white/20 dark:to-white/10 pointer-events-none"
+                aria-hidden="true"
+            />
+        </motion.div>
+    );
+
+    if (isAttached) {
+        return (
+            <div className="relative inline-flex items-center">
+                {children}
+                {badgeContent}
+            </div>
+        );
+    }
+
+    return badgeContent;
 };
 
 Badge.displayName = "Badge";
