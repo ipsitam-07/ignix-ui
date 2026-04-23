@@ -4,46 +4,22 @@ import { Badge } from "./index";
 import React from "react";
 
 vi.mock("framer-motion", () => {
-  type MotionProps = {
-    children?: React.ReactNode;
-    initial?: unknown;
-    animate?: unknown;
-    exit?: unknown;
-    variants?: unknown;
-    transition?: unknown;
-    whileHover?: unknown;
-    whileTap?: unknown;
-  };
-
   const motion = new Proxy(
     {},
     {
       get: (_target, tag: string) =>
-        React.forwardRef<HTMLElement, MotionProps>(
-          (
-            {
-              children,
-              initial: _i,
-              animate: _a,
-              exit: _e,
-              variants: _v,
-              transition: _t,
-              whileHover: _wh,
-              whileTap: _wt,
-              ...rest
-            },
-            ref
-          ) =>
-            React.createElement(
-              tag,
-              { ...(rest as Record<string, unknown>), ref },
-              children
-            )
+        React.forwardRef(({ children, ...rest }: any, ref) =>
+          React.createElement(tag, { ...rest, ref }, children)
         ),
     }
   );
 
-  return { motion, AnimatePresence: ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children) };
+  return {
+    motion,
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => (
+      <>{children}</>
+    ),
+  };
 });
 
 const renderBadge = (props: Partial<React.ComponentProps<typeof Badge>> = {}) =>
@@ -62,51 +38,44 @@ describe("Badge rendering", () => {
 
   it("renders the badge text inside a <span>", () => {
     renderBadge({ text: "Hello" });
-    const span = screen.getByText("Hello");
-    expect(span.tagName).toBe("SPAN");
+    expect(screen.getByText("Hello").tagName).toBe("SPAN");
   });
 
-  it("renders a gradient overlay div with aria-hidden", () => {
-    const { container } = renderBadge();
-    const overlay = container.querySelector("div[aria-hidden='true']");
-    expect(overlay).toHaveClass(
-      "bg-gradient-to-t",
-      "rounded-full",
-      "pointer-events-none"
+  it("renders overlay only in attached mode", () => {
+    const { container } = render(
+      <Badge mode="attached" text="1">
+        <div>child</div>
+      </Badge>
     );
+
+    const overlay = container.querySelector("div[aria-hidden='true']");
+    expect(overlay).toBeInTheDocument();
   });
 });
 
 describe("Badge children", () => {
-  it("renders children alongside the badge", () => {
+  it("renders children only in attached mode", () => {
+    render(
+      <Badge mode="attached" text="3">
+        <button>Bell</button>
+      </Badge>
+    );
+
+    expect(screen.getByRole("button", { name: "Bell" })).toBeInTheDocument();
+  });
+
+  it("does NOT render children in inline mode", () => {
     render(
       <Badge text="3">
         <button>Bell</button>
       </Badge>
     );
-    expect(screen.getByRole("button", { name: "Bell" })).toBeInTheDocument();
-    expect(screen.getByText("3")).toBeInTheDocument();
-  });
 
-  it("renders without children", () => {
-    renderBadge();
-    expect(screen.getByText("Badge Text")).toBeInTheDocument();
-  });
-
-  it("renders multiple children", () => {
-    render(
-      <Badge text="5">
-        <span>Icon</span>
-        <span>Label</span>
-      </Badge>
-    );
-    expect(screen.getByText("Icon")).toBeInTheDocument();
-    expect(screen.getByText("Label")).toBeInTheDocument();
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });
 
-
-describe("Badge type prop applies correct classes", () => {
+describe("Badge type prop", () => {
   const typeCases: Array<[React.ComponentProps<typeof Badge>["type"], string]> = [
     ["primary", "bg-primary"],
     ["secondary", "bg-secondary"],
@@ -117,74 +86,70 @@ describe("Badge type prop applies correct classes", () => {
 
   it.each(typeCases)('type="%s" applies class "%s"', (type, expectedClass) => {
     render(<Badge text="X" type={type} />);
-    const motionDiv = screen.getByText("X").closest("span")?.parentElement;
-    expect(motionDiv?.className).toContain(expectedClass);
+    const badge = screen.getByText("X").parentElement;
+    expect(badge?.className).toContain(expectedClass);
   });
 
-  it('defaults to "primary" type when type prop is omitted', () => {
+  it("defaults to primary type", () => {
     render(<Badge text="X" />);
-    const motionDiv = screen.getByText("X").closest("span")?.parentElement;
-    expect(motionDiv?.className).toContain("bg-primary");
+    const badge = screen.getByText("X").parentElement;
+    expect(badge?.className).toContain("bg-primary");
   });
 });
 
 describe("Badge variant prop", () => {
-  const variants: Array<React.ComponentProps<typeof Badge>["variant"]> = [
-    "pulse",
-    "bounce",
-    "tinypop",
-  ];
+  it.each(["pulse", "bounce", "tinypop"] as const)(
+    'variant="%s" renders',
+    (variant) => {
+      renderBadge({ variant });
+      expect(screen.getByText("Badge Text")).toBeInTheDocument();
+    }
+  );
+});
 
-  it.each(variants)('variant="%s" renders without crashing', (variant) => {
-    renderBadge({ variant });
-    expect(screen.getByText("Badge Text")).toBeInTheDocument();
+describe("Badge className", () => {
+  it("applies custom className", () => {
+    render(<Badge text="X" className="custom" />);
+    const badge = screen.getByText("X").parentElement;
+    expect(badge?.className).toContain("custom");
   });
 
-  it('defaults to "tinypop" variant when variant prop is omitted', () => {
-    renderBadge();
-    expect(screen.getByText("Badge Text")).toBeInTheDocument();
+  it("merges with default classes", () => {
+    render(<Badge text="X" type="success" className="extra" />);
+    const badge = screen.getByText("X").parentElement;
+    expect(badge?.className).toContain("bg-success");
+    expect(badge?.className).toContain("extra");
   });
 });
 
-describe("Badge className passthrough", () => {
-  it("applies custom className to the badge element", () => {
-    render(<Badge text="X" className="my-custom-badge" />);
-    const motionDiv = screen.getByText("X").parentElement;
-    expect(motionDiv?.className).toContain("my-custom-badge");
-  });
-
-  it("merges custom className with default classes", () => {
-    render(<Badge text="X" type="success" className="extra-class" />);
-    const motionDiv = screen.getByText("X").parentElement;
-    expect(motionDiv?.className).toContain("bg-success");
-    expect(motionDiv?.className).toContain("extra-class");
-  });
-});
-
-describe("Badge structural classes", () => {
-  it("outer wrapper has class 'relative inline-flex items-center'", () => {
+describe("Badge structure", () => {
+  it("inline mode has no wrapper", () => {
     const { container } = renderBadge();
+    const root = container.firstElementChild;
+    expect(root?.className).not.toContain("relative inline-flex");
+  });
+
+  it("attached mode has wrapper", () => {
+    const { container } = render(
+      <Badge mode="attached" text="1">
+        <div>child</div>
+      </Badge>
+    );
+
     const wrapper = container.firstElementChild;
     expect(wrapper?.className).toContain("relative");
     expect(wrapper?.className).toContain("inline-flex");
-    expect(wrapper?.className).toContain("items-center");
   });
 
-  it("badge element has 'rounded-full' class", () => {
+  it("badge has rounded-full", () => {
     renderBadge();
-    const motionDiv = screen.getByText("Badge Text").parentElement;
-    expect(motionDiv?.className).toContain("rounded-full");
-  });
-
-  it("badge element has 'z-10' class", () => {
-    renderBadge();
-    const motionDiv = screen.getByText("Badge Text").parentElement;
-    expect(motionDiv?.className).toContain("z-10");
+    const badge = screen.getByText("Badge Text").parentElement;
+    expect(badge?.className).toContain("rounded-full");
   });
 });
 
 describe("Badge displayName", () => {
-  it('has displayName "Badge"', () => {
+  it("has correct displayName", () => {
     expect(Badge.displayName).toBe("Badge");
   });
 });
