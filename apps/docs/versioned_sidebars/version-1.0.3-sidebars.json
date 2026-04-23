@@ -55,6 +55,7 @@
             "components/checkbox",
             "components/date-picker",
             "components/dropdown",
+            "components/exploding-input",
             "components/file-upload",
             "components/input",
             "components/radio",
@@ -257,7 +258,16 @@
                 "templates/pages/forms/advanced-search-form",
                 "templates/pages/forms/dynamic-form",
                 "templates/pages/forms/contact-form",
-                "templates/pages/forms/multi-step-form"
+                "templates/pages/forms/advanced-search-form",
+                "templates/pages/forms/multi-step-form",
+                "templates/pages/forms/quiz-form"
+              ]
+            },
+            {
+              "type": "category",
+              "label": "Data Management",
+              "items": [
+                "templates/pages/data-management/data-table"
               ]
             }
           ]

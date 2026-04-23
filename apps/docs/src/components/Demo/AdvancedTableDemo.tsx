@@ -57,7 +57,7 @@ import AdvancedTable from '@ignix-ui/advanced-table'
 `;
 
   return (
-    <div className="space-y-8 mb-8">
+    <div className="space-y-8">
       <div className="flex flex-wrap gap-4 justify-start sm:justify-end">
         <div className="space-y-2">
           <VariantSelector
@@ -71,7 +71,7 @@ import AdvancedTable from '@ignix-ui/advanced-table'
 
       <Tabs>
         <TabItem value="preview" label="Preview">
-          <div className="p-6 border rounded-lg mt-4">
+          <div className="mt-4">
             <AdvancedTable
               rows={sampleRows}
               columns={sampleColumns}
@@ -95,61 +95,51 @@ import AdvancedTable from '@ignix-ui/advanced-table'
 
 /** Base table only (no sort, filter, pagination). */
 export const AdvancedTableBaseDemo = () => (
-  <div className="p-6 border rounded-lg">
-    <AdvancedTable
-      rows={sampleRows}
-      columns={sampleColumns}
-      enableSorting={false}
-      enableFiltering={false}
-      enablePagination={false}
-    />
-  </div>
+  <AdvancedTable
+    rows={sampleRows}
+    columns={sampleColumns}
+    enableSorting={false}
+    enableFiltering={false}
+    enablePagination={false}
+  />
 );
 
 /** Sortable table only. */
 export const AdvancedTableSortableDemo = () => (
-  <div className="p-6 border rounded-lg">
-    <AdvancedTable
-      rows={sampleRows}
-      columns={sampleColumns}
-      enableSorting
-      enableFiltering={false}
-      enablePagination={false}
-    />
-  </div>
+  <AdvancedTable
+    rows={sampleRows}
+    columns={sampleColumns}
+    enableSorting
+    enableFiltering={false}
+    enablePagination={false}
+  />
 );
 
 /** Filterable table only. */
 export const AdvancedTableFilterableDemo = () => (
-  <div className="p-6 border rounded-lg">
-    <AdvancedTable
-      rows={sampleRows}
-      columns={sampleColumns}
-      enableSorting={false}
-      enableFiltering
-      enablePagination={false}
-    />
-  </div>
+  <AdvancedTable
+    rows={sampleRows}
+    columns={sampleColumns}
+    enableSorting={false}
+    enableFiltering
+    enablePagination={false}
+  />
 );
 
 /** Paginated table only. */
 export const AdvancedTablePaginatedDemo = () => (
-  <div className="p-6 border rounded-lg">
-    <AdvancedTable
-      rows={sampleRows}
-      columns={sampleColumns}
-      enableSorting={false}
-      enableFiltering={false}
-      enablePagination
-    />
-  </div>
+  <AdvancedTable
+    rows={sampleRows}
+    columns={sampleColumns}
+    enableSorting={false}
+    enableFiltering={false}
+    enablePagination
+  />
 );
 
 /** Full-featured table. */
 export const AdvancedTableFullDemo = () => (
-  <div className="p-6 border rounded-lg">
-    <AdvancedTable rows={sampleRows} columns={sampleColumns} />
-  </div>
+  <AdvancedTable rows={sampleRows} columns={sampleColumns} />
 );
 
 export default AdvancedTableDemo;
