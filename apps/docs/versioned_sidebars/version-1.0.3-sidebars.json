@@ -261,6 +261,13 @@
                 "templates/pages/forms/multi-step-form",
                 "templates/pages/forms/quiz-form"
               ]
+            },
+            {
+              "type": "category",
+              "label": "Data Management",
+              "items": [
+                "templates/pages/data-management/data-table"
+              ]
             }
           ]
         },
