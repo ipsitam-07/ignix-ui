@@ -74,7 +74,6 @@ function getRowKey(
   extractor?: (row: Record<string, React.ReactNode>, index: number) => string
 ) {
   if (extractor) return extractor(row, index);
-  // Default stable key: combine cell values
   return headings.map((h) => String(row[h.key] ?? "")).join("|") + `__${index}`;
 }
 
@@ -252,7 +251,12 @@ export function Table(props: TableProps & Partial<PaginationProps> & { currentPa
     <Theme radius="large" appearance="inherit" {...rest}>
       <Flex direction="column" align="center" gap="6" className="w-full">
         <TableContent {...rest} />
-        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+          siblingCount={rest.siblingCount}
+        />
       </Flex>
     </Theme>
   );

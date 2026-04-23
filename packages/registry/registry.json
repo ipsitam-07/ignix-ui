@@ -32,13 +32,14 @@
       "name": "AdvancedSearchForm",
       "description": "A form component for advanced search functionality with multiple filter options.",
       "dependencies": [
-        "lucide-react", 
+        "lucide-react",
         "class-variance-authority",
         "framer-motion"
       ],
       "componentDependencies": [
         "typography",
-        "datePicker", "checkbox"
+        "datePicker",
+        "checkbox"
       ],
       "files": {
         "main": {
@@ -405,6 +406,17 @@
         "hook": {
           "path": "components/toast/use-toast.ts",
           "type": "hook"
+        }
+      }
+    },
+    "exploding-input": {
+      "name": "Exploding-Input",
+      "description": "An interactive input field that fires particles, confetti, and emojis based on user input.",
+      "dependencies": [],
+      "files": {
+        "main": {
+          "path": "components/exploding-input/index.tsx",
+          "type": "component"
         }
       }
     },
@@ -1383,7 +1395,9 @@
     "activity-feed-page": {
       "name": "activity-feed-page",
       "description": "A composable activity feed page template with a chronological events list (newest-first), event-type filters, search, relative/absolute timestamps, and pagination or infinite load-more.",
-      "dependencies": ["@radix-ui/react-icons"],
+      "dependencies": [
+        "@radix-ui/react-icons"
+      ],
       "componentDependencies": [
         "button",
         "card",
@@ -1696,6 +1710,25 @@
       "files": {
         "main": {
           "path": "templates/pages/quiz-form/index.tsx",
+          "type": "template"
+        }
+      }
+    },
+    "data-table": {
+      "name": "data-table",
+      "description": "A Data table component that provides a flexible and interactive way to display tabular data with features like sorting, filtering, pagination, and customizable columns.",
+      "dependencies": [
+        "class-variance-authority",
+        "@radix-ui/react-icons", 
+        "framer-motion",
+        "@radix-ui/react-dropdown-menu"
+      ],
+      "componentDependencies": [
+        "checkbox"
+      ],
+      "files": {
+        "main": {
+          "path": "templates/pages/data-table/index.tsx",
           "type": "template"
         }
       }

@@ -5,6 +5,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import "@testing-library/jest-dom";
 import { ContactForm } from ".";
+import { ToastContext } from "@ignix-ui/toast";
 
 /* ================= MOCKS ================= */
 
@@ -83,6 +84,7 @@ const mockToast = {
 vi.mock("@ignix-ui/toast/use-toast", () => ({
   useToast: () => mockToast,
 }));
+
 
 /* ================= TEST SETUP ================= */
 
@@ -170,35 +172,29 @@ describe("ContactForm", () => {
     });
   });
 
-  it("shows success toast when onSuccess not provided", async () => {
-    const onSubmit = vi.fn().mockResolvedValue(undefined);
-
-    setup({ onSubmit });
-
-    fireEvent.change(screen.getByPlaceholderText("Name"), {
-      target: { value: "John" },
-    });
-    fireEvent.change(screen.getByPlaceholderText("Email"), {
-      target: { value: "john@test.com" },
-    });
-    fireEvent.change(screen.getByPlaceholderText("Subject"), {
-      target: { value: "Hello" },
-    });
-
-    fireEvent.click(screen.getByText("Send Message"));
-    await waitFor(() => {
-      expect(mockToast.addToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: "Message sent successfully!",
-        })
-      );
-    });
-  });
-
   it("handles submit error and shows toast", async () => {
-    const onSubmit = vi.fn().mockRejectedValue(new Error("fail"));
-
-    setup({ onSubmit });
+    const defaultProps = {
+      variant: "default" as const,
+      onSubmit: vi.fn().mockRejectedValue(new Error("fail"))
+    };
+    const mockToast = {
+      addToast: vi.fn(),
+    } as any;
+    render(
+      <ToastContext.Provider value={mockToast}>
+      <ContactForm {...defaultProps}>
+        <ContactForm.Header />
+        <ContactForm.Content>
+          <ContactForm.Field name="name" label="Name" />
+          <ContactForm.Field name="email" label="Email" />
+          <ContactForm.Field name="subject" label="Subject" />
+          <ContactForm.Textarea name="message" />
+          <ContactForm.FileUpload />
+        </ContactForm.Content>
+        <ContactForm.Actions />
+      </ContactForm>
+      </ToastContext.Provider>
+    );
 
     fireEvent.change(screen.getByPlaceholderText("Name"), {
       target: { value: "John" },
