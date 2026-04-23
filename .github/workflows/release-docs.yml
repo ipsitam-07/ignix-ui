@@ -24,11 +24,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: 'Install dependencies and build'
         run: |
           cd apps/docs
-          npm install
-          npm run build
+          pnpm install
+          pnpm run build
 
       - name: 'Fetch branches'
         run: git fetch origin
