@@ -255,8 +255,9 @@ export async function createSrcDirectory(root: string): Promise<void> {
 // 11. Create global styles
 export async function createGlobalStyles(root: string): Promise<void> {
   const globalsCss = `@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
+@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
@@ -447,7 +448,6 @@ npm run start
 │       └── globals.css   # Tailwind CSS imports and theme variables
 ├── ignix.config.js       # Ignix UI configuration
 ├── next.config.js        # Next.js configuration
-├── tailwind.config.js    # Tailwind CSS configuration
 └── tsconfig.json         # TypeScript configuration
 \`\`\`
 
