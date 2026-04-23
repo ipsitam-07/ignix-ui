@@ -84,18 +84,13 @@ export function createStartersCommandMonorepo() {
       }
 
       const originalCwd = process.cwd();
+      let restoreLogger: (() => void) | undefined;
 
       try {
         process.chdir(ctx.cwd);
 
         if (ctx.isJson) {
-          const silent = (): void => {
-            return;
-          };
-          logger.info = silent;
-          logger.warn = silent;
-          logger.error = silent;
-          logger.success = silent;
+          restoreLogger = logger.setSilent(true);
         }
 
         const noop = () => {
@@ -141,6 +136,7 @@ export function createStartersCommandMonorepo() {
         }
         process.exit(1);
       } finally {
+        restoreLogger?.();
         process.chdir(originalCwd);
       }
     });
@@ -181,18 +177,13 @@ export function createStartersCommandNextjsApp() {
       }
 
       const originalCwd = process.cwd();
+      let restoreLogger: (() => void) | undefined;
 
       try {
         process.chdir(ctx.cwd);
 
         if (ctx.isJson) {
-          const silent = (): void => {
-            return;
-          };
-          logger.info = silent;
-          logger.warn = silent;
-          logger.error = silent;
-          logger.success = silent;
+          restoreLogger = logger.setSilent(true);
         }
 
         const noop = () => {
@@ -301,6 +292,7 @@ export function createStartersCommandNextjsApp() {
         }
         process.exit(1);
       } finally {
+        restoreLogger?.();
         process.chdir(originalCwd);
       }
     });
@@ -339,18 +331,13 @@ export function createStartersCommandViteReact() {
       }
 
       const originalCwd = process.cwd();
+      let restoreLogger: (() => void) | undefined;
 
       try {
         process.chdir(ctx.cwd);
 
         if (ctx.isJson) {
-          const silent = (): void => {
-            return;
-          };
-          logger.info = silent;
-          logger.warn = silent;
-          logger.error = silent;
-          logger.success = silent;
+          restoreLogger = logger.setSilent(true);
         }
 
         const noop = () => {
@@ -460,6 +447,7 @@ export function createStartersCommandViteReact() {
         }
         process.exit(1);
       } finally {
+        restoreLogger?.();
         process.chdir(originalCwd);
       }
     });

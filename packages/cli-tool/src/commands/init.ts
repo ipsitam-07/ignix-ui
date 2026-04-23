@@ -28,6 +28,7 @@ export function createInitCommand() {
       };
 
       const originalCwd = process.cwd();
+      let restoreLogger: (() => void) | undefined;
       process.chdir(ctx.cwd);
 
       type NoopSpinner = {
@@ -53,7 +54,7 @@ export function createInitCommand() {
         : ora('Initializing Ignix UI...').start();
 
       if (ctx.isJson) {
-        logger.setSilent(true);
+        restoreLogger = logger.setSilent(true);
       }
 
       try {
@@ -178,6 +179,7 @@ export function createInitCommand() {
 
         process.exit(1);
       } finally {
+        restoreLogger?.();
         process.chdir(originalCwd);
       }
     });
