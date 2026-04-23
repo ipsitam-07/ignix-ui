@@ -1,95 +1,132 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Badge } from "./index";
-import { Bell } from "lucide-react";
+import { Mail } from "lucide-react";
 
 const meta: Meta<typeof Badge> = {
-    title: "Components/Badge",
-    component: Badge,
-    tags: ["autodocs"],
-    parameters: {
-        docs: {
-            description: {
-                component: `
-The **Badge** component is a small animated indicator often used for notifications, statuses, or counts.  
-It supports multiple **types** (primary, success, warning, etc.) and **animation variants** (pulse, bounce, tinypop).
+  title: "Components/Badge",
+  component: Badge,
+  tags: ["autodocs"],
+  parameters: {
+    docs: {
+      description: {
+        component: `
+The **Badge** component is a small status indicator used for notifications, counts, and labels.
 
-###  Features
-- Type-based color variants (primary, success, warning, error, etc.)
-- Built-in animations (pulse, bounce, tinypop)
-- Works with or without a parent icon/element
+### Features
+- Inline and attached modes
+- Multiple color types (primary, success, warning, error)
+- Built-in animation variants (pulse, bounce, tinypop)
+- Works with text, icons, buttons, and avatars
         `,
-            },
-        },
+      },
     },
-    argTypes: {
-        text: {
-            control: "text",
-            description: "Text or number displayed inside the badge",
-            defaultValue: "3",
-        },
-        type: {
-            control: "select",
-            options: ["primary", "secondary", "success", "warning", "error"],
-            description: "Color style of the badge",
-        },
-        variant: {
-            control: "select",
-            options: ["pulse", "bounce", "tinypop"],
-            description: "Animation style of the badge",
-        },
-        className: {
-            control: "text",
-            description: "Custom Tailwind or CSS class names",
-        },
-        children: {
-            table: { disable: true },
-            description: "Optional parent element or icon (like a bell or avatar)",
-        },
+  },
+  argTypes: {
+    text: {
+      control: "text",
+      description: "Content displayed inside the badge",
+      defaultValue: "5",
     },
+    type: {
+      control: "select",
+      options: ["primary", "secondary", "success", "warning", "error"],
+      description: "Color style of the badge",
+    },
+    variant: {
+      control: "select",
+      options: ["pulse", "bounce", "tinypop"],
+      description: "Animation style",
+    },
+    mode: {
+      control: "select",
+      options: ["inline", "attached"],
+      description: "Layout behavior of the badge",
+    },
+    className: {
+      control: "text",
+      description: "Custom styles",
+    },
+    children: {
+      table: { disable: true },
+    },
+  },
 };
 
 export default meta;
 type Story = StoryObj<typeof Badge>;
 
 
-export const Default: Story = {
-    args: {
-        text: "5",
-        type: "primary",
-        variant: "tinypop",
-    },
+// Inline Badge (default usage)
+export const Inline: Story = {
+  args: {
+    text: "99+",
+    type: "error",
+    mode: "inline",
+  },
+  render: (args) => (
+    <div className="flex items-center gap-2">
+      <span className="text-lg font-medium">Notifications</span>
+      <Badge {...args} />
+    </div>
+  ),
 };
 
-export const WithIcon: Story = {
-    args: {
-        text: "12",
-        type: "success",
-        variant: "pulse",
-        children: (
-            <div className="p-4 bg-gray-200 rounded-full">
-                <Bell className="w-6 h-6 text-gray-700" />
-            </div>
-        ),
-    },
+
+// Attached to Icon
+export const AttachedIcon: Story = {
+  args: {
+    text: "3",
+    type: "primary",
+    variant: "pulse",
+    mode: "attached",
+  },
+  render: (args) => (
+    <Badge {...args}>
+      <Mail className="h-10 w-10" />
+    </Badge>
+  ),
 };
 
-export const Warning: Story = {
-    args: {
-        text: "99+",
-        type: "warning",
-        variant: "bounce",
-        children: (
-            <div className="p-4 bg-gray-100 rounded-full">
-                <Bell className="w-6 h-6 text-gray-700" />
-            </div>
-        ),
-    },
+
+// Attached to Button
+export const AttachedButton: Story = {
+  args: {
+    text: "New",
+    type: "error",
+    variant: "tinypop",
+    mode: "attached",
+  },
+  render: (args) => (
+    <Badge {...args}>
+      <button className="px-4 py-2 bg-muted rounded-lg shadow">
+        Components
+      </button>
+    </Badge>
+  ),
 };
 
-export const ErrorBadge: Story = {
-    args: {
-        text: "9",
-        type: "error",
-        variant: "pulse",
-    },
+
+// Variants Showcase
+export const Variants: Story = {
+  render: () => (
+    <div className="flex gap-4 items-center">
+      <Badge text="5" variant="pulse" type="primary" />
+      <Badge text="5" variant="bounce" type="success" />
+      <Badge text="5" variant="tinypop" type="warning" />
+    </div>
+  ),
+};
+
+
+// Types Showcase
+export const Types: Story = {
+  render: () => (
+    <div className="flex gap-4 items-center">
+      <Badge text="1" type="primary" />
+      <Badge text="2" type="secondary" />
+      <Badge text="3" type="success" />
+      <Badge text="4" type="warning" />
+      <Badge text="5" type="error" />
+    </div>
+  ),
 };
