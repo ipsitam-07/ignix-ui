@@ -10,14 +10,16 @@ type InputValues = {
 
 export function InputBasicDemo(): ReactElement {
   const [value, setValue] = useState<string>('');
-  
+
   return (
-    <AnimatedInput
-      placeholder="Type something..."
-      variant="clean"
-      value={value}
-      onChange={setValue}
-    />
+    <div className="pt-10 pb-4">
+      <AnimatedInput
+        placeholder="Type something..."
+        variant="clean"
+        value={value}
+        onChange={setValue}
+      />
+    </div>
   );
 }
 
@@ -34,7 +36,7 @@ export function InputAdvancedDemo(): ReactElement {
   };
 
   return (
-    <>
+    <div className="pt-10 pb-4 flex flex-col gap-4">
       <AnimatedInput
         placeholder="Border Beam"
         variant="borderBeam"
@@ -59,6 +61,6 @@ export function InputAdvancedDemo(): ReactElement {
         value={values.cosmic}
         onChange={handleChange('cosmic')}
       />
-    </>
+    </div>
   );
 }
