@@ -55,6 +55,7 @@
             "components/checkbox",
             "components/date-picker",
             "components/dropdown",
+            "components/exploding-input",
             "components/file-upload",
             "components/input",
             "components/radio",
