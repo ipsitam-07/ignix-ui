@@ -515,7 +515,7 @@ export default {
     'https://raw.githubusercontent.com/mindfiredigital/ignix-ui/main/packages/registry/themes.json',
 
   // Default directory for UI components in a monorepo
-  componentsDir: 'packages/ui/src/components',
+  componentsDir: 'packages/ui/src/components/ui',
 
   // Default directory for themes
   themesDir: 'packages/ui/src/themes',
