@@ -187,8 +187,8 @@
         }
       }
     },
-    "empty-state-page": {
-      "name": "Empty-State-Page",
+    "empty-state": {
+      "name": "Empty-State",
       "description": "An advanced, interactive empty state template featuring 3D mouse-tracking tilt effects, a custom particle system, and support for multiple themes and accent colors.",
       "dependencies": [
         "@radix-ui/react-icons",

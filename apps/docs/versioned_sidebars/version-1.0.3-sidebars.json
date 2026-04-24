@@ -248,7 +248,8 @@
               "label": "Error Pages",
               "items": [
                 "templates/pages/error-page",
-                "templates/pages/maintenance-page"
+                "templates/pages/maintenance-page",
+                "templates/pages/empty-state"
               ]
             },
             {
