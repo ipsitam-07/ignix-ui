@@ -427,8 +427,9 @@ export default function Page() {
   await fs.writeFile(path.join(base, 'app', 'page.tsx'), page);
 
   const globalsCss = `@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
+@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);

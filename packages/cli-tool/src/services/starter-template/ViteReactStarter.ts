@@ -301,8 +301,9 @@ export async function createGlobalStyles(root: string): Promise<void> {
   const srcDir = path.join(root, 'src');
   await fs.ensureDir(srcDir);
   const indexCss = `@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
+@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
