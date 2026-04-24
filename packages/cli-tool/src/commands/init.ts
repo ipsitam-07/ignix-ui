@@ -193,11 +193,6 @@ async function validateEnvironment() {
   if (!hasPackageJson) {
     throw new Error('No package.json found. Please run `npm init` or `yarn init` first.');
   }
-
-  const hasNodeModules = await fs.pathExists('node_modules');
-  if (!hasNodeModules) {
-    throw new Error('node_modules not found. Please run `npm install` or `yarn install` first.');
-  }
 }
 
 async function createProjectStructure() {

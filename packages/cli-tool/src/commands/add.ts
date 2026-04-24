@@ -63,13 +63,15 @@ export function createAddCommand() {
                 type: 'select',
                 name: 'component',
                 message: chalk.green('Select a component to add:'),
-                choices: availableComponents.map((c) => ({
-                  title: c.name,
-                  value: {
-                    name: c.name.toLowerCase(),
-                    type: c.files.main.type,
-                  },
-                })),
+                choices: availableComponents
+                  .filter((c) => c && (c.name || c.id))
+                  .map((c) => ({
+                    title: c.name || c.id || 'Unknown',
+                    value: {
+                      name: String(c.id || c.name).toLowerCase(),
+                      type: c.files?.main?.type || 'component',
+                    },
+                  })),
               });
 
               if (installResponse && installResponse.component) {
@@ -77,13 +79,15 @@ export function createAddCommand() {
               }
             } else {
               // Deterministic processing based on user input
-              const normalized = identifiers.map((i: string) => i.toLowerCase());
+              const normalized = identifiers
+                .filter((i: any) => typeof i === 'string')
+                .map((i: string) => i.toLowerCase());
 
               // Build lookup map
               const componentMap = new Map<string, any>();
               for (const c of availableComponents) {
-                if (c.name) componentMap.set(c.name.toLowerCase(), c);
-                if (c.id) componentMap.set(c.id.toLowerCase(), c);
+                if (c.name) componentMap.set(String(c.name).toLowerCase(), c);
+                if (c.id) componentMap.set(String(c.id).toLowerCase(), c);
               }
 
               selectedItems = [];
@@ -100,8 +104,8 @@ export function createAddCommand() {
                 }
 
                 selectedItems.push({
-                  name: (component.id || component.name).toLowerCase(),
-                  type: component.files.main.type,
+                  name: String(component.id || component.name).toLowerCase(),
+                  type: component.files?.main?.type || 'component',
                 });
               }
             }

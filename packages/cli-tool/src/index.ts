@@ -149,12 +149,14 @@ async function startInteractiveCLI(): Promise<void> {
             type: 'multiselect',
             name: 'components',
             message: 'Select components to add:',
-            choices: availableComponents.map((c: any) => ({
-              title: c.name,
-              value: c.name.toLowerCase(),
-              type: c.files.main.type,
-              description: c.description || ' ',
-            })),
+            choices: availableComponents
+              .filter((c: any) => c && (c.name || c.id))
+              .map((c: any) => ({
+                title: c.name || c.id,
+                value: String(c.id || c.name).toLowerCase(),
+                type: c.files?.main?.type || 'component',
+                description: c.description || ' ',
+              })),
             instructions: false,
             hint: '- Space to select. Return to submit',
           });
