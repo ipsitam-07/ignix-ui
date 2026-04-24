@@ -112,7 +112,7 @@ const iconVariants = {
 
 interface Particle { id: number; x: number; y: number; tx: number; ty: number; dur: number; del: number; size: number; }
 
-function useParticles(count = 12) {
+function useParticles(count = 12): Particle[] {
     return React.useMemo<Particle[]>(
         () =>
             Array.from({ length: count }, (_, i) => ({
@@ -434,7 +434,7 @@ EmptyStateHelp.displayName = "EmptyStateHelp";
 
 //  Preset compositions 
 
-const EmptyStateDefault = () => (
+const EmptyStateDefault = (): React.JSX.Element => (
     <EmptyState>
         <EmptyStateIllustration icon={FileTextIcon} accent="primary" />
         <EmptyStateHeading>No projects yet</EmptyStateHeading>
@@ -453,7 +453,7 @@ const EmptyStateDefault = () => (
     </EmptyState>
 );
 
-const EmptyStateMinimal = () => (
+const EmptyStateMinimal = (): React.JSX.Element => (
     <EmptyState variant="minimal" tilt={false}>
         <EmptyStateIllustration icon={FileTextIcon} accent="teal" />
         <EmptyStateBadge label="0 results" />
@@ -465,13 +465,13 @@ const EmptyStateMinimal = () => (
     </EmptyState>
 );
 
-export { 
-    EmptyState, 
-    EmptyStateIllustration, 
-    EmptyStateBadge, 
-    EmptyStateHeading, 
-    EmptyStateDesc, 
-    EmptyStateActions, 
+export {
+    EmptyState,
+    EmptyStateIllustration,
+    EmptyStateBadge,
+    EmptyStateHeading,
+    EmptyStateDesc,
+    EmptyStateActions,
     EmptyStateHelp,
     EmptyStateDefault,
     EmptyStateMinimal
