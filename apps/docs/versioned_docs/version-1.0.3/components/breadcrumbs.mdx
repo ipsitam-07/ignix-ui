@@ -8,48 +8,11 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import { Breadcrumbs } from '@site/src/components/UI/breadcrumbs';
 import { ChevronRight } from 'lucide-react';
-
-## Overview
+import BreadcrumbsDemo from '@site/src/components/Demo/BreadcrumbsDemo';
 
 Breadcrumbs provide users with a way to navigate back to previous pages or sections in a hierarchical structure. They help users understand their current location within the website and provide quick access to parent pages.
 
-## Preview
-
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-    <div className="p-4 border rounded-lg">
-      <Breadcrumbs 
-        items={[
-          { label: 'Home', href: '#' },
-          { label: 'Products', href: '#' },
-          { label: 'Electronics', href: '#' },
-          { label: 'Smartphones' }
-        ]}
-        separatorIcon={ChevronRight}
-      />
-    </div>
-  </TabItem>
-  <TabItem value="code" label="Code">
-    ```tsx
-    import { Breadcrumbs } from '@ignix-ui/breadcrumbs';
-    import { ChevronRight } from 'lucide-react';
-
-    function BreadcrumbDemo() {
-      return (
-        <Breadcrumbs 
-          items={[
-            { label: 'Home', href: '#' },
-            { label: 'Products', href: '#' },
-            { label: 'Electronics', href: '#' },
-            { label: 'Smartphones' }
-          ]}
-          separatorIcon={ChevronRight}
-        />
-      );
-    }
-    ```
-  </TabItem>
-</Tabs>
+<BreadcrumbsDemo />
 
 ## Installation
 
@@ -59,7 +22,7 @@ Breadcrumbs provide users with a way to navigate back to previous pages or secti
     ignix add component breadcrumbs
     ```
   </TabItem>
-  <TabItem value="manual" label="manual" className="max-h-[500px] overflow-y-auto">
+  <TabItem value="manual" label="Manual" className="max-h-[500px] overflow-y-auto">
 
     ```tsx
 "use client";
@@ -669,8 +632,18 @@ function BasicBreadcrumb() {
 }
 ```
 
-import BreadcrumbsDemo from '@site/src/components/Demo/BreadcrumbsDemo';
+## Props
 
-## Variants
-
-<BreadcrumbsDemo />
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `items` | `{ label: string; href?: string; icon?: React.ElementType }[]` | `[]` | Array of breadcrumb items to display |
+| `variant` | `'text' \| 'step' \| 'progress' \| 'custom'` | `'text'` | Visual style variant of the breadcrumbs |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Size of the breadcrumb items |
+| `shape` | `'rectangle' \| 'round' \| 'pill' \| 'default'` | `'pill'` | Border radius shape of the breadcrumb items |
+| `separatorIcon` | `React.ElementType` | `ChevronRight` | Custom icon to use as a separator between breadcrumb items |
+| `steps` | `string[]` | `[]` | Array of step labels (used with 'step' and 'progress' variants) |
+| `currentStep` | `number` | `0` | Current active step index (0-indexed) |
+| `bgColor` | `'primary' \| 'secondary' \| 'success' \| 'destructive' \| 'transparent'` | - | Background color variant for the breadcrumbs |
+| `textColor` | `'primary' \| 'secondary' \| 'muted' \| 'accent'` | - | Text color variant for the breadcrumbs |
+| `className` | `string` | - | Additional CSS classes to apply to the root element |
+| `asChild` | `boolean` | `false` | If true, the component will merge its props onto its immediate child |
