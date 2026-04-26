@@ -10,7 +10,6 @@ const InteractiveFeaturesDemo = () => {
     const [activeHover, setActiveHover] = useState<string>('');
 
     const codeString = `
-// Interactive Features Example
 import { Typography } from '@ignix-ui/typography';
 
 <div>
