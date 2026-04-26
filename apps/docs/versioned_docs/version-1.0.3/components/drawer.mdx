@@ -9,12 +9,7 @@ import TabItem from '@theme/TabItem';
 import DrawerDemo from '@site/src/components/Demo/DrawerDemo';
 import CodeBlock from '@theme/CodeBlock';
 
-## Overview
-
 The Drawer component provides a sliding panel that can be positioned from any side of the screen. It supports multiple animation types, customizable sizes, and includes features like overlay, keyboard navigation, and accessibility support.
-
-## Preview
-
 <DrawerDemo />
 
 ## Installation
@@ -25,7 +20,7 @@ The Drawer component provides a sliding panel that can be positioned from any si
     ignix add component drawer
     ```
   </TabItem>
-  <TabItem value="manual" label="manual" className="max-h-[500px] overflow-y-auto">
+  <TabItem value="manual" label="Manual" className="max-h-[500px] overflow-y-auto">
     ```tsx
     import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
@@ -220,23 +215,6 @@ function MyComponent() {
 }
 ```
 
-## Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `isOpen` | `boolean` | - | Controls whether the drawer is open or closed |
-| `onClose` | `() => void` | - | Callback function called when the drawer should close |
-| `children` | `React.ReactNode` | - | Content to be displayed inside the drawer |
-| `position` | `'left' \| 'right' \| 'top' \| 'bottom'` | `'right'` | Position of the drawer relative to the screen |
-| `size` | `string \| number` | `'350px'` | Size of the drawer (width for left/right, height for top/bottom) |
-| `showOverlay` | `boolean` | `true` | Whether to show a backdrop overlay |
-| `closeOnOverlayClick` | `boolean` | `true` | Whether clicking the overlay closes the drawer |
-| `title` | `React.ReactNode` | - | Optional title displayed in the drawer header |
-| `footer` | `React.ReactNode` | - | Optional footer content |
-| `className` | `string` | - | Additional CSS classes for the drawer container |
-| `animationType` | `'slide' \| 'reveal' \| 'fade' \| 'hinge' \| 'zoom' \| 'flip'` | `'slide'` | Type of animation to use when opening/closing |
-| `zIndex` | `number` | `1000` | Z-index for the drawer and overlay |
-
 ## Examples
 
 ### Form Drawer
@@ -261,3 +239,20 @@ function MyComponent() {
   </form>
 </Drawer>
 ```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `isOpen` | `boolean` | - | Controls whether the drawer is open or closed |
+| `onClose` | `() => void` | - | Callback function called when the drawer should close |
+| `children` | `React.ReactNode` | - | Content to be displayed inside the drawer |
+| `position` | `'left' \| 'right' \| 'top' \| 'bottom'` | `'right'` | Position of the drawer relative to the screen |
+| `size` | `string \| number` | `'350px'` | Size of the drawer (width for left/right, height for top/bottom) |
+| `showOverlay` | `boolean` | `true` | Whether to show a backdrop overlay |
+| `closeOnOverlayClick` | `boolean` | `true` | Whether clicking the overlay closes the drawer |
+| `title` | `React.ReactNode` | - | Optional title displayed in the drawer header |
+| `footer` | `React.ReactNode` | - | Optional footer content |
+| `className` | `string` | - | Additional CSS classes for the drawer container |
+| `animationType` | `'slide' \| 'reveal' \| 'fade' \| 'hinge' \| 'zoom' \| 'flip'` | `'slide'` | Type of animation to use when opening/closing |
+| `zIndex` | `number` | `1000` | Z-index for the drawer and overlay |
