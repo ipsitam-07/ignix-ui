@@ -8,11 +8,12 @@ import {
   EmptyStateIllustration,
   EmptyStateHeading,
   EmptyStateDesc,
+  EmptyStateBadge,
   EmptyStateActions,
   EmptyStateHelp,
 } from '@site/src/components/UI/empty-state';
 import { Button } from '@site/src/components/UI/button';
-import { ArchiveIcon, MagnifyingGlassIcon, UploadIcon, PlusIcon } from '@radix-ui/react-icons';
+import { ArchiveIcon, MagnifyingGlassIcon, UploadIcon, PlusIcon, BellIcon } from '@radix-ui/react-icons';
 
 type EmptyStateVariant = 'default' | 'minimal' | 'gradient' | 'card';
 
@@ -64,24 +65,29 @@ import { ArchiveIcon, PlusIcon, UploadIcon } from '@radix-ui/react-icons';
 
       <Tabs>
         <TabItem value="preview" label="Preview">
-          <div className="border border-gray-300 rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-900">
+          <div className="border border-border rounded-xl overflow-hidden bg-white dark:bg-slate-950 transition-colors duration-300">
             <div className="p-8 flex justify-center items-center min-h-[500px]">
               {variant === 'card' ? (
-                <div className="w-full max-w-2xl bg-muted/20 p-8 rounded-xl">
+                <div className="w-full max-w-2xl p-12 rounded-[3rem] bg-gradient-to-b from-primary/5 to-transparent border border-primary/10 shadow-inner">
                   <EmptyState variant="card">
-                    <EmptyStateIllustration icon={ArchiveIcon} />
+                    <EmptyStateIllustration icon={BellIcon} accent="teal" />
+                    <EmptyStateBadge label="New Notification" dot />
                     <EmptyStateHeading>Your inbox is empty</EmptyStateHeading>
                     <EmptyStateDesc>
-                      You don't have any new messages. We'll notify you when someone reaches out.
+                      You don't have any new messages. We'll notify you as soon as someone reaches out or a task is assigned.
                     </EmptyStateDesc>
                     <EmptyStateActions>
-                      <Button variant="default">Refresh Inbox</Button>
+                      <Button variant="default" className="rounded-full px-8 shadow-lg shadow-primary/20">Refresh Inbox</Button>
                     </EmptyStateActions>
                   </EmptyState>
                 </div>
               ) : (
                 <EmptyState variant={variant}>
-                  <EmptyStateIllustration icon={variant === 'minimal' ? MagnifyingGlassIcon : ArchiveIcon} />
+                  <EmptyStateIllustration
+                    icon={variant === 'minimal' ? MagnifyingGlassIcon : (variant === 'gradient' ? UploadIcon : ArchiveIcon)}
+                    accent={variant === 'gradient' ? 'amber' : 'primary'}
+                  />
+                  {variant !== 'minimal' && <EmptyStateBadge label="Project status: inactive" dot={false} className="mb-6 opacity-80" />}
                   <EmptyStateHeading>{variant === 'minimal' ? 'No results found' : 'No Projects Yet'}</EmptyStateHeading>
                   <EmptyStateDesc>
                     {variant === 'minimal'
@@ -90,13 +96,13 @@ import { ArchiveIcon, PlusIcon, UploadIcon } from '@radix-ui/react-icons';
                   </EmptyStateDesc>
                   <EmptyStateActions>
                     {variant === 'minimal' ? (
-                      <Button variant="outline">Clear all filters</Button>
+                      <Button variant="outline" className="rounded-full">Clear all filters</Button>
                     ) : (
                       <>
-                        <Button variant="default" animationVariant="pulse">
+                        <Button variant="default" animationVariant="pulse" className="rounded-full px-6">
                           <PlusIcon className="mr-2" /> Create New Project
                         </Button>
-                        <Button variant="outline">
+                        <Button variant="outline" className="rounded-full px-6">
                           <UploadIcon className="mr-2" /> Import Project
                         </Button>
                       </>

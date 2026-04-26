@@ -50,11 +50,13 @@ export interface EmptyStateIllustrationProps extends Omit<HTMLMotionProps<"div">
 export interface EmptyStateHeadingProps
     extends Omit<React.HTMLAttributes<HTMLHeadingElement>, "color"> {
     title?: string;
+    variant?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 }
 
 export interface EmptyStateDescProps
     extends Omit<React.HTMLAttributes<HTMLParagraphElement>, "color"> {
     description?: string;
+    color?: "inherit" | "default" | "primary" | "muted" | "secondary" | "error" | "success" | "warning";
 }
 
 export interface EmptyStateActionsProps extends Omit<HTMLMotionProps<"div">, "ref"> {
@@ -76,28 +78,34 @@ export interface EmptyStateHelpProps extends Omit<HTMLMotionProps<"div">, "ref">
 
 const emptyStateVariants = cva(
     [
-        "relative flex flex-col items-center justify-center w-full min-h-[380px] p-8 text-center",
-        "rounded-2xl border overflow-hidden",
-        "transform-style-3d",
+        "relative flex flex-col items-center justify-center w-full min-h-[460px] p-12 text-center",
+        "rounded-[3rem] border transition-all duration-700 ease-out",
+        "transform-style-3d group/card",
     ].join(" "),
     {
         variants: {
             variant: {
                 default:
-                    "bg-background border-dashed border-border/60 " +
+                    "bg-background/40 backdrop-blur-md border-border/60 " +
+                    "shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] " +
                     "before:absolute before:inset-0 before:rounded-[inherit] " +
-                    "before:bg-[radial-gradient(ellipse_60%_40%_at_50%_0%,hsl(var(--primary)/0.08),transparent_70%)] " +
+                    "before:bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.1),transparent_70%)] " +
                     "before:pointer-events-none",
                 card:
-                    "bg-card border-none shadow-[0_8px_32px_hsl(0_0%_0%/0.15)] " +
+                    "bg-card/95 dark:bg-gradient-to-br dark:from-card/90 dark:via-card/50 dark:to-card/30 backdrop-blur-2xl border-border/50 dark:border-white/10 " +
+                    "shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)] " +
+                    "dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] " +
                     "before:absolute before:inset-0 before:rounded-[inherit] " +
-                    "before:bg-[radial-gradient(ellipse_50%_30%_at_50%_0%,hsl(var(--primary)/0.06),transparent)] " +
-                    "before:pointer-events-none",
+                    "before:bg-[conic-gradient(from_0deg_at_50%_0%,transparent,hsl(var(--primary)/0.03),transparent)] " +
+                    "before:animate-spin-slow before:pointer-events-none",
                 minimal:
-                    "border-dashed border-border/40 bg-transparent min-h-[300px]",
+                    "bg-muted/5 dark:bg-muted/10 border border-dashed border-border/50 min-h-[360px] " +
+                    "hover:bg-muted/10 dark:hover:bg-muted/15 hover:border-solid hover:border-primary/30 " +
+                    "hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 ease-in-out group/minimal",
                 gradient:
-                    "bg-gradient-to-b from-primary/[0.07] to-background " +
-                    "border-primary/[0.12]",
+                    "bg-gradient-to-tr from-primary/[0.05] via-background to-primary/[0.02] " +
+                    "dark:from-primary/[0.12] dark:to-primary/[0.05] " +
+                    "border-primary/20 shadow-sm dark:shadow-[0_20px_40px_-12px_rgba(var(--primary),0.1)]",
             },
         },
         defaultVariants: { variant: "default" },
@@ -206,18 +214,39 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
                     }}
                     {...props}
                 >
-                    {/* Subtle grid texture */}
+                    {/* Noise Texture Overlay */}
+                    <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-overlay"
+                        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+                    />
+
+                    {/* Sophisticated light beam effect */}
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[inherit]">
+                        <div className="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[1px] h-[140%] bg-gradient-to-b from-transparent via-primary/10 dark:via-primary/20 to-transparent blur-[60px]" />
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-primary/5 dark:bg-primary/10 blur-[80px] rounded-full" />
+                    </div>
+
+                    {/* Background pattern */}
                     <div
                         aria-hidden
-                        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+                        className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
                         style={{
-                            backgroundImage:
-                                "linear-gradient(rgba(255,255,255,0.8) 1px,transparent 1px)," +
-                                "linear-gradient(90deg,rgba(255,255,255,0.8) 1px,transparent 1px)",
-                            backgroundSize: "28px 28px",
+                            backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1.5px, transparent 0)`,
+                            backgroundSize: "44px 44px",
                         }}
                     />
-                    <div className="relative z-10 flex flex-col items-center max-w-xs w-full">
+
+                    {/* Corner accents for minimal variant */}
+                    {variant === 'minimal' && (
+                        <div className="absolute inset-0 pointer-events-none">
+                            <div className="absolute top-6 left-6 w-8 h-8 border-t border-l border-primary/30 dark:border-primary/20 rounded-tl-xl group-hover/card:border-primary/50 transition-colors duration-500" />
+                            <div className="absolute top-6 right-6 w-8 h-8 border-t border-r border-primary/30 dark:border-primary/20 rounded-tr-xl group-hover/card:border-primary/50 transition-colors duration-500" />
+                            <div className="absolute bottom-6 left-6 w-8 h-8 border-b border-l border-primary/30 dark:border-primary/20 rounded-bl-xl group-hover/card:border-primary/50 transition-colors duration-500" />
+                            <div className="absolute bottom-6 right-6 w-8 h-8 border-b border-r border-primary/30 dark:border-primary/20 rounded-br-xl group-hover/card:border-primary/50 transition-colors duration-500" />
+                            <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-primary/5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-700" />
+                        </div>
+                    )}
+
+                    <div className="relative z-10 flex flex-col items-center max-w-sm w-full">
                         {children}
                     </div>
                 </motion.div>
@@ -231,28 +260,31 @@ EmptyState.displayName = "EmptyState";
 
 const accentTokens = {
     primary: {
-        ring: "border-primary/30",
-        ringInner: "border-primary/15",
-        dot: "bg-primary shadow-[0_0_8px_var(--primary)]",
-        core: "bg-primary/10 border-primary/20",
-        float: "drop-shadow-[0_0_12px_hsl(var(--primary)/0.5)]",
+        ring: "border-primary/40 shadow-[inset_0_0_12px_hsl(var(--primary)/0.15)]",
+        ringInner: "border-primary/25",
+        dot: "bg-primary shadow-[0_0_15px_hsl(var(--primary)),0_0_30px_hsl(var(--primary))]",
+        core: "bg-primary/10 border-primary/30 backdrop-blur-md",
+        float: "drop-shadow-[0_0_25px_hsl(var(--primary)/0.6)]",
         iconColor: "text-primary",
+        glow: "bg-primary/30 dark:bg-primary/25 blur-[40px]",
     },
     teal: {
-        ring: "border-teal-400/30",
-        ringInner: "border-teal-400/15",
-        dot: "bg-teal-400 shadow-[0_0_8px_theme(colors.teal.400)]",
-        core: "bg-teal-400/10 border-teal-400/20",
-        float: "drop-shadow-[0_0_12px_theme(colors.teal.400/0.5)]",
-        iconColor: "text-teal-400",
+        ring: "border-teal-500/40 shadow-[inset_0_0_12px_theme(colors.teal.500/0.15)]",
+        ringInner: "border-teal-500/25",
+        dot: "bg-teal-500 shadow-[0_0_15px_theme(colors.teal.500),0_0_30px_theme(colors.teal.500)]",
+        core: "bg-teal-500/10 border-teal-500/30 backdrop-blur-md",
+        float: "drop-shadow-[0_0_25px_theme(colors.teal.500/0.6)]",
+        iconColor: "text-teal-600 dark:text-teal-400",
+        glow: "bg-teal-500/30 dark:bg-teal-500/25 blur-[40px]",
     },
     amber: {
-        ring: "border-amber-400/30",
-        ringInner: "border-amber-400/15",
-        dot: "bg-amber-400 shadow-[0_0_8px_theme(colors.amber.400)]",
-        core: "bg-amber-400/10 border-amber-400/20",
-        float: "drop-shadow-[0_0_12px_theme(colors.amber.400/0.5)]",
-        iconColor: "text-amber-400",
+        ring: "border-amber-500/40 shadow-[inset_0_0_12px_theme(colors.amber.500/0.15)]",
+        ringInner: "border-amber-500/25",
+        dot: "bg-amber-500 shadow-[0_0_15px_theme(colors.amber.500),0_0_30px_theme(colors.amber.500)]",
+        core: "bg-amber-500/10 border-amber-500/30 backdrop-blur-md",
+        float: "drop-shadow-[0_0_25px_theme(colors.amber.500/0.6)]",
+        iconColor: "text-amber-600 dark:text-amber-400",
+        glow: "bg-amber-500/30 dark:bg-amber-500/25 blur-[40px]",
     },
 } as const;
 
@@ -275,10 +307,12 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                         <div className="max-w-[140px]">{illustration}</div>
                     )
                 ) : (
-                    <div className="relative w-[88px] h-[88px]" style={{ transformStyle: "preserve-3d" }}>
+                    <div className="relative w-[120px] h-[120px]" style={{ transformStyle: "preserve-3d" }}>
+                        {/* Central light source */}
+                        <div className={cn("absolute inset-0 rounded-full opacity-30", tk.glow)} aria-hidden />
 
                         {/* Floating particles */}
-                        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-full" aria-hidden>
+                        <div className="absolute inset-[-20px] pointer-events-none overflow-hidden rounded-full" aria-hidden>
                             {particles.map(p => (
                                 <motion.div
                                     key={p.id}
@@ -290,53 +324,69 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                                     animate={{
                                         y: [0, p.ty],
                                         x: [0, p.tx],
-                                        opacity: [0, 0.55, 0.3, 0],
-                                        scale: [0.5, 1, 1, 0.4],
+                                        opacity: [0, 0.8, 0.4, 0],
+                                        scale: [0.3, 1.4, 1, 0.2],
                                     }}
                                     transition={{
                                         duration: p.dur,
                                         delay: p.del,
                                         repeat: Infinity,
-                                        ease: "easeInOut",
+                                        ease: "circOut",
                                     }}
                                 />
                             ))}
                         </div>
 
-                        {/* Outer spinning ring */}
+                        {/* Outer spinning ring with orbiters */}
                         <motion.div
                             aria-hidden
-                            className={cn("absolute inset-0 rounded-full border", tk.ring)}
+                            className={cn("absolute inset-0 rounded-full border-2", tk.ring)}
                             animate={{ rotate: 360 }}
-                            transition={{ duration: 9, repeat: Infinity, ease: "linear" }}
+                            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
                         >
-                            {/* Orbiting dot */}
-                            <div className={cn("absolute -top-[3px] left-1/2 -translate-x-1/2 w-[6px] h-[6px] rounded-full", tk.dot)} />
+                            <div className={cn("absolute -top-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full", tk.dot)} />
+                            <div className={cn("absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full opacity-50", tk.dot)} />
                         </motion.div>
 
-                        {/* Inner counter-rotating dashed ring */}
+                        {/* Middle ring with dash effect */}
                         <motion.div
                             aria-hidden
-                            className={cn("absolute inset-[10px] rounded-full border border-dashed", tk.ringInner)}
+                            className={cn("absolute inset-[10px] rounded-full border border-dashed opacity-40", tk.ringInner)}
                             animate={{ rotate: -360 }}
-                            transition={{ duration: 5.5, repeat: Infinity, ease: "linear" }}
+                            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
                         />
 
-                        {/* Icon core — floats in Z */}
+                        {/* Inner counter-rotating ring */}
+                        <motion.div
+                            aria-hidden
+                            className={cn("absolute inset-[20px] rounded-full border border-primary/10", tk.ringInner)}
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                        />
+
+                        {/* Icon core — advanced floating */}
                         <motion.div
                             className={cn(
-                                "absolute inset-[18px] rounded-full border flex items-center justify-center",
+                                "absolute inset-[28px] rounded-full border flex items-center justify-center shadow-2xl",
                                 tk.core, tk.float
                             )}
-                            animate={{ y: [0, -4, 0], rotateY: [0, 8, 0] }}
-                            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+                            animate={{
+                                y: [0, -10, 0],
+                                rotateY: [0, 15, 0],
+                                rotateX: [0, -10, 0],
+                                scale: [1, 1.08, 1]
+                            }}
+                            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                             style={{ transformStyle: "preserve-3d" }}
                         >
                             {Icon ? (
-                                <Icon width={iconSize} height={iconSize} className={tk.iconColor} />
+                                <Icon width={iconSize + 4} height={iconSize + 4} className={cn(tk.iconColor, "drop-shadow-lg")} />
                             ) : (
-                                <FileTextIcon width={iconSize} height={iconSize} className="text-muted-foreground/50" />
+                                <FileTextIcon width={iconSize + 4} height={iconSize + 4} className="text-muted-foreground/60" />
                             )}
+
+                            {/* Inner core glow */}
+                            <div className="absolute inset-0 rounded-full bg-primary/5 blur-lg -z-10 animate-pulse" />
                         </motion.div>
                     </div>
                 )}
@@ -352,15 +402,18 @@ const EmptyStateBadge = React.forwardRef<HTMLDivElement, EmptyStateBadgeProps>(
             ref={ref}
             variants={itemVariants}
             className={cn(
-                "mb-3 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border",
-                "text-[11px] font-mono tracking-wide",
-                "bg-primary/10 border-primary/20 text-primary",
+                "mb-6 inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border",
+                "text-[10px] font-bold tracking-[0.1em] uppercase",
+                "bg-primary/15 border-primary/20 text-primary shadow-lg shadow-primary/10 backdrop-blur-md",
                 className
             )}
             {...props}
         >
             {dot && (
-                <span className="w-[5px] h-[5px] rounded-full bg-primary shadow-[0_0_5px_hsl(var(--primary))]" />
+                <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary shadow-[0_0_8px_hsl(var(--primary))]"></span>
+                </span>
             )}
             {label}
         </motion.div>
@@ -370,12 +423,15 @@ EmptyStateBadge.displayName = "EmptyStateBadge";
 
 
 const EmptyStateHeading = React.forwardRef<HTMLHeadingElement, EmptyStateHeadingProps>(
-    ({ className, title, children, ...props }, ref) => (
+    ({ className, title, children, variant = "h3", ...props }, ref) => (
         <motion.div variants={itemVariants} className="w-full">
             <Typography
                 ref={ref}
-                variant="h3"
-                className={cn("mb-2 font-semibold tracking-tight text-foreground", className)}
+                variant={variant}
+                className={cn(
+                    "mb-4 font-bold tracking-tight text-foreground text-4xl sm:text-5xl",
+                    className
+                )}
                 {...props}
             >
                 {children || title || "No data available"}
@@ -388,13 +444,16 @@ EmptyStateHeading.displayName = "EmptyStateHeading";
 //  Description 
 
 const EmptyStateDesc = React.forwardRef<HTMLParagraphElement, EmptyStateDescProps>(
-    ({ className, description, children, ...props }, ref) => (
+    ({ className, description, children, color = "muted", ...props }, ref) => (
         <motion.div variants={itemVariants} className="w-full">
             <Typography
                 ref={ref}
                 variant="body"
-                color="muted"
-                className={cn("mb-8 max-w-[280px] mx-auto", className)}
+                color={color}
+                className={cn(
+                    "mb-10 max-w-[360px] mx-auto text-slate-600 dark:text-slate-400 text-lg leading-relaxed text-balance font-medium",
+                    className
+                )}
                 {...props}
             >
                 {children || description || "There is no data to show right now."}
@@ -411,7 +470,7 @@ const EmptyStateActions = React.forwardRef<HTMLDivElement, EmptyStateActionsProp
         <motion.div
             ref={ref}
             variants={itemVariants}
-            className={cn("flex flex-col sm:flex-row items-center justify-center gap-3 w-full", className)}
+            className={cn("mt-6 flex flex-col sm:flex-row items-center justify-center gap-4 w-full", className)}
             {...props}
         >
             {children}
