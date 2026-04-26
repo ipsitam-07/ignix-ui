@@ -9,53 +9,11 @@ import TabItem from '@theme/TabItem';
 import { DialogProvider } from '@site/src/components/UI/dialog-box';
 import DialogDemo from '@site/src/components/UI/dialog-box/dialog-demo';
 
-## Overview
-
 The Dialog Box component provides a flexible way to display modal dialogs with various animations and types. It's built on top of Framer Motion for smooth animations and supports different dialog types like alerts, confirmations, and custom content.
 
+import DialogBoxDemo from '@site/src/components/Demo/DialogBoxDemo';
 
-## Preview
-
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-    <div className="p-4 border rounded-lg">
-      <DialogProvider>
-        <div className="space-y-4">
-          <DialogDemo />
-        </div>
-      </DialogProvider>
-    </div>
-  </TabItem>
-  <TabItem value="code" label="Code">
-    ```tsx
-    import { DialogProvider } from '@ignix-ui/dialogbox';
-    import { useDialog } from '@ignix-ui/dialogbox/use-dialog';
-    import { Button } from '@ignix-ui/button';
-
-    function Demo() {
-      const { openDialog } = useDialog();
-      
-      return (
-        <Button 
-          onClick={() => openDialog({
-            title: 'Alert',
-            content: 'This is an alert dialog.',
-            dialogType: 'alert'
-          })}
-        >
-          Show Alert Dialog
-        </Button>
-      );
-    }
-
-    // In your app:
-    <DialogProvider>
-      <Demo />
-    </DialogProvider>
-    ```
-  </TabItem>
-</Tabs>
-
+<DialogBoxDemo />
 ## Installation
 
 <Tabs>
@@ -64,30 +22,12 @@ The Dialog Box component provides a flexible way to display modal dialogs with v
     ignix add component dialogbox
     ```
   </TabItem>
-  <TabItem value="manual" label="manual" className="max-h-[500px] overflow-y-auto">
+  <TabItem value="manual" label="Manual" className="max-h-[500px] overflow-y-auto">
 
-    ```tsx
+```tsx
 import { motion, AnimatePresence } from 'framer-motion';
-import { createContext, CSSProperties, useState } from 'react';
+import { createContext, CSSProperties, useState, useContext } from 'react';
 import { X, Check, AlertTriangle, Info, XCircle } from 'lucide-react';
-
-// types/dialog.ts
-export interface DialogRef {
-  open: (options?: DialogProps) => void;
-  close: () => void;
-}
-  <TabItem value="manual" label="manual" className="max-h-[500px] overflow-y-auto">
-
-    ```tsx
-import { motion, AnimatePresence } from 'framer-motion';
-import { createContext, CSSProperties, useState } from 'react';
-import { X, Check, AlertTriangle, Info, XCircle } from 'lucide-react';
-
-// types/dialog.ts
-export interface DialogRef {
-  open: (options?: DialogProps) => void;
-  close: () => void;
-}
 
 export type DialogAnimationTypes =
   | 'popIn'
@@ -107,63 +47,26 @@ export type DialogTypes = 'success' | 'confirm' | 'error' | 'alert' | 'info' | '
 
 export const animations = {
   popIn: {
-    initial: {
-      scale: 0.95,
-      opacity: 0,
-      y: 20,
-    },
+    initial: { scale: 0.95, opacity: 0, y: 20 },
     animate: {
       scale: 1,
       opacity: 1,
       y: 0,
-      transition: {
-        type: 'spring',
-        stiffness: 300,
-        damping: 25,
-        duration: 0.3,
-      },
+      transition: { type: 'spring', stiffness: 300, damping: 25, duration: 0.3 }
     },
-    exit: {
-      scale: 0.95,
-      opacity: 0,
-      y: 20,
-      transition: {
-        duration: 0.2,
-      },
-    },
+    exit: { scale: 0.95, opacity: 0, y: 20, transition: { duration: 0.2 } }
   },
   springPop: {
-    initial: {
-      y: 100,
-      opacity: 0,
-      scale: 0.2,
-      rotateX: 20,
-      filter: 'blur(8px)',
-    },
+    initial: { y: 100, opacity: 0, scale: 0.2, rotateX: 20, filter: 'blur(8px)' },
     animate: {
       y: 0,
       opacity: 1,
       scale: 1,
       rotateX: 0,
       filter: 'blur(0px)',
-      transition: {
-        type: 'spring',
-        stiffness: 200,
-        damping: 15,
-        mass: 0.5,
-        velocity: 2,
-      },
+      transition: { type: 'spring', stiffness: 200, damping: 15, mass: 0.5, velocity: 2 }
     },
-    exit: {
-      y: 100,
-      scale: 0.2,
-      opacity: 0,
-      filter: 'blur(4px)',
-      transition: {
-        duration: 0.4,
-        ease: 'easeIn',
-      },
-    },
+    exit: { y: 100, scale: 0.2, opacity: 0, filter: 'blur(4px)', transition: { duration: 0.4, ease: 'easeIn' } }
   },
   backdropZoom: {
     initial: { scale: 1.3, opacity: 0, filter: 'blur(10px)' },
@@ -171,57 +74,23 @@ export const animations = {
       scale: 1,
       opacity: 1,
       filter: 'blur(0px)',
-      transition: {
-        duration: 0.8,
-        type: 'spring',
-        stiffness: 200,
-        ease: 'easeInOut',
-      },
+      transition: { duration: 0.8, type: 'spring', stiffness: 200, ease: 'easeInOut' }
     },
-    exit: {
-      scale: 0.95,
-      opacity: 0,
-      filter: 'blur(4px)',
-      transition: { duration: 0.3, ease: 'easeIn' },
-    },
+    exit: { scale: 0.95, opacity: 0, filter: 'blur(4px)', transition: { duration: 0.3, ease: 'easeIn' } }
   },
   flip3D: {
-    initial: {
-      rotateY: -180,
-      opacity: 0,
-      scale: 0.8,
-      filter: 'brightness(0.5)',
-    },
+    initial: { rotateY: -180, opacity: 0, scale: 0.8, filter: 'brightness(0.5)' },
     animate: {
       rotateY: 0,
       opacity: 1,
       scale: 1,
       filter: 'brightness(1)',
-      transition: {
-        duration: 0.8,
-        ease: [0.68, -0.55, 0.265, 1.55],
-        times: [0, 0.6, 1],
-      },
+      transition: { duration: 0.8, ease: [0.68, -0.55, 0.265, 1.55], times: [0, 0.6, 1] }
     },
-    exit: {
-      rotateY: 180,
-      opacity: 0,
-      scale: 0.8,
-      filter: 'brightness(0.5)',
-      transition: { duration: 0.5, ease: 'easeIn' },
-    },
+    exit: { rotateY: 180, opacity: 0, scale: 0.8, filter: 'brightness(0.5)', transition: { duration: 0.5, ease: 'easeIn' } }
   },
   skewSlide: {
-    initial: {
-      skewY: -30,
-      skewX: -30,
-      scale: 0.2,
-      y: -400,
-      x: -300,
-      opacity: 0,
-      rotateZ: -15,
-      filter: 'blur(8px) brightness(0.3)',
-    },
+    initial: { skewY: -30, skewX: -30, scale: 0.2, y: -400, x: -300, opacity: 0, rotateZ: -15, filter: 'blur(8px) brightness(0.3)' },
     animate: {
       skewY: [30, -5, 0],
       skewX: [30, -5, 0],
@@ -231,88 +100,35 @@ export const animations = {
       opacity: [0, 0.7, 1],
       rotateZ: [-15, 2, 0],
       filter: 'blur(0px) brightness(1)',
-      transition: {
-        duration: 1.2,
-        ease: [0.68, -0.55, 0.265, 1.55],
-        times: [0, 0.7, 1],
-      },
+      transition: { duration: 1.2, ease: [0.68, -0.55, 0.265, 1.55], times: [0, 0.7, 1] }
     },
-    exit: {
-      skewY: 30,
-      skewX: 30,
-      scale: 0.2,
-      y: -300,
-      x: 400,
-      opacity: 0,
-      rotateZ: 15,
-      filter: 'blur(6px)',
-      transition: { duration: 0.6, ease: 'easeIn' },
-    },
+    exit: { skewY: 30, skewX: 30, scale: 0.2, y: -300, x: 400, opacity: 0, rotateZ: 15, filter: 'blur(6px)', transition: { duration: 0.6, ease: 'easeIn' } }
   },
   glassBlur: {
-    initial: {
-      opacity: 0,
-      scale: 0.95,
-      filter: 'blur(20px) saturate(1.5)',
-      backdropFilter: 'blur(0px)',
-    },
+    initial: { opacity: 0, scale: 0.95, filter: 'blur(20px) saturate(1.5)', backdropFilter: 'blur(0px)' },
     animate: {
       opacity: 1,
       scale: 1,
       filter: 'blur(0px) saturate(1)',
       backdropFilter: 'blur(20px)',
-      transition: {
-        duration: 0.8,
-        ease: 'easeOut',
-        filter: { duration: 1 },
-      },
+      transition: { duration: 0.8, ease: 'easeOut', filter: { duration: 1 } }
     },
-    exit: {
-      opacity: 0,
-      scale: 0.95,
-      filter: 'blur(10px)',
-      transition: { duration: 0.4, ease: 'easeIn' },
-    },
+    exit: { opacity: 0, scale: 0.95, filter: 'blur(10px)', transition: { duration: 0.4, ease: 'easeIn' } }
   },
   skyDrop: {
-    initial: {
-      y: -500,
-      opacity: 0,
-      scale: 0.7,
-      rotateX: -45,
-      filter: 'blur(10px)',
-    },
+    initial: { y: -500, opacity: 0, scale: 0.7, rotateX: -45, filter: 'blur(10px)' },
     animate: {
       y: [0, 15, 0],
       opacity: [0, 0.8, 1],
       scale: [0.7, 1.05, 1],
       rotateX: [-45, 5, 0],
       filter: 'blur(0px)',
-      transition: {
-        duration: 1,
-        ease: [0.34, 1.56, 0.64, 1],
-        times: [0, 0.6, 1],
-      },
+      transition: { duration: 1, ease: [0.34, 1.56, 0.64, 1], times: [0, 0.6, 1] }
     },
-    exit: {
-      y: -400,
-      opacity: 0,
-      scale: 0.8,
-      rotateX: -30,
-      filter: 'blur(6px)',
-      transition: { duration: 0.5, ease: 'easeIn' },
-    },
+    exit: { y: -400, opacity: 0, scale: 0.8, rotateX: -30, filter: 'blur(6px)', transition: { duration: 0.5, ease: 'easeIn' } }
   },
-  // NEW PREMIUM ANIMATIONS
   morphSlide: {
-    initial: {
-      scale: 0.3,
-      opacity: 0,
-      x: -200,
-      rotateZ: -45,
-      borderRadius: '50%',
-      filter: 'blur(15px) hue-rotate(180deg)',
-    },
+    initial: { scale: 0.3, opacity: 0, x: -200, rotateZ: -45, borderRadius: '50%', filter: 'blur(15px) hue-rotate(180deg)' },
     animate: {
       scale: [0.3, 1.2, 1],
       opacity: [0, 0.6, 1],
@@ -320,31 +136,12 @@ export const animations = {
       rotateZ: [-45, 10, 0],
       borderRadius: ['50%', '20%', '12px'],
       filter: 'blur(0px) hue-rotate(0deg)',
-      transition: {
-        duration: 1.5,
-        ease: [0.68, -0.55, 0.265, 1.55],
-        times: [0, 0.6, 1],
-      },
+      transition: { duration: 1.5, ease: [0.68, -0.55, 0.265, 1.55], times: [0, 0.6, 1] }
     },
-    exit: {
-      scale: 0.4,
-      opacity: 0,
-      x: 200,
-      rotateZ: 45,
-      borderRadius: '50%',
-      filter: 'blur(10px)',
-      transition: { duration: 0.8, ease: 'easeIn' },
-    },
+    exit: { scale: 0.4, opacity: 0, x: 200, rotateZ: 45, borderRadius: '50%', filter: 'blur(10px)', transition: { duration: 0.8, ease: 'easeIn' } }
   },
   quantumFold: {
-    initial: {
-      scaleX: 0,
-      scaleY: 1.5,
-      opacity: 0,
-      rotateY: 90,
-      rotateX: 45,
-      filter: 'brightness(2) contrast(0.5) blur(10px)',
-    },
+    initial: { scaleX: 0, scaleY: 1.5, opacity: 0, rotateY: 90, rotateX: 45, filter: 'brightness(2) contrast(0.5) blur(10px)' },
     animate: {
       scaleX: [0, 1.3, 1],
       scaleY: [1.5, 0.8, 1],
@@ -352,30 +149,12 @@ export const animations = {
       rotateY: [90, -15, 0],
       rotateX: [45, -10, 0],
       filter: 'brightness(1) contrast(1) blur(0px)',
-      transition: {
-        duration: 1.3,
-        ease: [0.68, -0.55, 0.265, 1.55],
-        times: [0, 0.5, 1],
-      },
+      transition: { duration: 1.3, ease: [0.68, -0.55, 0.265, 1.55], times: [0, 0.5, 1] }
     },
-    exit: {
-      scaleX: 0,
-      scaleY: 1.5,
-      opacity: 0,
-      rotateY: -90,
-      filter: 'blur(8px)',
-      transition: { duration: 0.6, ease: 'easeIn' },
-    },
+    exit: { scaleX: 0, scaleY: 1.5, opacity: 0, rotateY: -90, filter: 'blur(8px)', transition: { duration: 0.6, ease: 'easeIn' } }
   },
   prismBreak: {
-    initial: {
-      scale: 0.1,
-      opacity: 0,
-      rotateX: 180,
-      rotateY: 180,
-      rotateZ: 180,
-      filter: 'blur(20px) saturate(3) hue-rotate(90deg)',
-    },
+    initial: { scale: 0.1, opacity: 0, rotateX: 180, rotateY: 180, rotateZ: 180, filter: 'blur(20px) saturate(3) hue-rotate(90deg)' },
     animate: {
       scale: [0.1, 1.4, 1],
       opacity: [0, 0.3, 1],
@@ -383,60 +162,24 @@ export const animations = {
       rotateY: [180, 20, 0],
       rotateZ: [180, -10, 0],
       filter: 'blur(0px) saturate(1) hue-rotate(0deg)',
-      transition: {
-        duration: 1.8,
-        ease: [0.68, -0.55, 0.265, 1.55],
-        times: [0, 0.4, 1],
-      },
+      transition: { duration: 1.8, ease: [0.68, -0.55, 0.265, 1.55], times: [0, 0.4, 1] }
     },
-    exit: {
-      scale: 0.2,
-      opacity: 0,
-      rotateX: -90,
-      rotateY: 90,
-      rotateZ: 45,
-      filter: 'blur(15px)',
-      transition: { duration: 0.8, ease: 'easeIn' },
-    },
+    exit: { scale: 0.2, opacity: 0, rotateX: -90, rotateY: 90, rotateZ: 45, filter: 'blur(15px)', transition: { duration: 0.8, ease: 'easeIn' } }
   },
   liquidFloat: {
-    initial: {
-      scale: 0.6,
-      opacity: 0,
-      y: 100,
-      borderRadius: '50%',
-      filter: 'blur(12px)',
-    },
+    initial: { scale: 0.6, opacity: 0, y: 100, borderRadius: '50%', filter: 'blur(12px)' },
     animate: {
       scale: [0.6, 1.1, 0.95, 1.02, 1],
       opacity: [0, 0.7, 0.9, 1, 1],
       y: [100, -20, 10, -5, 0],
       borderRadius: ['50%', '30%', '20%', '15%', '12px'],
       filter: 'blur(0px)',
-      transition: {
-        duration: 2,
-        ease: 'easeOut',
-        times: [0, 0.3, 0.6, 0.8, 1],
-      },
+      transition: { duration: 2, ease: 'easeOut', times: [0, 0.3, 0.6, 0.8, 1] }
     },
-    exit: {
-      scale: 0.7,
-      opacity: 0,
-      y: -50,
-      borderRadius: '50%',
-      filter: 'blur(8px)',
-      transition: { duration: 0.6, ease: 'easeIn' },
-    },
+    exit: { scale: 0.7, opacity: 0, y: -50, borderRadius: '50%', filter: 'blur(8px)', transition: { duration: 0.6, ease: 'easeIn' } }
   },
   dimensionRip: {
-    initial: {
-      scaleX: 0.1,
-      scaleY: 2,
-      opacity: 0,
-      rotateZ: 45,
-      skewX: 30,
-      filter: 'blur(20px) brightness(3) contrast(2)',
-    },
+    initial: { scaleX: 0.1, scaleY: 2, opacity: 0, rotateZ: 45, skewX: 30, filter: 'blur(20px) brightness(3) contrast(2)' },
     animate: {
       scaleX: [0.1, 2, 1],
       scaleY: [2, 0.5, 1],
@@ -444,25 +187,13 @@ export const animations = {
       rotateZ: [45, -10, 0],
       skewX: [30, -5, 0],
       filter: 'blur(0px) brightness(1) contrast(1)',
-      transition: {
-        duration: 1.4,
-        ease: [0.68, -0.55, 0.265, 1.55],
-        times: [0, 0.4, 1],
-      },
+      transition: { duration: 1.4, ease: [0.68, -0.55, 0.265, 1.55], times: [0, 0.4, 1] }
     },
-    exit: {
-      scaleX: 0.1,
-      scaleY: 2,
-      opacity: 0,
-      rotateZ: -45,
-      skewX: -30,
-      filter: 'blur(15px)',
-      transition: { duration: 0.7, ease: 'easeIn' },
-    },
-  },
+    exit: { scaleX: 0.1, scaleY: 2, opacity: 0, rotateZ: -45, skewX: -30, filter: 'blur(15px)', transition: { duration: 0.7, ease: 'easeIn' } }
+  }
 };
 
-interface DialogProps {
+export interface DialogProps {
   animationKey?: DialogAnimationTypes;
   confirmationCallBack?: (confirm: boolean) => void;
   dialogType?: DialogTypes;
@@ -478,105 +209,48 @@ interface DialogProps {
 }
 
 const typeConfig = {
-  success: {
-    gradient: 'from-success-light via-success to-success-dark',
-    icon: Check,
-    iconBg: 'bg-success/20',
-    iconColor: 'text-success-dark',
-    borderColor: 'border-success/30',
-    shadowColor: 'shadow-success/25',
-  },
-  confirm: {
-    gradient: 'from-primary-light via-primary to-primary-dark',
-    icon: Info,
-    iconBg: 'bg-primary/20',
-    iconColor: 'text-primary-dark',
-    borderColor: 'border-primary/30',
-    shadowColor: 'shadow-primary/25',
-  },
-  error: {
-    gradient: 'from-destructive-light via-destructive to-destructive-dark',
-    icon: XCircle,
-    iconBg: 'bg-destructive/20',
-    iconColor: 'text-destructive-dark',
-    borderColor: 'border-destructive/30',
-    shadowColor: 'shadow-destructive/25',
-  },
-  alert: {
-    gradient: 'from-warning-light via-warning to-warning-dark',
-    icon: AlertTriangle,
-    iconBg: 'bg-warning/20',
-    iconColor: 'text-warning-dark',
-    borderColor: 'border-warning/30',
-    shadowColor: 'shadow-warning/25',
-  },
-  info: {
-    gradient: 'from-info-light via-info to-info-dark',
-    icon: Info,
-    iconBg: 'bg-info/20',
-    iconColor: 'text-info-dark',
-    borderColor: 'border-info/30',
-    shadowColor: 'shadow-info/25',
-  },
-  warning: {
-    gradient: 'from-warning-light via-warning to-warning-dark',
-    icon: AlertTriangle,
-    iconBg: 'bg-warning/20',
-    iconColor: 'text-warning-dark',
-    borderColor: 'border-warning/30',
-    shadowColor: 'shadow-warning/25',
-  },
+  success: { icon: Check, gradient: 'from-emerald-500 to-emerald-700', iconBg: 'bg-emerald-500/20', shadowColor: 'shadow-emerald-500/25', borderColor: 'border-emerald-500/30' },
+  confirm: { icon: Info, gradient: 'from-blue-500 to-blue-700', iconBg: 'bg-blue-500/20', shadowColor: 'shadow-blue-500/25', borderColor: 'border-blue-500/30' },
+  error: { icon: XCircle, gradient: 'from-rose-500 to-rose-700', iconBg: 'bg-rose-500/20', shadowColor: 'shadow-rose-500/25', borderColor: 'border-rose-500/30' },
+  alert: { icon: AlertTriangle, gradient: 'from-amber-500 to-amber-700', iconBg: 'bg-amber-500/20', shadowColor: 'shadow-amber-500/25', borderColor: 'border-amber-500/30' },
+  info: { icon: Info, gradient: 'from-sky-500 to-sky-700', iconBg: 'bg-sky-500/20', shadowColor: 'shadow-sky-500/25', borderColor: 'border-sky-500/30' },
+  warning: { icon: AlertTriangle, gradient: 'from-orange-500 to-orange-700', iconBg: 'bg-orange-500/20', shadowColor: 'shadow-orange-500/25', borderColor: 'border-orange-500/30' },
 };
 
-const sizeConfig = {
-  sm: 'max-w-sm',
-  md: 'max-w-md',
-  lg: 'max-w-lg',
-  xl: 'max-w-xl',
-};
+const sizeConfig = { sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-lg', xl: 'max-w-xl' };
 
-export interface DialogContextType {
+export const DialogContext = createContext<{
   openDialog: (opts: DialogProps) => void;
   closeDialog: () => void;
-}
+} | undefined>(undefined);
 
-export const DialogContext = createContext<DialogContextType | undefined>(
-  undefined
-) as React.Context<DialogContextType>;
 export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [options, setOptions] = useState<DialogProps>({
-    dialogType: 'alert',
-    title: 'Default Title',
-  });
+  const [options, setOptions] = useState<DialogProps>({});
 
   const openDialog = (opts: DialogProps) => {
-    const finalOptions: DialogProps = {
+    setOptions({
       animationKey: 'popIn',
       confirmButtonText: 'Confirm',
       cancelButtonText: 'Cancel',
-      defaultButtons: false,
       showCloseButton: true,
       size: 'md',
-      ...opts,
-    };
-    setOptions(finalOptions);
+      ...opts
+    });
     setIsOpen(true);
   };
 
-  const closeDialog = () => {
-    setIsOpen(false);
-  };
+  const closeDialog = () => setIsOpen(false);
 
   const handleClose = (confirm = false) => {
     setIsOpen(false);
-    if (options?.dialogType === 'confirm' && options?.confirmationCallBack) {
-      options?.confirmationCallBack(confirm);
+    if (options.dialogType === 'confirm' && options.confirmationCallBack) {
+      options.confirmationCallBack(confirm);
     }
   };
 
-  const anim = animations[options?.animationKey || 'popIn'];
-  const config = typeConfig[options?.dialogType || 'alert'];
+  const anim = animations[options.animationKey || 'popIn'];
+  const config = typeConfig[options.dialogType || 'alert'];
   const IconComponent = config.icon;
 
   return (
@@ -584,209 +258,60 @@ export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       {children}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            {/* Backdrop */}
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
-              className="absolute inset-0 dark:bg-black/60 bg-white/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
               onClick={() => handleClose(false)}
             />
-
-            {/* Subtle animated background pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 animate-pulse" />
-            </div>
-
             <motion.div
-              className={`
-                relative bg-background/95 backdrop-blur-xl rounded-2xl shadow-2xl 
-                ${sizeConfig[options?.size || 'md']} w-full max-h-[85vh] 
-                flex flex-col border border-border/40 overflow-hidden
-                ${config.shadowColor}
-                before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/10 before:via-white/5 before:to-transparent before:pointer-events-none
-                after:absolute after:inset-0 after:bg-gradient-to-t after:from-background/20 after:via-transparent after:to-white/10 after:pointer-events-none
-              `}
-              style={{ transformStyle: 'preserve-3d' }}
+              className={`relative bg-background rounded-2xl shadow-2xl ${sizeConfig[options.size || 'md']} w-full flex flex-col border border-border/40 overflow-hidden ${config.shadowColor}`}
               {...anim}
             >
-              {/* Premium Header with enhanced gradients and effects */}
-              <div
-                className={`
-                  relative flex items-center justify-between rounded-t-2xl p-6
-                  bg-gradient-to-br ${config.gradient} text-white overflow-hidden
-                  border-b ${config.borderColor}
-                `}
-                style={options?.headerStyles}
-              >
-                {/* Animated background pattern */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/10"
-                  animate={{
-                    x: ['-100%', '100%'],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: 'linear',
-                  }}
-                />
-
-                {/* Icon with enhanced styling */}
-                <motion.div
-                  className={`
-                    flex items-center justify-center w-12 h-12 rounded-xl mr-4
-                    ${config.iconBg} backdrop-blur-sm border border-white/20
-                    shadow-lg
-                  `}
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{
-                    delay: 0.2,
-                    type: 'spring',
-                    stiffness: 300,
-                    damping: 15,
-                  }}
-                  whileHover={{
-                    scale: 1.1,
-                    rotate: 5,
-                    transition: { duration: 0.2 },
-                  }}
-                >
-                  <IconComponent className="h-6 w-6 text-white" />
-                </motion.div>
-
-                {/* Enhanced Title */}
-                <motion.h2
-                  className="text-xl sm:text-2xl font-bold flex-1 relative z-10"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3, duration: 0.5 }}
-                >
-                  {options?.title}
-                </motion.h2>
-
-                {/* Premium Close Button */}
-                {options?.showCloseButton && (
-                  <motion.button
-                    onClick={() => handleClose(false)}
-                    className="
-                      relative w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm
-                      flex items-center justify-center transition-all duration-300
-                      hover:bg-white/30 hover:scale-110 active:scale-95
-                      border border-white/30 group z-10
-                    "
-                    initial={{ opacity: 0, scale: 0, rotate: 90 }}
-                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                    transition={{ delay: 0.4, type: 'spring', stiffness: 300 }}
-                    whileHover={{ rotate: 90 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <X className="h-5 w-5 text-white group-hover:text-white/90" />
-                  </motion.button>
+              <div className={`relative flex items-center justify-between p-6 bg-gradient-to-br ${config.gradient} text-white`}>
+                <div className="flex items-center">
+                  <div className={`p-2 rounded-lg ${config.iconBg} mr-4`}>
+                    <IconComponent className="h-6 w-6 text-white" />
+                  </div>
+                  <h2 className="text-xl font-bold">{options.title}</h2>
+                </div>
+                {options.showCloseButton && (
+                  <button onClick={() => handleClose(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                    <X className="h-5 w-5" />
+                  </button>
                 )}
               </div>
-
-              {/* Enhanced Content Area */}
-              <motion.div
-                className="p-6 flex-1 overflow-y-auto relative"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-              >
-                <div className="prose prose-sm max-w-none dark:prose-invert">
-                  {options.children ?? (
-                    <p className="text-muted-foreground leading-relaxed">
-                      {options.content}
-                    </p>
+              <div className="p-6 overflow-y-auto">
+                {options.children ?? <p className="text-muted-foreground">{options.content}</p>}
+              </div>
+              {!options.defaultButtons && (
+                <div className="flex justify-end gap-3 p-6 pt-0">
+                  <button onClick={() => handleClose(false)} className="px-4 py-2 rounded-lg border border-border hover:bg-muted transition-colors">
+                    {options.cancelButtonText}
+                  </button>
+                  {options.dialogType === 'confirm' && (
+                    <button onClick={() => handleClose(true)} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity">
+                      {options.confirmButtonText}
+                    </button>
                   )}
                 </div>
-              </motion.div>
-
-              {/* Premium Button Area */}
-              {!options?.defaultButtons && (
-                <motion.div
-                  className="flex items-center justify-center gap-3 p-6 pt-0"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.5 }}
-                >
-                  {options?.dialogType === 'confirm' && (
-                    <motion.button
-                      onClick={() => handleClose(true)}
-                      className="
-                        relative px-6 py-3 font-semibold text-white rounded-xl overflow-hidden
-                        bg-gradient-to-br from-primary via-primary-dark to-primary-darker
-                        hover:from-primary-dark hover:via-primary-darker hover:to-primary-darkest
-                        shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40
-                        border border-primary/20 backdrop-blur-sm
-                        transition-all duration-300 group transform-gpu
-                        hover:scale-105 active:scale-95
-                        before:absolute before:inset-0 before:bg-gradient-to-t 
-                        before:from-white/0 before:to-white/20 before:opacity-0 
-                        before:group-hover:opacity-100 before:transition-opacity
-                      "
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                    >
-                      <span className="relative z-10 flex items-center gap-2">
-                        <Check className="h-4 w-4" />
-                        {options?.confirmButtonText || 'Confirm'}
-                      </span>
-                    </motion.button>
-                  )}
-
-                  <motion.button
-                    onClick={() => handleClose(false)}
-                    className="
-                      relative px-6 py-3 font-semibold rounded-xl overflow-hidden
-                      bg-gradient-to-br from-muted via-muted-dark to-muted-darker text-muted-foreground
-                      hover:from-muted-dark hover:via-muted-darker hover:to-muted-darkest
-                      shadow-lg shadow-muted/20 hover:shadow-xl hover:shadow-muted/30
-                      border border-muted/30 backdrop-blur-sm
-                      transition-all duration-300 group transform-gpu
-                      hover:scale-105 active:scale-95
-                    "
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  >
-                    <span className="relative z-10 flex items-center gap-2">
-                      <X className="h-4 w-4" />
-                      {options?.cancelButtonText || 'Cancel'}
-                    </span>
-                  </motion.button>
-                </motion.div>
               )}
-
-              {/* Subtle border glow effect */}
-              <div
-                className={`absolute inset-0 rounded-2xl border ${config.borderColor} opacity-50 pointer-events-none`}
-              />
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </DialogContext.Provider>
+  );
+};
 
-  export const useDialog = () => {
+export const useDialog = () => {
   const context = useContext(DialogContext);
   if (!context) throw new Error('useDialog must be used within a DialogProvider');
   return context;
 };
-  );
-};
-
-    ```
+```
   </TabItem>
 </Tabs>
 
@@ -809,7 +334,7 @@ function App() {
 ### 2. Use the useDialog hook in your components
 
 ```tsx
-import { useDialog } from '@ignix-ui/dialogbox/use-dialog';
+import { useDialog } from '@ignix-ui/dialogbox';
 
 function MyComponent() {
   const { openDialog } = useDialog();
@@ -826,8 +351,21 @@ function MyComponent() {
 }
 ```
 
-import DialogBoxDemo from '@site/src/components/Demo/DialogBoxDemo';
+## Props
 
-## Variants
+### DialogProps
 
-<DialogBoxDemo />
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `title` | `string` | - | Title of the dialog box |
+| `content` | `string` | - | Text content to display (if `children` is not provided) |
+| `children` | `React.ReactNode` | - | Custom content to display inside the dialog |
+| `dialogType` | `'success' \| 'confirm' \| 'error' \| 'alert' \| 'info' \| 'warning'` | `'alert'` | Visual style variant of the dialog |
+| `animationKey` | `DialogAnimationTypes` | `'popIn'` | Type of entrance/exit animation |
+| `size` | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | Maximum width of the dialog |
+| `showCloseButton` | `boolean` | `true` | Whether to show the close button in the header |
+| `confirmButtonText` | `string` | `'Confirm'` | Label for the primary action button |
+| `cancelButtonText` | `string` | `'Cancel'` | Label for the secondary action button |
+| `defaultButtons` | `boolean` | `false` | If true, hides the default action buttons |
+| `confirmationCallBack` | `(confirm: boolean) => void` | - | Callback fired when a confirm dialog is resolved |
+| `headerStyles` | `CSSProperties` | - | Custom styles for the dialog header |

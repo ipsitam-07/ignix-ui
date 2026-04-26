@@ -9,64 +9,9 @@ import TabItem from '@theme/TabItem';
 import { Box } from '@site/src/components/UI/box';
 import BoxDemo from '@site/src/components/Demo/BoxDemo';
 
-## Overview
-
 Box is a flexible layout component for wrapping content with customizable width, height, padding, background, border radius, and shadow. Use it for cards, containers, wrappers, and more.
 
-## Preview
-
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-    <div className="flex items-center gap-8 border rounded-lg p-4">
-      <Box
-        width="large"
-        height="normal"
-        padding="lg"
-        background="default"
-        rounded="lg"
-        shadow="medium"
-        className="border"
-      >
-        <h2 className={`font-bold text-lg mb-2`}>Box Component</h2>
-        <p>This is a general-purpose content box.</p>
-      </Box>
-    </div>
-  </TabItem>
-  <TabItem value="code" label="Code">
-    ```tsx
-    import { Box } from '@ignix-ui/box';
-
-    function BoxDemo() {
-      return (
-        <div className="flex items-center gap-8">
-          <Box
-            width="large"
-            height="normal"
-            padding="lg"
-            background="default"
-            rounded="lg"
-            shadow="medium"
-          >
-            <h2 className="font-bold text-lg mb-2">Box Component</h2>
-            <p>This is a general-purpose content box.</p>
-          </Box>
-          <Box
-            width="small"
-            height="lg"
-            padding="sm"
-            background="secondary"
-            rounded="full"
-            shadow="strong"
-          >
-            <span className="text-primary  font-semibold">Small Box</span>
-          </Box>
-        </div>
-      );
-    }
-    ```
-  </TabItem>
-</Tabs>
-
+<BoxDemo />
 ## Installation
 
 <Tabs>
@@ -75,7 +20,7 @@ Box is a flexible layout component for wrapping content with customizable width,
     ignix add component box
     ```
   </TabItem>
-  <TabItem value="manual" label="manual" className="max-h-[500px] overflow-y-auto">
+  <TabItem value="manual" label="Manual" className="max-h-[500px] overflow-y-auto">
 
     ```tsx
 import React from "react";
@@ -193,10 +138,6 @@ function BasicBox() {
 }
 ```
 
-## Variants
-
-<BoxDemo />
-
 ## Props
 
 | Prop        | Type    | Default   | Description                                      |
@@ -209,9 +150,3 @@ function BasicBox() {
 | shadow      | string  | "subtle"  | Box shadow: "none", "subtle", "medium", "strong"  |
 | className   | string  |  null      | Additional CSS classes                            |
 | children    | node    |  null     | Content inside the box                            |
-
-## Use Cases
-- Cards
-- Content blocks
-- Wrappers
-- Styled containers

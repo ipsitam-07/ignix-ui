@@ -9,11 +9,7 @@ import TabItem from '@theme/TabItem';
 import HeaderLayout from '@site/src/components/UI/header-layout';
 import HeaderLayoutDemo from '@site/src/components/Demo/HeaderLayoutDemo';
 
-## Overview
-
 The **HeaderLayout** component provides a complete layout solution with a header, sidebar, and footer. It's designed to be highly configurable with support for responsive design, animations, and various layout variants. This component is perfect for building dashboards, admin panels, and complex web applications.
-
-## Preview
 
 <HeaderLayoutDemo />
 
@@ -26,7 +22,7 @@ The **HeaderLayout** component provides a complete layout solution with a header
     ignix add component headerlayout
     ```
   </TabItem>
-  <TabItem value="manual" label="manual" className="max-h-[500px] overflow-y-auto">
+  <TabItem value="manual" label="Manual" className="max-h-[500px] overflow-y-auto">
     ```tsx
 import * as React from "react";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
@@ -327,27 +323,53 @@ HeaderLayout.displayName = "HeaderLayout";
 ## Usage
 
 ```tsx
-import { HeaderLayout } from './components/header-layout';
+import { HeaderLayout } from '@ignix-ui/header-layout';
 
-    function HeaderLayoutDemo() {
-      return (
-        <HeaderLayout
-          variant="default"
-          sidebarPosition="left"
-          animation="slide"
-          mobileBreakpoint="md"
-          stickyHeader={true}
-          stickyFooter={false}
-          overlay={true}
-          enableGestures={true}
-          header={<div>Header Content</div>}
-          sidebar={<div>Sidebar Content</div>}
-          footer={<div>Footer Content</div>}
-        >
-          <div>Main Content</div>
-        </HeaderLayout>
-      );
-    }
+```
+
+### Basic Usage
+
+```tsx
+function HeaderLayoutDemo() {
+    return (
+      <HeaderLayout
+        variant="default"
+        sidebarPosition="left"
+        animation="slide"
+        mobileBreakpoint="md"
+        stickyHeader={true}
+        stickyFooter={false}
+        overlay={true}
+        enableGestures={true}
+        header={<div>Header Content</div>}
+        sidebar={<div>Sidebar Content</div>}
+        footer={<div>Footer Content</div>}
+      >
+        <div>Main Content</div>
+      </HeaderLayout>
+    );
+}
+```
+
+## Advanced Configuration
+
+### Custom Z-Index Management
+
+```tsx
+function CustomZIndexExample() {
+  return (
+    <HeaderLayout
+      zIndex={{
+        header: 200,
+        sidebar: 150,
+        footer: 100,
+        overlay: 180
+      }}
+    >
+      {/* Content */}
+    </HeaderLayout>
+  );
+}
 ```
 
 ## Props
@@ -376,24 +398,3 @@ import { HeaderLayout } from './components/header-layout';
 | `onSidebarToggle` | `(isOpen: boolean) => void` | `undefined` | Callback for sidebar toggle |
 | `zIndex` | `object` | `{ header: 100, sidebar: 90, footer: 50, overlay: 80 }` | Z-index values for each layer |
 | `className` | `string` | `undefined` | Additional CSS classes |
-
-## Advanced Configuration
-
-### Custom Z-Index Management
-
-```tsx
-function CustomZIndexExample() {
-  return (
-    <HeaderLayout
-      zIndex={{
-        header: 200,
-        sidebar: 150,
-        footer: 100,
-        overlay: 180
-      }}
-    >
-      {/* Content */}
-    </HeaderLayout>
-  );
-}
-```

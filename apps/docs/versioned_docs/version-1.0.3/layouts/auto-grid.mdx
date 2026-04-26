@@ -8,44 +8,12 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import AutoGrid from '@site/src/components/UI/auto-grid';
 
-## Overview
-
 The **AutoGrid** component automatically determines the number of columns based on the available container width and a defined minimum item width.  
 It’s ideal for dynamic content, responsive galleries, and layouts where the number of items is unknown.
 
-## Preview
+import AutoGridDemo from '@site/src/components/Demo/AutoGridDemo';
 
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-    <div className="p-4 border rounded-lg">
-      <AutoGrid minItemWidth="150px" maxColumns={4} gap="normal" balanced>
-        <div className="bg-red-600 text-white p-4 rounded">Item 1</div>
-        <div className="bg-red-600 text-white p-4 rounded">Item 2</div>
-        <div className="bg-red-600 text-white p-4 rounded">Item 3</div>
-        <div className="bg-red-600 text-white p-4 rounded">Item 4</div>
-        <div className="bg-red-600 text-white p-4 rounded">Item 5</div>
-        <div className="bg-red-600 text-white p-4 rounded">Item 6</div>
-      </AutoGrid>
-    </div>
-  </TabItem>
-  <TabItem value="code" label="Code">
-    ```tsx
-    import AutoGrid from '@ignix-ui/autogrid';
-
-    function Example() {
-      return (
-        <AutoGrid minItemWidth="150px" maxColumns={4} gap="normal" balanced>
-          <div>Item 1</div>
-          <div>Item 2</div>
-          <div>Item 3</div>
-          <div>Item 4</div>
-        </AutoGrid>
-      );
-    }
-    ```
-  </TabItem>
-</Tabs>
-
+<AutoGridDemo />
 ## Installation
 
 <Tabs>
@@ -111,13 +79,25 @@ export default AutoGrid;
   </TabItem>
 </Tabs>
 
-## Variants
-
-import AutoGridDemo from '@site/src/components/Demo/AutoGridDemo';
-
-<AutoGridDemo />
-
 ## Usage
+
+```tsx
+import { AutoGrid } from '@ignix-ui/autogrid';
+```
+### Basic Usage
+
+```tsx
+function Example() {
+  return (
+    <AutoGrid minItemWidth="150px" maxColumns={4} gap="normal" balanced>
+      <div>Item 1</div>
+      <div>Item 2</div>
+      <div>Item 3</div>
+      <div>Item 4</div>
+    </AutoGrid>
+  );
+}
+```
 
 ### Responsive Gallery
 

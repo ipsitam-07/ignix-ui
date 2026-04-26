@@ -8,46 +8,13 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Pin from '@site/src/components/UI/pin';
 
-## Overview
-
 The **Pin** component makes absolute positioning **declarative**.  
 It lets you "pin" elements like close buttons, badges, or floating actions to a corner or edge of their nearest relative container.
 
-## Preview
+import PinDemo from '@site/src/components/Demo/PinDemo';
 
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-    <div className="border p-6 rounded-lg">
-            <div className="relative p-10 w-40 sm:w-96 m-auto border rounded-lg min-h-[200px]">
-              <Pin
-                to={"top-right"}
-                offset={"normal"}
-                zIndex={"normal"} mobile={undefined} className={undefined}            >
-                <button className="bg-red-600 text-white w-6 h-6 rounded-full shadow">
-                  ✕
-                </button>
-              </Pin>
-              <p className="mt-8 text-gray-700">Pinned button inside a card</p>
-            </div>
-          </div>
-  </TabItem>
-  <TabItem value="code" label="Code">
-    ```tsx
-    import Pin from '@ignix-ui/pin';
+<PinDemo />
 
-    function Example() {
-      return (
-        <div className="relative p-10 border rounded-lg">
-          <Pin to="top-right" offset="normal" zIndex="high">
-            <button>✕</button>
-          </Pin>
-          <p>Card Content</p>
-        </div>
-      );
-    }
-    ```
-  </TabItem>
-</Tabs>
 
 ## Installation
 
@@ -152,7 +119,11 @@ export default Pin;
 
 ```tsx
 import Pin from '@ignix-ui/pin';
+```
 
+### Basic Usage
+
+```tsx
 function BasicPin() {
   return (
     <div className="relative">
@@ -163,12 +134,6 @@ function BasicPin() {
   );
 }
 ```
-
-## Variants
-
-import PinDemo from '@site/src/components/Demo/PinDemo';
-
-<PinDemo />
 
 ## Props
 

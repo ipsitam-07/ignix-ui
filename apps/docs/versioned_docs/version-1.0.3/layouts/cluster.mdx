@@ -8,11 +8,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import ClusterDemo from '@site/src/components/Demo/ClusterDemo';
 
-## Overview
-
 The **Cluster** component is a layout primitive that helps you group related items with consistent spacing and alignment. It's particularly useful for navigation bars, button groups, tags, and other UI elements that need to be grouped together.
-
-## Preview
 
 <ClusterDemo />
 
@@ -101,24 +97,15 @@ export function Cluster({
   </TabItem>
 </Tabs>
 
-## Props
-
-| Prop     | Type                                     | Default   | Description                                     |
-|----------|------------------------------------------|-----------|-------------------------------------------------|
-| spacing  | 'none' \| 'small' \| 'normal' \| 'large' | 'normal'  | Controls the spacing between items in the cluster |
-| align    | 'start' \| 'center' \| 'end' \| 'stretch' \| 'baseline' | 'center' | Controls the cross-axis alignment of items |
-| justify  | 'start' \| 'center' \| 'end' \| 'between' \| 'around' \| 'evenly' | 'start' | Controls the main axis alignment of items |
-| wrap     | boolean                                  | true      | Whether items should wrap to the next line when they don't fit |
-| className| string                                   | ''        | Additional CSS classes to apply to the container |
-| children | ReactNode                                | -         | The content to be rendered inside the cluster    |
-
 ## Usage Examples
+
+```tsx
+import { Cluster } from '@ignix-ui/cluster';
+```
 
 ### Basic Usage
 
 ```tsx
-import { Cluster } from '@mindfiredigital/ignix';
-
 function TagList() {
   return (
     <Cluster>
@@ -131,3 +118,14 @@ function TagList() {
   );
 }
 ```
+
+## Props
+
+| Prop | Type | Default | Description |
+|----------|------------------------------------------|-----------|-------------------------------------------------|
+| `spacing` | `"none" \| "small" \| "normal" \| "large"` | `"normal"` | Controls the spacing between items in the cluster |
+| `align` | `"start" \| "center" \| "end" \| "stretch" \| "baseline"` | `"center"` | Controls the cross-axis alignment of items |
+| `justify` | `"start" \| "center" \| "end" \| "between" \| "around" \| "evenly"` | `"start"` | Controls the main axis alignment of items |
+| `wrap` | `boolean` | `true` | Whether items should wrap to the next line when they don't fit |
+| `className` | `string` | `""` | Additional CSS classes to apply to the container |
+| `children` | `React.ReactNode` | - | The content to be rendered inside the cluster |

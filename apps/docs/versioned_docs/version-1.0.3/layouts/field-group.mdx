@@ -9,44 +9,12 @@ import TabItem from '@theme/TabItem';
 import FieldGroup from '@site/src/components/UI/field-group';
 import FieldGroupDemo from '@site/src/components/Demo/FieldGroupDemo';
 
-## Overview
-
 The **FieldGroup** component is used inside forms to visually group related fields under a common title.  
 It improves structure, accessibility, and scannability of complex forms.
 
----
+## Variants
 
-## Preview
-
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-    <div className="p-4 border rounded-lg">
-      <FieldGroup title="Personal Information" columns="3" spacing="normal" border={true}>
-          <input type="text" placeholder="First Name" className="border border-gray-300 p-2 rounded-lg" />
-          <input type="text" placeholder="Last Name" className="border border-gray-300 p-2 rounded-lg" />
-      </FieldGroup>
-    </div>
-  </TabItem>
-
-  <TabItem value="code" label="Code">
-    ```tsx
-    import FieldGroup from '@ignix-ui/fieldgroup';
-
-    export default function Demo() {
-      return (
-        <div className="p-4 border rounded-lg">
-          <FieldGroup title="Personal Information" columns="3" spacing="normal" border={true}>
-              <input type="text" placeholder="First Name" className="border border-gray-300 p-2 rounded-lg" />
-              <input type="text" placeholder="Last Name" className="border border-gray-300 p-2 rounded-lg" />
-          </FieldGroup>
-        </div>
-      );
-    }
-    ```
-  </TabItem>
-</Tabs>
-
----
+<FieldGroupDemo />
 
 ## Installation
 
@@ -127,15 +95,11 @@ export default FieldGroup;
   </TabItem>
 </Tabs>
 
----
+## Usage
 
-## Variants
-
-<FieldGroupDemo />
-
----
-
-## Usage Examples
+```tsx
+import FieldGroup from '@ignix-ui/fieldgroup';
+```
 
 ### Grouped Form Fields
 
@@ -145,9 +109,6 @@ export default FieldGroup;
   <input type="password" placeholder="Password" />
 </FieldGroup>
 ```
-
----
-
 ### Without Border
 
 ```tsx
@@ -156,8 +117,6 @@ export default FieldGroup;
   <label><input type="checkbox" /> Enable Dark Mode</label>
 </FieldGroup>
 ```
-
----
 
 ## Props
 

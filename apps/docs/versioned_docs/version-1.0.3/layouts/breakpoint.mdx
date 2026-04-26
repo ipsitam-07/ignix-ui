@@ -8,11 +8,7 @@ import BreakpointDemo from '@site/src/components/Demo/BreakpointDemo';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-## Overview
-
 The **Breakpoint** component provides a declarative way to conditionally render content based on the current viewport size. It eliminates the need for CSS media queries in your React components.
-
-## Preview
 
 <BreakpointDemo />
 
@@ -95,7 +91,7 @@ export const Breakpoint: React.FC<BreakpointProps> = ({
 Import the component:
 
 ```tsx
-import { Breakpoint } from './components/ui';
+import { Breakpoint } from '@ignix-ui/breakpoint';
 ```
 
 ### Basic Usage
@@ -111,16 +107,6 @@ import { Breakpoint } from './components/ui';
   <p>This content is visible from tablet to desktop.</p>
 </Breakpoint>
 ```
-
-## Props
-
-| Prop      | Type                                | Description                                      |
-|-----------|-------------------------------------|--------------------------------------------------|
-| `show`    | `"mobile" \| "tablet" \| "desktop"` | Render content only on the specified device.    |
-| `hide`    | `"mobile" \| "tablet" \| "desktop"` | Hide content on the specified device.           |
-| `from`    | `"mobile" \| "tablet" \| "desktop"` | Render content starting from this breakpoint.   |
-| `to`      | `"mobile" \| "tablet" \| "desktop"` | Render content up to this breakpoint.           |
-| `children`| `ReactNode`                         | Content to be conditionally rendered.           |
 
 ## Examples
 
@@ -147,9 +133,13 @@ import { Breakpoint } from './components/ui';
   <p>This content is visible from tablet to desktop.</p>
 </Breakpoint>
 ```
+## Props
 
-## Best Practices
+| Prop | Type | Default | Description |
+|-----------|-------------------------------------|---------|---------------------------------------------------|
+| `show` | `"mobile" \| "tablet" \| "desktop"` | - | Render content only on the specified device. |
+| `hide` | `"mobile" \| "tablet" \| "desktop"` | - | Hide content on the specified device. |
+| `from` | `"mobile" \| "tablet" \| "desktop"` | - | Render content starting from this breakpoint. |
+| `to` | `"mobile" \| "tablet" \| "desktop"` | - | Render content up to this breakpoint. |
+| `children` | `React.ReactNode` | - | Content to be conditionally rendered. |
 
-- Use `show` and `hide` for simple conditional rendering.
-- Combine `from` and `to` for more complex viewport logic.
-- Avoid nesting multiple Breakpoint components unnecessarily.

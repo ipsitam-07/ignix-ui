@@ -14,18 +14,6 @@ It includes a dimmed overlay, structured header/body/footer slots, keyboard supp
 
 <ModalsDemo />
 
-Key features:
-
-- Overlay with backdrop blur and click-to-close support
-- Structured header, body, and footer sections
-- Optional header icon to the left of the title
-- Confirm and cancel buttons in the footer
-- Keyboard support: <kbd>Esc</kbd> closes the modal
-- Multiple size options: `sm`, `md`, `lg`, `xl`, `full`
-- Built-in color schemes: `primary`, `accent`, `success`, `warning`, `destructive`, `info`
-- Fine-grained color overrides via `colorOverrides`
-
-
 ## Installation
 
 <Tabs>
@@ -38,17 +26,12 @@ Key features:
 
 ## Usage
 
-You can use the Modal in two ways:
-
-1. **Simple** — Use the `<Modal>` component with props and `children` for the body.
-2. **Composable (nested)** — Compose `ModalOverlay`, `ModalContent`, `ModalHeader`, `ModalBody`, and `ModalFooter` yourself. Use `Modal.colorSchemeConfig` to apply the same color schemes.
-
-The demo above includes both **Simple (Modal)** and **Composable (nested)** tabs.
-
-### Basic usage (Simple)
+```tsx
+import { Modal } from '@ignix-ui/modal';
+```
+### Basic usage 
 
 ```tsx
-import Modal from '@ignix-ui/modal';
 import { Button } from '@ignix-ui/button';
 
 function BasicModalExample() {
@@ -70,8 +53,6 @@ function BasicModalExample() {
 ```
 
 ### Composable (nested) usage
-
-Build the modal from primitives for full control over structure and layout. Use `Modal.colorSchemeConfig` so styles match the built-in schemes:
 
 ```tsx
 import { useState, useCallback } from 'react';
@@ -160,31 +141,7 @@ function ComposableModalExample() {
 }
 ```
 
-When using the composable API, you own visibility (e.g. `isOpen` and `close`). For Escape key and body scroll lock, add your own `useEffect` and key listener if needed.
-
-Subcomponents: `ModalOverlay`, `ModalContent`, `ModalHeader`, `ModalBody`, `ModalFooter`. Each accepts the same styling and behavior props as the areas of the main `Modal` component.
-
-### With header icon
-
-```tsx
-import { Info } from 'lucide-react';
-
-<Modal
-  isOpen={isOpen}
-  onClose={() => setIsOpen(false)}
-  title="New update available"
-  headerIcon={<Info className="h-5 w-5 text-primary" />}
-  headerIconClassName="bg-primary/10 border-primary/30"
->
-  <p className="mb-2">
-    A new version of the application is available. Would you like to update now?
-  </p>
-</Modal>
-```
-
 ### Color schemes
-
-Use the `colorScheme` prop to switch between predefined visual styles:
 
 ```tsx
 <Modal
@@ -205,42 +162,6 @@ Use the `colorScheme` prop to switch between predefined visual styles:
   <p>This action cannot be undone. Are you sure?</p>
 </Modal>
 ```
-
-### Custom colors with `colorOverrides`
-
-If you need more control, use the `colorOverrides` prop to pass custom Tailwind classes for specific areas:
-
-```tsx
-<Modal
-  isOpen={isOpen}
-  onClose={() => setIsOpen(false)}
-  title="Custom styled modal"
-  colorScheme="primary"
-  colorOverrides={{
-    header: 'border-b border-violet-500/30 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/10 to-violet-500/20',
-    content: 'border-violet-500/30 shadow-violet-500/20 before:from-violet-500/10 before:to-fuchsia-500/10',
-    body: 'border-l-violet-500/30',
-    footer: 'border-t border-violet-500/20 bg-gradient-to-r from-fuchsia-500/5 via-violet-500/10 to-fuchsia-500/5',
-    closeButton: 'hover:text-violet-600 hover:bg-violet-500/20 focus:ring-violet-500/50',
-    cancelButton: 'hover:border-violet-500/40 focus:ring-violet-500/50',
-    confirmButton:
-      'bg-gradient-to-r from-violet-600 to-violet-500 text-white hover:from-violet-500 hover:to-violet-600 shadow-violet-500/30 border-violet-500/40 focus:ring-violet-500',
-  }}
->
-  <p>Use colorOverrides to fully customize the modal appearance.</p>
-</Modal>
-```
-
-### Sizes
-
-```tsx
-<Modal size="sm" {...commonProps} />
-<Modal size="md" {...commonProps} />
-<Modal size="lg" {...commonProps} />
-<Modal size="xl" {...commonProps} />
-<Modal size="full" {...commonProps} />
-```
-
 
 
 ## Props

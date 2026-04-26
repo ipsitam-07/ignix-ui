@@ -11,6 +11,55 @@ import StepperDemo from '@site/src/components/UI/stepper/demo';
 
 The Stepper component helps visualize progress through a multi-step process. It's perfect for forms, wizards, or any sequential workflow in your application. The component includes support for completed states, active states, and optional descriptions for each step.
 
+<Tabs>
+  <TabItem value="interactive-preview" label="Preview" default>
+    <div className="w-full p-8 space-y-8 border rounded-lg">
+      <div className="p-6 rounded-lg space-y-4">
+       <StepperDemo />
+      </div>
+    </div>
+  </TabItem>
+  <TabItem value="interactive-code" label="Code">
+    ```tsx
+    import { Stepper } from '@ignix-ui/stepper';
+    import { useState } from 'react';
+
+    function InteractiveStepper() {
+      const [step, setStep] = useState(0);
+      
+      return (
+        <div className="space-y-4">
+          <Stepper
+            steps={[
+              { label: 'Cart', description: 'Review items' },
+              { label: 'Shipping', description: 'Delivery info' },
+              { label: 'Payment', description: 'Card details' },
+            ]}
+            activeStep={step}
+          />
+          <div className="flex justify-between mt-4">
+            <button
+              onClick={() => setStep(Math.max(0, step - 1))}
+              disabled={step === 0}
+              className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setStep(Math.min(2, step + 1))}
+              disabled={step === 2}
+              className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      );
+    }
+    ```
+  </TabItem>
+</Tabs>
+
 ## Installation
 
 <Tabs>
@@ -190,57 +239,6 @@ function BasicStepper() {
       ]}
       activeStep={2}
     />
-    ```
-  </TabItem>
-</Tabs>
-
-### Interactive Example
-
-<Tabs>
-  <TabItem value="interactive-preview" label="Preview" default>
-    <div className="w-full p-8 space-y-8 border rounded-lg">
-      <div className="p-6 rounded-lg space-y-4">
-       <StepperDemo />
-      </div>
-    </div>
-  </TabItem>
-  <TabItem value="interactive-code" label="Code">
-    ```tsx
-    import { Stepper } from '@ignix-ui/stepper';
-    import { useState } from 'react';
-
-    function InteractiveStepper() {
-      const [step, setStep] = useState(0);
-      
-      return (
-        <div className="space-y-4">
-          <Stepper
-            steps={[
-              { label: 'Cart', description: 'Review items' },
-              { label: 'Shipping', description: 'Delivery info' },
-              { label: 'Payment', description: 'Card details' },
-            ]}
-            activeStep={step}
-          />
-          <div className="flex justify-between mt-4">
-            <button
-              onClick={() => setStep(Math.max(0, step - 1))}
-              disabled={step === 0}
-              className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setStep(Math.min(2, step + 1))}
-              disabled={step === 2}
-              className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      );
-    }
     ```
   </TabItem>
 </Tabs>

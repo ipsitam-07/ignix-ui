@@ -10,14 +10,9 @@ import TabItem from '@theme/TabItem';
 import HeaderLayout from '@site/src/components/UI/header-layout';
 import FullHeightSidebarLayoutDemo from '@site/src/components/Demo/FullHeightSidebarLayoutDemo';
 
-## Overview
-
 The **Full Height SideBar** component provides a complete layout solution with a header, sidebar, scrollable main content. It's designed to be highly configurable with support for responsive design, animations, and various layout variants. This component is perfect for building app dashboards.
 
-## Preview
-
 <FullHeightSidebarLayoutDemo/>
-
 
 ## Installation
 
@@ -27,7 +22,7 @@ The **Full Height SideBar** component provides a complete layout solution with a
     ignix add component FullHeightSidebarLayout
     ```
   </TabItem>
-<TabItem value="manual" label="manual" className="max-h-[500px] overflow-y-auto">
+<TabItem value="manual" label="Manual" className="max-h-[500px] overflow-y-auto">
 ```tsx
 import * as React from "react";
 import { motion, AnimatePresence, type PanInfo } from "framer-motion";
@@ -309,23 +304,28 @@ FullHeightSidebarLayout.displayName = "FullHeightSidebarLayout";
 ## Usage
 
 ```tsx
-  import { FullHeightSidebarLayout } from '@ignix-ui/fullheightsidebarlayout';
-    function App() {
-      return (
-        <FullHeightSidebarLayout
-          variant="default"
-          mobileBreakpoint="md"
-          sidebarPosition="left"
-          stickyHeader={true}
-          overlay={true}
-          enableGestures={true}
-          header={<div>Header Content</div>}
-          sidebar={<div>Sidebar Content</div>}
-        >
-          <div>Main Content</div>
-        </FullHeightSidebarLayout>
-      );
-    }
+import { FullHeightSidebarLayout } from '@ignix-ui/fullheightsidebarlayout';
+```
+
+### Basic Usage
+
+```tsx
+function App() {
+    return (
+      <FullHeightSidebarLayout
+        variant="default"
+        mobileBreakpoint="md"
+        sidebarPosition="left"
+        stickyHeader={true}
+        overlay={true}
+        enableGestures={true}
+        header={<div>Header Content</div>}
+        sidebar={<div>Sidebar Content</div>}
+      >
+        <div>Main Content</div>
+      </FullHeightSidebarLayout>
+    );
+}
 ```
 
 ## Props

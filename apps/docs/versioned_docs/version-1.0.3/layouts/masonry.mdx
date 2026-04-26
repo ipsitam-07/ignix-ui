@@ -8,57 +8,13 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Masonry from '@site/src/components/UI/masonry';
 
-## Overview
-
 The **Masonry** component creates Pinterest-style layouts that optimize vertical space by arranging items of varying heights into responsive columns.
 
 It supports responsive breakpoints, gaps, balanced column heights, and entrance animations.
 
-## Preview
+import MasonryDemo from '@site/src/components/Demo/MasonryDemo';
 
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-    <div className="p-4 border rounded-lg">
-      <Masonry 
-        columns={3}
-        mobile={1}
-        gap="normal"
-        balanced
-        animation="fade-in"
-      >
-      <div className="bg-red-600 text-white p-1 sm:p-3 md:p-4 rounded">Item 1</div>
-      <div className="bg-red-600 text-white p-4 sm:p-8 md:p-10 rounded">Item 2 (taller)</div>
-      <div className="bg-red-600 text-white p-2 sm:p-4 md:p-6 rounded">Item 3</div>
-      <div className="bg-red-600 text-white p-6 sm:p-12 md:p-20 rounded">Item 4 (tallest)</div>
-      </Masonry>
-    </div>
-  </TabItem>
-  <TabItem value="code" label="Code">
-    ```tsx
-    import Masonry from '@ignix-ui/masonry';
-
-    function MasonryDemo() {
-      return (
-        <div className="p-4 border rounded-lg">
-      <Masonry 
-        columns={3}
-        mobile={1}
-        gap="normal"
-        balanced
-        animation="fade-in"
-      >
-      <div className="bg-red-600 text-white p-1 sm:p-3 md:p-4 rounded">Item 1</div>
-      <div className="bg-red-600 text-white p-4 sm:p-8 md:p-10 rounded">Item 2 (taller)</div>
-      <div className="bg-red-600 text-white p-2 sm:p-4 md:p-6 rounded">Item 3</div>
-      <div className="bg-red-600 text-white p-6 sm:p-12 md:p-20 rounded">Item 4 (tallest)</div>
-      </Masonry>
-    </div>
-      );
-    }
-    ```
-  </TabItem>
-</Tabs>
-
+<MasonryDemo />
 ## Installation
 
 <Tabs>
@@ -200,14 +156,11 @@ export default Masonry;
   </TabItem>
 </Tabs>
 
-## Variants
-
-import MasonryDemo from '@site/src/components/Demo/MasonryDemo';
-
-<MasonryDemo />
-
 ## Usage
 
+```tsx
+import { Masonry } from '@ignix-ui/masonry';
+```
 ### Basic Example
 
 ```tsx

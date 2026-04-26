@@ -8,12 +8,8 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Responsive from '@site/src/components/UI/responsive';
 
-## Overview
-
 The **Responsive** component allows developers to render entirely different components or layouts depending on the active device breakpoint.  
 Unlike `<Breakpoint>`, which only hides or shows content, `<Responsive>` ensures only the correct component is rendered for the current screen size.
-
-## Preview
 
 <Tabs defaultValue="preview">
   <TabItem value="preview" label="Preview" default>
@@ -115,7 +111,9 @@ Unlike `<Breakpoint>`, which only hides or shows content, `<Responsive>` ensures
 </Tabs>
 
 ## Usage
-
+```tsx
+import Responsive from '@ignix-ui/responsive';
+```
 ### Basic Example
 
 ```tsx
@@ -148,9 +146,10 @@ function Dashboard() {
 
 ## Props
 
-| Prop       | Type        | Default | Description                                                       |
-|------------|-------------|---------|-------------------------------------------------------------------|
-| `mobile`   | `ReactNode` | `null`  | Component to render for **mobile** breakpoint.                    |
-| `tablet`   | `ReactNode` | `null`  | Component to render for **tablet** breakpoint.                    |
-| `desktop`  | `ReactNode` | `null`  | Component to render for **desktop** breakpoint.                   |
-| `fallback` | `ReactNode` | `null`  | Component to render when no breakpoint-specific one is available. |
+| Prop | Type | Default | Description |
+|-----------|------------------|---------|-------------------------------------------------------------------|
+| `mobile` | `React.ReactNode` | - | Component to render for mobile breakpoint |
+| `tablet` | `React.ReactNode` | - | Component to render for tablet breakpoint |
+| `desktop` | `React.ReactNode` | - | Component to render for desktop breakpoint |
+| `fallback` | `React.ReactNode` | - | Component to render when no breakpoint-specific one is available |
+

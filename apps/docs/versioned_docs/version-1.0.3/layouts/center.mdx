@@ -8,38 +8,12 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import Center from '@site/src/components/UI/center';
 
-## Overview
-
 The **Center** component is a utility wrapper that helps you center its children horizontally, vertically, or both.  
 It supports different positioning strategies (`flex`, `grid`, `absolute`) and configurable `minHeight`.
 
-## Preview
+import CenterDemo from '@site/src/components/Demo/CenterDemo';
 
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-    <div className="p-4 border rounded-lg h-[200px] relative">
-      <Center horizontal vertical variant="flex" minHeight="150px">
-        <div className="bg-red-800 text-white px-4 py-2 rounded-lg shadow">
-          Centered Content
-        </div>
-      </Center>
-    </div>
-  </TabItem>
-  <TabItem value="code" label="Code">
-    ```tsx
-    import Center from '@ignix-ui/center';
-
-    function Example() {
-      return (
-        <Center horizontal vertical variant="flex" minHeight="150px">
-          <div>Centered Content</div>
-        </Center>
-      );
-    }
-    ```
-  </TabItem>
-</Tabs>
-
+<CenterDemo />
 ## Installation
 
 <Tabs>
@@ -141,12 +115,6 @@ function BasicCenter() {
   );
 }
 ```
-
-## Variants
-
-import CenterDemo from '@site/src/components/Demo/CenterDemo';
-
-<CenterDemo />
 
 ## Props
 

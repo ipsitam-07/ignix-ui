@@ -413,21 +413,24 @@ ThreeColumnSidebarLayout.displayName = "ThreeColumnSidebarLayout";
 
 
 ## Usage
+```tsx
+import { ThreeColumnSidebarLayout } from '@ignix-ui/threecolumnlayout';
+```
+
+### Basic Usage
 
 ```tsx
-  import { ThreeColumnSidebarLayout } from '@ignix-ui/threecolumnlayout';
-
-    function App() {
-      return (
-        <ThreeColumnSidebarLayout
-          header={<div>Header Content</div>}
-          sidebar={<div>Sidebar Content</div>}
-          rightSidebar={<div>Right Content</div>}
-        >
-          <div>Main Content</div>
-        </ThreeColumnSidebarLayout>
-      );
-    }
+function App() {
+    return (
+      <ThreeColumnSidebarLayout
+        header={<div>Header Content</div>}
+        sidebar={<div>Sidebar Content</div>}
+        rightSidebar={<div>Right Content</div>}
+      >
+      <div>Main Content</div>
+    </ThreeColumnSidebarLayout>
+  );
+}
 ```
 ## Props
 

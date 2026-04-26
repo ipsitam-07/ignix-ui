@@ -8,52 +8,12 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import ResponsiveGrid from '@site/src/components/UI/responsive-grid';
 
-## Overview
-
 The **ResponsiveGrid** component allows developers to build responsive grid layouts declaratively, without writing media queries.  
 It supports dynamic column counts across breakpoints, configurable gaps, equal-height items, and animations.
 
-## Preview
+import ResponsiveGridDemo from '@site/src/components/Demo/ResponsiveGridDemo';
 
-<Tabs defaultValue="preview">
-  <TabItem value="preview" label="Preview" default>
-    <div className="p-4 border rounded-lg">
-      <ResponsiveGrid 
-        columns={{ mobile: 1, tablet: 2, desktop: 4 }}
-        gap="normal"
-        minItemWidth="100px"
-        equalHeight
-      >
-        <div className="bg-red-600 text-white p-4 rounded">Item 1</div>
-        <div className="bg-red-600 text-white p-4 rounded">Item 2</div>
-        <div className="bg-red-600 text-white p-4 rounded">Item 3</div>
-        <div className="bg-red-600 text-white p-4 rounded">Item 4</div>
-      </ResponsiveGrid>
-    </div>
-  </TabItem>
-  <TabItem value="code" label="Code">
-    ```tsx
-    import ResponsiveGrid from '@ignix-ui/responsivegrid';
-
-    function Example() {
-      return (
-        <ResponsiveGrid 
-          columns={{ mobile: 1, tablet: 2, desktop: 4 }}
-          gap="normal"
-          minItemWidth="100px"
-          equalHeight
-        >
-          <div>Item 1</div>
-          <div>Item 2</div>
-          <div>Item 3</div>
-          <div>Item 4</div>
-        </ResponsiveGrid>
-      );
-    }
-    ```
-  </TabItem>
-</Tabs>
-
+<ResponsiveGridDemo />
 ## Installation
 
 <Tabs>
@@ -177,15 +137,11 @@ export default ResponsiveGrid;
   </TabItem>
 </Tabs>
 
-## Variants
-
-import ResponsiveGridDemo from '@site/src/components/Demo/ResponsiveGridDemo';
-
-<ResponsiveGridDemo />
-
-
 ## Usage
 
+```tsx
+import { ResponsiveGrid } from '@ignix-ui/responsive-grid';
+```
 ### Basic Example
 
 ```tsx

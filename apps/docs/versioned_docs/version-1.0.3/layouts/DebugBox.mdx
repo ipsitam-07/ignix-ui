@@ -9,11 +9,8 @@ import TabItem from '@theme/TabItem';
 import { DebugBox } from '@site/src/components/UI/DebugBox';
 import { Box } from '@site/src/components/UI/box';
 
-## Overview
-
 **DebugBox** is a utility wrapper that overlays **grid**, **spacing guides**, **breakpoints**, and **dimensions** on any component, helping developers debug layouts visually.
 
-## Preview
 
 <Tabs defaultValue="preview">
   <TabItem value="preview" label="Preview" default>
@@ -60,8 +57,36 @@ import { Box } from '@site/src/components/UI/box';
 
 ## Usage
 
-Import the components:
+Import the component:
 
 ```tsx
 import { DebugBox } from '@ignix-ui/debugbox';
+```
+
+### Basic Example
+
+```tsx
+function MyLayout() {
+  return (
+    <DebugBox 
+      defaultShowGrid={true} 
+      defaultShowSpacing={true}
+    >
+      <div className="p-8 bg-blue-100 rounded-lg">
+        Layout content to debug
+      </div>
+    </DebugBox>
+  );
+}
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|-----------|-----------|---------|-------------|
+| `children` | `React.ReactNode` | - | The content to be wrapped and debugged |
+| `defaultShowGrid` | `boolean` | `true` | Whether to show the alignment grid by default |
+| `defaultShowSpacing` | `boolean` | `true` | Whether to show spacing and boundary guides by default |
+| `defaultShowBreakpoints` | `boolean` | `true` | Whether to show the current breakpoint badge by default |
+| `defaultShowDimensions` | `boolean` | `true` | Whether to show component dimensions by default |
 
