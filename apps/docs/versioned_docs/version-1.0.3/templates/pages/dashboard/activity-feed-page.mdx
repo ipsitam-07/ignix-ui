@@ -1067,175 +1067,6 @@ export default ActivityFeedPage;
   </TabItem>
 </Tabs>
 
-## Features
-
-- **Chronological event list**: events are always sorted newest-first by their `occurredAt` timestamp.
-- **Event type badges**: each event shows an icon and badge (auth, user, security, billing, etc.) with theme-aware colors.
-- **Actor + context**: display who performed the action plus extra context like invoice or order IDs.
-- **Relative or absolute time**: show friendly `"2 hours ago"` strings or full absolute timestamps.
-- **Search + filters**: filter by event type and search across titles, descriptions, actors, and context.
-- **Pagination or infinite scroll**: choose between numbered pages or a "Load more" / infinite pattern.
-- **Composable sections**: `ActivityFeedLayout`, `ActivityFeedHeader`, `ActivityFeedFilters`, `ActivityFeedList`, `ActivityEventRow`, and `ActivityFeedPagination` can be used independently.
-
-## Props
-
-### Page props (`ActivityFeedPage`)
-
-```ts
-type ActivityEventType =
-  | "authentication"
-  | "user"
-  | "security"
-  | "system"
-  | "billing"
-  | "order"
-  | "comment"
-  | "document"
-  | "schedule"
-  | "warning";
-
-interface ActivityActor {
-  name: string;
-  meta?: string;
-  avatarUrl?: string;
-}
-
-interface ActivityEvent {
-  id: string;
-  type: ActivityEventType;
-  actor: ActivityActor;
-  occurredAt: Date;
-  title: string;
-  description: string;
-  contextLabel?: string;
-}
-
-type TimestampMode = "relative" | "absolute";
-
-type FeedPagingMode = "pagination" | "infinite";
-
-interface ActivityFeedFilterState {
-  type: ActivityEventType | null;
-  query: string;
-}
-```
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `events` | `ActivityEvent[]` | Events to display in the feed; they are sorted newest-first by `occurredAt`. |
-| `title` | `string` (optional) | Page title; defaults to `"Activity Feed"`. |
-| `description` | `string` (optional) | Subtitle shown under the title. |
-| `timestampMode` | `"relative" \| "absolute"` (optional) | Controls whether timestamps are rendered as `"2 hours ago"` or as absolute locale strings. Defaults to `"relative"`. |
-| `pagingMode` | `"pagination" \| "infinite"` (optional) | Whether to paginate with numbered pages or use an infinite "Load more" pattern. Defaults to `"pagination"`. |
-| `pageSize` | `number` (optional) | Number of events per page or per load. Defaults to `10`. |
-| `filterState` | `ActivityFeedFilterState` (optional) | Controlled filter state (type + search query). When omitted, the page manages its own filter state. |
-| `onFilterChange` | `(next: ActivityFeedFilterState) => void` (optional) | Called when the user changes the type filter or search query. Use this to control `filterState` from above. |
-| `className` | `string` (optional) | Additional class names for the outer layout wrapper. |
-
-## Composable component props
-
-### `ActivityFeedLayout`
-
-```ts
-interface ActivityFeedLayoutProps {
-  children: React.ReactNode;
-  className?: string;
-}
-```
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `children` | `ReactNode` | Page content (header, filters, list, etc.). |
-| `className` | `string` (optional) | Extra Tailwind classes for the outer layout container. |
-
-### `ActivityFeedHeader`
-
-```ts
-interface ActivityFeedHeaderProps {
-  title?: string;
-  description?: string;
-  query: string;
-  onQueryChange: (value: string) => void;
-}
-```
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `title` | `string` (optional) | Page title; defaults to `"Activity Feed"`. |
-| `description` | `string` (optional) | Short subtitle below the title. |
-| `query` | `string` | Current search query value. |
-| `onQueryChange` | `(value: string) => void` | Called when the user types into the search input. |
-
-### `ActivityFeedFilters`
-
-```ts
-interface ActivityFeedFiltersProps {
-  events: ActivityEvent[];
-  filter: ActivityFeedFilterState;
-  onFilterChange: (next: ActivityFeedFilterState) => void;
-}
-```
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `events` | `ActivityEvent[]` | Full events list used to compute per-type counts. |
-| `filter` | `ActivityFeedFilterState` | Current filter state (type + query). |
-| `onFilterChange` | `(next: ActivityFeedFilterState) => void` | Called when the user clicks a type chip; query is preserved. |
-
-### `ActivityFeedList`
-
-```ts
-interface ActivityFeedListProps {
-  events: ActivityEvent[];
-  timestampMode: TimestampMode;
-  now: Date;
-}
-```
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `events` | `ActivityEvent[]` | Already-filtered and paged events; the list groups them by date label (Today, Yesterday, etc.). |
-| `timestampMode` | `"relative" \| "absolute"` | Controls timestamp rendering for each row. |
-| `now` | `Date` | Reference timestamp used for computing relative times. |
-
-### `ActivityEventRow`
-
-```ts
-interface ActivityEventRowProps {
-  event: ActivityEvent;
-  timestampMode: TimestampMode;
-  now: Date;
-}
-```
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `event` | `ActivityEvent` | The event to render. |
-| `timestampMode` | `"relative" \| "absolute"` | Controls how the row’s timestamp is rendered. |
-| `now` | `Date` | Reference timestamp for relative calculations. |
-
-### `ActivityFeedPagination`
-
-```ts
-interface ActivityFeedPaginationProps {
-  pagingMode: FeedPagingMode;
-  currentPage: number;
-  totalPages: number;
-  canLoadMore: boolean;
-  onPageChange: (page: number) => void;
-  onLoadMore: () => void;
-}
-```
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `pagingMode` | `"pagination" \| "infinite"` | Determines whether a `Pagination` control or "Load more" pattern is rendered. |
-| `currentPage` | `number` | Current page index (1-based) for pagination mode. |
-| `totalPages` | `number` | Total page count for pagination mode. |
-| `canLoadMore` | `boolean` | Whether there are more events to load in infinite mode. |
-| `onPageChange` | `(page: number) => void` | Called when the user selects a different page. |
-| `onLoadMore` | `() => void` | Called when the user clicks "Load more" or when the sentinel enters view (infinite mode). |
-
 ## Usage Examples
 
 ### Basic activity feed
@@ -1366,4 +1197,133 @@ function ComposableActivityFeed({ events }: { events: ActivityEvent[] }) {
   );
 }
 ```
+
+## Features
+
+- **Chronological event list**: events are always sorted newest-first by their `occurredAt` timestamp.
+- **Event type badges**: each event shows an icon and badge (auth, user, security, billing, etc.) with theme-aware colors.
+- **Actor + context**: display who performed the action plus extra context like invoice or order IDs.
+- **Relative or absolute time**: show friendly `"2 hours ago"` strings or full absolute timestamps.
+- **Search + filters**: filter by event type and search across titles, descriptions, actors, and context.
+- **Pagination or infinite scroll**: choose between numbered pages or a "Load more" / infinite pattern.
+- **Composable sections**: `ActivityFeedLayout`, `ActivityFeedHeader`, `ActivityFeedFilters`, `ActivityFeedList`, `ActivityEventRow`, and `ActivityFeedPagination` can be used independently.
+
+## Props
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `events` | `ActivityEvent[]` | Events to display in the feed; they are sorted newest-first by `occurredAt`. |
+| `title` | `string` (optional) | Page title; defaults to `"Activity Feed"`. |
+| `description` | `string` (optional) | Subtitle shown under the title. |
+| `timestampMode` | `"relative" \| "absolute"` (optional) | Controls whether timestamps are rendered as `"2 hours ago"` or as absolute locale strings. Defaults to `"relative"`. |
+| `pagingMode` | `"pagination" \| "infinite"` (optional) | Whether to paginate with numbered pages or use an infinite "Load more" pattern. Defaults to `"pagination"`. |
+| `pageSize` | `number` (optional) | Number of events per page or per load. Defaults to `10`. |
+| `filterState` | `ActivityFeedFilterState` (optional) | Controlled filter state (type + search query). When omitted, the page manages its own filter state. |
+| `onFilterChange` | `(next: ActivityFeedFilterState) => void` (optional) | Called when the user changes the type filter or search query. Use this to control `filterState` from above. |
+| `className` | `string` (optional) | Additional class names for the outer layout wrapper. |
+
+## Composable component props
+
+### `ActivityFeedLayout`
+
+```ts
+interface ActivityFeedLayoutProps {
+  children: React.ReactNode;
+  className?: string;
+}
+```
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `children` | `ReactNode` | Page content (header, filters, list, etc.). |
+| `className` | `string` (optional) | Extra Tailwind classes for the outer layout container. |
+
+### `ActivityFeedHeader`
+
+```ts
+interface ActivityFeedHeaderProps {
+  title?: string;
+  description?: string;
+  query: string;
+  onQueryChange: (value: string) => void;
+}
+```
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `title` | `string` (optional) | Page title; defaults to `"Activity Feed"`. |
+| `description` | `string` (optional) | Short subtitle below the title. |
+| `query` | `string` | Current search query value. |
+| `onQueryChange` | `(value: string) => void` | Called when the user types into the search input. |
+
+### `ActivityFeedFilters`
+
+```ts
+interface ActivityFeedFiltersProps {
+  events: ActivityEvent[];
+  filter: ActivityFeedFilterState;
+  onFilterChange: (next: ActivityFeedFilterState) => void;
+}
+```
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `events` | `ActivityEvent[]` | Full events list used to compute per-type counts. |
+| `filter` | `ActivityFeedFilterState` | Current filter state (type + query). |
+| `onFilterChange` | `(next: ActivityFeedFilterState) => void` | Called when the user clicks a type chip; query is preserved. |
+
+### `ActivityFeedList`
+
+```ts
+interface ActivityFeedListProps {
+  events: ActivityEvent[];
+  timestampMode: TimestampMode;
+  now: Date;
+}
+```
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `events` | `ActivityEvent[]` | Already-filtered and paged events; the list groups them by date label (Today, Yesterday, etc.). |
+| `timestampMode` | `"relative" \| "absolute"` | Controls timestamp rendering for each row. |
+| `now` | `Date` | Reference timestamp used for computing relative times. |
+
+### `ActivityEventRow`
+
+```ts
+interface ActivityEventRowProps {
+  event: ActivityEvent;
+  timestampMode: TimestampMode;
+  now: Date;
+}
+```
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `event` | `ActivityEvent` | The event to render. |
+| `timestampMode` | `"relative" \| "absolute"` | Controls how the row’s timestamp is rendered. |
+| `now` | `Date` | Reference timestamp for relative calculations. |
+
+### `ActivityFeedPagination`
+
+```ts
+interface ActivityFeedPaginationProps {
+  pagingMode: FeedPagingMode;
+  currentPage: number;
+  totalPages: number;
+  canLoadMore: boolean;
+  onPageChange: (page: number) => void;
+  onLoadMore: () => void;
+}
+```
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `pagingMode` | `"pagination" \| "infinite"` | Determines whether a `Pagination` control or "Load more" pattern is rendered. |
+| `currentPage` | `number` | Current page index (1-based) for pagination mode. |
+| `totalPages` | `number` | Total page count for pagination mode. |
+| `canLoadMore` | `boolean` | Whether there are more events to load in infinite mode. |
+| `onPageChange` | `(page: number) => void` | Called when the user selects a different page. |
+| `onLoadMore` | `() => void` | Called when the user clicks "Load more" or when the sentinel enters view (infinite mode). |
+
 

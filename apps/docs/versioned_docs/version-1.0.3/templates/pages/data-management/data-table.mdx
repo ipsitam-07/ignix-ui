@@ -1520,140 +1520,6 @@ export function DataTable<T extends Record<string, any>>({
 </TabItem>
 </Tabs>
 
-## Props
-
-### `<DataTable>`
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `data` | `T[]` | — | **Required.** The dataset to display. |
-| `columns` | `Column<T>[]` | — | **Required.** Column definitions (see below). |
-| `keyExtractor` | `(row: T) => string \| number` | — | **Required.** Returns a unique key per row; used for selection state and React reconciliation. |
-| `bulkActions` | `BulkAction<T>[]` | `[]` | Actions shown in the floating bulk-action bar when rows are selected. |
-| `pageSizeOptions` | `number[]` | `[5, 10, 25, 50]` | Options shown in the "Rows per page" selector. |
-| `defaultPageSize` | `number` | `5` | Initial page size. |
-| `enableRowSelection` | `boolean` | `true` | Show per-row checkboxes and the select-all header checkbox. |
-| `loading` | `boolean` | `false` | Show animated skeleton rows instead of data. |
-| `emptyStateMessage` | `string` | `'No data available.'` | Message shown when `data` is empty and `loading` is false. |
-| `noResultsMessage` | `string` | `'No results found.'` | Message shown when the global search returns zero results. |
-| `theme` | `'light' \| 'dark'` | `'light'` | Activates the dark colour scheme (adds the `dark` class to the root). |
-| `onRowClick` | `(row: T) => void` | `undefined` | Callback fired when the user taps a row (used in the mobile card view). |
-| `mobileBreakpoint` | `number` | `768` | Pixel width below which the mobile card layout is rendered instead of the table. |
-| `className` | `string` | `undefined` | Extra classes applied to the root wrapper. |
-
-### `Column<T>` object
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `key` | `keyof T` | ✓ | The property key on `T` this column reads from. |
-| `title` | `string` | ✓ | Column header label. |
-| `sortable` | `boolean` | | Defaults to `true`. Set to `false` to disable sort on this column. |
-| `visible` | `boolean` | | Defaults to `true`. Set to `false` to hide the column on initial render. |
-| `render` | `(value: T[keyof T], row: T) => React.ReactNode` | | Custom cell renderer. Receives the raw cell value and the full row. |
-| `className` | `string` | | Extra classes applied to both `<th>` and `<td>` for this column. |
-
-### `BulkAction<T>` object
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `label` | `string` | ✓ | Button label. |
-| `icon` | `React.ReactNode` | | Optional icon rendered to the left of the label. |
-| `onClick` | `(selectedRows: T[]) => void` | ✓ | Called with the full array of selected row objects. |
-| `variant` | `'default' \| 'destructive'` | | `'destructive'` renders the button in the destructive colour token. Default is `'default'`. |
-
-## Sub-components
-
-All sub-components are exported and can be used independently if you need a fully custom layout.
-
-| Component | Description |
-|-----------|-------------|
-| `TableHeader<T>` | Sticky `<thead>` with sortable column headers and an optional select-all checkbox. |
-| `TableRow<T>` | Animated `<tr>` with per-row checkbox, striped background, and selection highlight. |
-| `ColumnVisibilityDropdown<T>` | Radix UI dropdown that toggles column visibility with animated entrance. |
-| `Pagination` | Full-featured pagination: page-number buttons (windowed), rows-per-page selector, and item range label. |
-| `BulkActionBar<T>` | Fixed floating action bar (bottom-centre) that slides in when rows are selected; supports arbitrary actions. |
-| `SkeletonRow` | Pulsing skeleton row used during the `loading` state. |
-| `MobileCardView<T>` | Stacked card layout rendered on narrow viewports; first column becomes the card title. |
-| `MobilePagination` | Mobile-optimised pagination with a page-size menu, simplified page buttons, and a "jump to page" input. |
-
-## Hooks
-
-Each hook manages a single concern and can be imported independently for headless use.
-
-### `useSort<T>(data, initialSortKey?)`
-
-```tsx
-const { sortedData, sortKey, sortDirection, toggleSort } = useSort(data);
-// toggleSort(key) toggles between 'asc' ↔ 'desc' for the active column.
-// When switching columns, sorting starts at 'asc'.
-```
-
-| Return | Type | Description |
-|--------|------|-------------|
-| `sortedData` | `T[]` | Data sorted by the active key and direction. |
-| `sortKey` | `keyof T \| null` | Currently active sort column. |
-| `sortDirection` | `'asc' \| 'desc'` | Current sort direction. |
-| `toggleSort` | `(key: keyof T) => void` | Toggle sort for the given column. |
-
-### `usePagination<T>(data, pageSize)`
-
-```tsx
-const { currentPage, totalPages, currentData, nextPage, previousPage, goToPage } = usePagination(data, 10);
-```
-
-| Return | Type | Description |
-|--------|------|-------------|
-| `currentPage` | `number` | Active page (1-indexed). |
-| `totalPages` | `number` | Total number of pages. |
-| `currentData` | `T[]` | Slice of `data` for the current page. |
-| `startIndex` | `number` | 0-based index of the first item on the current page. |
-| `endIndex` | `number` | 0-based index of the last item on the current page. |
-| `nextPage` | `() => void` | Advance to the next page. |
-| `previousPage` | `() => void` | Go back one page. |
-| `goToPage` | `(page: number) => void` | Jump to an arbitrary page. |
-
-### `useFilter<T>(data, columns)`
-
-```tsx
-const { filteredData, searchTerm, setSearchTerm } = useFilter(data, columns);
-// Searches across all provided columns (i.e., the columns passed into useFilter).
-```
-
-| Return | Type | Description |
-|--------|------|-------------|
-| `filteredData` | `T[]` | Data filtered by `searchTerm` across all columns. |
-| `searchTerm` | `string` | Current search query. |
-| `setSearchTerm` | `(term: string) => void` | Update the search query. |
-
-### `useColumnVisibility<T>(initialColumns)`
-
-```tsx
-const { visibleColumns, toggleColumn, getVisibleColumns } = useColumnVisibility(columns);
-```
-
-| Return | Type | Description |
-|--------|------|-------------|
-| `visibleColumns` | `Set<keyof T>` | Set of currently visible column keys. |
-| `toggleColumn` | `(key: keyof T) => void` | Show or hide the given column. |
-| `getVisibleColumns` | `Column<T>[]` | Filtered array of `Column<T>` objects that are currently visible. |
-
-### `useRowSelection<T>(data, keyExtractor)`
-
-```tsx
-const { selectedRows, toggleRow, toggleAll, clearSelection, getSelectedRowData, isAllSelected, isIndeterminate } =
-  useRowSelection(currentPageData, (row) => row.id);
-```
-
-| Return | Type | Description |
-|--------|------|-------------|
-| `selectedRows` | `Set<string \| number>` | Set of selected row keys. |
-| `toggleRow` | `(row: T) => void` | Toggle selection for a single row. |
-| `toggleAll` | `() => void` | Select all rows on the current page, or deselect all if all are selected. |
-| `clearSelection` | `() => void` | Deselect all rows. |
-| `getSelectedRowData` | `() => T[]` | Returns the full row objects for all selected keys. |
-| `isAllSelected` | `boolean` | True when every row on the current page is selected. |
-| `isIndeterminate` | `boolean` | True when some but not all rows are selected (drives the indeterminate checkbox state). |
-
 ## Examples
 
 ### Basic table
@@ -1800,3 +1666,137 @@ function MyCustomTable({ data }: { data: Product[] }) {
   onRowClick={(row) => router.push(`/products/${row.id}`)}
 />
 ```
+
+## Props
+
+### `<DataTable>`
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `data` | `T[]` | — | **Required.** The dataset to display. |
+| `columns` | `Column<T>[]` | — | **Required.** Column definitions (see below). |
+| `keyExtractor` | `(row: T) => string \| number` | — | **Required.** Returns a unique key per row; used for selection state and React reconciliation. |
+| `bulkActions` | `BulkAction<T>[]` | `[]` | Actions shown in the floating bulk-action bar when rows are selected. |
+| `pageSizeOptions` | `number[]` | `[5, 10, 25, 50]` | Options shown in the "Rows per page" selector. |
+| `defaultPageSize` | `number` | `5` | Initial page size. |
+| `enableRowSelection` | `boolean` | `true` | Show per-row checkboxes and the select-all header checkbox. |
+| `loading` | `boolean` | `false` | Show animated skeleton rows instead of data. |
+| `emptyStateMessage` | `string` | `'No data available.'` | Message shown when `data` is empty and `loading` is false. |
+| `noResultsMessage` | `string` | `'No results found.'` | Message shown when the global search returns zero results. |
+| `theme` | `'light' \| 'dark'` | `'light'` | Activates the dark colour scheme (adds the `dark` class to the root). |
+| `onRowClick` | `(row: T) => void` | `undefined` | Callback fired when the user taps a row (used in the mobile card view). |
+| `mobileBreakpoint` | `number` | `768` | Pixel width below which the mobile card layout is rendered instead of the table. |
+| `className` | `string` | `undefined` | Extra classes applied to the root wrapper. |
+
+### `Column<T>` object
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `key` | `keyof T` | ✓ | The property key on `T` this column reads from. |
+| `title` | `string` | ✓ | Column header label. |
+| `sortable` | `boolean` | | Defaults to `true`. Set to `false` to disable sort on this column. |
+| `visible` | `boolean` | | Defaults to `true`. Set to `false` to hide the column on initial render. |
+| `render` | `(value: T[keyof T], row: T) => React.ReactNode` | | Custom cell renderer. Receives the raw cell value and the full row. |
+| `className` | `string` | | Extra classes applied to both `<th>` and `<td>` for this column. |
+
+### `BulkAction<T>` object
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `label` | `string` | ✓ | Button label. |
+| `icon` | `React.ReactNode` | | Optional icon rendered to the left of the label. |
+| `onClick` | `(selectedRows: T[]) => void` | ✓ | Called with the full array of selected row objects. |
+| `variant` | `'default' \| 'destructive'` | | `'destructive'` renders the button in the destructive colour token. Default is `'default'`. |
+
+## Sub-components
+
+All sub-components are exported and can be used independently if you need a fully custom layout.
+
+| Component | Description |
+|-----------|-------------|
+| `TableHeader<T>` | Sticky `<thead>` with sortable column headers and an optional select-all checkbox. |
+| `TableRow<T>` | Animated `<tr>` with per-row checkbox, striped background, and selection highlight. |
+| `ColumnVisibilityDropdown<T>` | Radix UI dropdown that toggles column visibility with animated entrance. |
+| `Pagination` | Full-featured pagination: page-number buttons (windowed), rows-per-page selector, and item range label. |
+| `BulkActionBar<T>` | Fixed floating action bar (bottom-centre) that slides in when rows are selected; supports arbitrary actions. |
+| `SkeletonRow` | Pulsing skeleton row used during the `loading` state. |
+| `MobileCardView<T>` | Stacked card layout rendered on narrow viewports; first column becomes the card title. |
+| `MobilePagination` | Mobile-optimised pagination with a page-size menu, simplified page buttons, and a "jump to page" input. |
+
+## Hooks
+
+Each hook manages a single concern and can be imported independently for headless use.
+
+### `useSort<T>(data, initialSortKey?)`
+
+```tsx
+const { sortedData, sortKey, sortDirection, toggleSort } = useSort(data);
+// toggleSort(key) toggles between 'asc' ↔ 'desc' for the active column.
+// When switching columns, sorting starts at 'asc'.
+```
+
+| Return | Type | Description |
+|--------|------|-------------|
+| `sortedData` | `T[]` | Data sorted by the active key and direction. |
+| `sortKey` | `keyof T \| null` | Currently active sort column. |
+| `sortDirection` | `'asc' \| 'desc'` | Current sort direction. |
+| `toggleSort` | `(key: keyof T) => void` | Toggle sort for the given column. |
+
+### `usePagination<T>(data, pageSize)`
+
+```tsx
+const { currentPage, totalPages, currentData, nextPage, previousPage, goToPage } = usePagination(data, 10);
+```
+
+| Return | Type | Description |
+|--------|------|-------------|
+| `currentPage` | `number` | Active page (1-indexed). |
+| `totalPages` | `number` | Total number of pages. |
+| `currentData` | `T[]` | Slice of `data` for the current page. |
+| `startIndex` | `number` | 0-based index of the first item on the current page. |
+| `endIndex` | `number` | 0-based index of the last item on the current page. |
+| `nextPage` | `() => void` | Advance to the next page. |
+| `previousPage` | `() => void` | Go back one page. |
+| `goToPage` | `(page: number) => void` | Jump to an arbitrary page. |
+
+### `useFilter<T>(data, columns)`
+
+```tsx
+const { filteredData, searchTerm, setSearchTerm } = useFilter(data, columns);
+// Searches across all provided columns (i.e., the columns passed into useFilter).
+```
+
+| Return | Type | Description |
+|--------|------|-------------|
+| `filteredData` | `T[]` | Data filtered by `searchTerm` across all columns. |
+| `searchTerm` | `string` | Current search query. |
+| `setSearchTerm` | `(term: string) => void` | Update the search query. |
+
+### `useColumnVisibility<T>(initialColumns)`
+
+```tsx
+const { visibleColumns, toggleColumn, getVisibleColumns } = useColumnVisibility(columns);
+```
+
+| Return | Type | Description |
+|--------|------|-------------|
+| `visibleColumns` | `Set<keyof T>` | Set of currently visible column keys. |
+| `toggleColumn` | `(key: keyof T) => void` | Show or hide the given column. |
+| `getVisibleColumns` | `Column<T>[]` | Filtered array of `Column<T>` objects that are currently visible. |
+
+### `useRowSelection<T>(data, keyExtractor)`
+
+```tsx
+const { selectedRows, toggleRow, toggleAll, clearSelection, getSelectedRowData, isAllSelected, isIndeterminate } =
+  useRowSelection(currentPageData, (row) => row.id);
+```
+
+| Return | Type | Description |
+|--------|------|-------------|
+| `selectedRows` | `Set<string \| number>` | Set of selected row keys. |
+| `toggleRow` | `(row: T) => void` | Toggle selection for a single row. |
+| `toggleAll` | `() => void` | Select all rows on the current page, or deselect all if all are selected. |
+| `clearSelection` | `() => void` | Deselect all rows. |
+| `getSelectedRowData` | `() => T[]` | Returns the full row objects for all selected keys. |
+| `isAllSelected` | `boolean` | True when every row on the current page is selected. |
+| `isIndeterminate` | `boolean` | True when some but not all rows are selected (drives the indeterminate checkbox state). |

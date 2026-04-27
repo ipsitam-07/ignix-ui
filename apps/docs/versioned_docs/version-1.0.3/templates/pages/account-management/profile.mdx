@@ -8,10 +8,9 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import { ProfilePageDemo } from '@site/src/components/Demo/ProfileDemo';
 
-## Overview
-
 A complete profile management component with editing capabilities, avatar upload, social links management, and multiple customization options. Perfect for user profile pages, settings sections, or any user management interface.
 
+<ProfilePageDemo />
 
 ## Installation
 
@@ -1024,69 +1023,48 @@ export {
     </TabItem>
 </Tabs>
 
-
 ## Usage
-<ProfilePageDemo />
+```tsx
+import { ProfilePage } from '@ignix-ui/profile';
 
+function UserProfile() {
+  const handleSave = async (data, avatarFile) => {
+    // Implement save logic
+    console.log('Saving profile:', data);
+  };
 
-## ProfileData Interface
-```ts
-interface ProfileData {
-  displayName: string;
-  email: string;
-  bio: string;
-  avatarUrl: string | null;
-  socialLinks: SocialLink[];
-  location?: string;
-  jobTitle?: string;
-  website?: string;
-  phone?: string;
-}
-
-interface SocialLink {
-  id: string;
-  platform: string;
-  url: string;
+  return (
+    <ProfilePage
+      onSave={handleSave}
+      avatarShape="circle"
+      variant="default"
+    />
+  );
 }
 ```
 
-
-## Features
-- **Avatar Management:** Upload and preview avatar images with multiple shapes
-- **Editable Fields:** Toggle between view and edit modes for all profile information
-- **Social Links:** Add, edit, and remove social media links with automatic platform detection
-- **Multiple Variants:** Light, dark, gradient, glass, and card variants
-- **Responsive Design:** Works seamlessly across all screen sizes
-- **Accessibility:** Fully accessible with keyboard navigation and screen reader support
-- **Customizable:** Extensive customization options for every aspect
+### Features
+- **Avatar Management**: Upload and preview avatar images with multiple shapes.
+- **Editable Fields**: Toggle between view and edit modes for all profile information.
+- **Social Links**: Add, edit, and remove social media links with detection.
+- **Multiple Variants**: Light, dark, gradient, glass, and card variants.
+- **Responsive Design**: Works seamlessly across all screen sizes.
 
 ## Props
 
 | Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `headerTitle` | `string` | `"Profile Settings"` | Title displayed in the header
-| `headerIcon` | `React.ReactNode` | `<User className="w-4 h-4" />` | Icon displayed next to header title
-| `initialProfileData` | `Partial<ProfileData>` | `{}` | Initial profile data to display
-| `onSave` | `(data: ProfileData, avatarFile?: File &#124; null) => Promise&lt;void&gt; &#124; void | `-` | Callback when save is clicked
-| `onCancel` | `() => void` | `-` | Callback when cancel is clicked
-| `variant` | `"default" \| "gradient" \| "card" \| "glass" \| "dark"` | `'default'` | Visual variant of the profile page
-| `animationVariant` | `"fadeUp" \| "scaleIn" \| "slideUp" \| "slideLeft" \| "slideRight"` | `'fadeUp'` | Animation style for page entrance
-| `avatarShape` | `"circle" \| "square" \| "rounded" \| "hexagon" \| "star"` | `'circle'` | Shape of the avatar
-| `avatarSize` | `"md" \| "lg" \| "xl" \| "2xl" \| "3xl" \| "4xl" \| "5xl" \| "6xl" \| "7xl" \| "8xl" \| "9xl"` | `'3xl'` | Size of the avatar
-| `inputVariant` | `string` |	`clean` |	Variant for input fields
-| `buttonVariant` | `string` | `'default'` |	Variant for buttons
-| `buttonAnimationVariant` | `string` | `-` |	Animation variant for buttons
-| `customHeader` | `React.ReactNode` | `-` |	Custom header component
-| `customAvatarSection` | `React.ReactNode` | `-` |	Custom avatar section component
-| `customSocialLinks` | `React.ReactNode` | `-` |	Custom social links component
-| `editButtonLabel` | `string` | `'Edit Profile'` | Label for edit button
-| `saveButtonLabel` | `string` | `'Save Changes'` | Label for save button
-| `cancelButtonLabel` | `string` | `'Cancel'` | Label for cancel button
-| `savingButtonLabel` | `string` | `'Saving...'` | Label for saving state button
-| `isLoading` | `boolean` | `false` |	Show loading state
-| `status` | `"online" \| "offline" \| "away" \| "busy"` | `-` |	User status indicator
-| `showSaveNotification` | `boolean` | `true` |	Show notification on save
-| `saveNotificationDuration` | `number` | `3000` |	Duration of save notification in ms
-| `saveNotificationMessage` | `string` | `"Changes saved successfully!"` |	Message for save notification
-| `customNotification` | `React.ReactNode` | `-` |	Custom notification component
-| `darkMode` | `boolean` | `false` |	Enable dark mode
+| :--- | :--- | :--- | :--- |
+| `headerTitle` | `string` | `"Profile Settings"` | Header title. |
+| `headerIcon` | `React.ReactNode` | `<User />` | Header icon. |
+| `initialProfileData` | `Partial<ProfileData>` | `{}` | Initial profile data. |
+| `onSave` | `function` | - | Callback on save. |
+| `onCancel` | `function` | - | Callback on cancel. |
+| `variant` | `"default" \| "gradient" \| "card" \| "glass" \| "dark"` | `"default"` | Background variant. |
+| `animationVariant` | `string` | `"fadeUp"` | Page animation. |
+| `avatarShape` | `string` | `"circle"` | Shape of the avatar. |
+| `avatarSize` | `string` | `"3xl"` | Size of the avatar. |
+| `inputVariant` | `string` | `"clean"` | Input variant. |
+| `buttonVariant` | `string` | `"default"` | Button variant. |
+| `editButtonLabel` | `string` | `"Edit Profile"` | Label for edit button. |
+| `showSaveNotification` | `boolean` | `true` | Show notification on save. |
+| `darkMode` | `boolean` | `false` | Enable dark mode. |

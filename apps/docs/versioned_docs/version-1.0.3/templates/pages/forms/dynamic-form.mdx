@@ -12,8 +12,6 @@ import {
 
 A highly flexible and intelligent form component that dynamically shows or hides fields based on user selections. Perfect for complex forms with conditional logic, multi-section layouts, and real-time validation. Features include conditional field rendering, section organization, real-time validation, multiple themes, and comprehensive debugging tools.
 
-
-## Example Usage
 <DynamicFormDemo />
 
 ## Installation
@@ -21,7 +19,7 @@ A highly flexible and intelligent form component that dynamically shows or hides
 <Tabs>
     <TabItem value="cli" label="CLI" default>
         ```bash
-        ignix add component dynamicForm
+        ignix add component dynamicform
         ```
     </TabItem>
     <TabItem value="manual" label="manual" className="max-h-[500px] overflow-y-auto">
@@ -1918,278 +1916,163 @@ export {
 </Tabs>
 
 
-## Interfaces
+## Examples
 
+### Basic Usage
 ```tsx
-export type FieldValue = string | boolean | number | undefined;
-export type FormValues = Record<string, FieldValue>;
-export type ValidationErrors = Record<string, string>;
+import { DynamicForm } from '@ignix-ui/dynamic-form';
 
-export type ConditionalOperator = 
-| 'equals' 
-| 'notEquals' 
-| 'includes' 
-| 'greaterThan' 
-| 'lessThan' 
-| 'contains' 
-| 'startsWith' 
-| 'endsWith' 
-| 'boolean';
+const fields = [
+  { id: '1', name: 'name', label: 'Name', type: 'text', required: true },
+  { 
+    id: '2', 
+    name: 'role', 
+    label: 'Role', 
+    type: 'select', 
+    options: [{ value: 'admin', label: 'Admin' }, { value: 'user', label: 'User' }] 
+  }
+];
 
-export interface Condition {
-/** Field to check for the condition */
-field: string;
-
-/** Operator to use for comparison */
-operator: ConditionalOperator;
-
-/** Value to compare against */
-value: FieldValue | FieldValue[];
-}
-
-export interface ConditionalField {
-/** ID of the field to show conditionally */
-fieldId: string;
-
-/** Condition that must be met to show this field */
-condition: Condition;
-
-/** Whether this field becomes required when shown */
-required?: boolean;
-
-/** Whether to preserve the field's value when hidden */
-preserveValue?: boolean;
-}
-
-export interface FieldOption {
-/** Option value (stored in form data) */
-value: string;
-
-/** Display label for the option */
-label: string;
-
-/** Optional description shown below the label */
-description?: string;
-
-/** Icon to display with the option */
-icon?: React.ElementType;
-}
-
-export interface DynamicFormField {
-/** Unique identifier for the field */
-id: string;
-
-/** Field name used in form data object */
-name: string;
-
-/** Display label for the field */
-label: string;
-
-/** Input type with extended options */
-type: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 
-       'textarea' | 'select' | 'checkbox' | 'radio' | 'date' | 
-       'range' | 'color';
-
-/** Placeholder text for the input */
-placeholder?: string;
-
-/** Whether the field is required */
-required?: boolean;
-
-/** Options for select, radio, or checkbox fields */
-options?: FieldOption[];
-
-/** Custom validation function (receives current value and all form values) */
-validation?: (value: FieldValue, allValues?: FormValues) => string | undefined;
-
-/** Default value for the field */
-defaultValue?: FieldValue;
-
-/** Column span for grid layout */
-colSpan?: 'full' | 'half' | 'third' | 'quarter';
-
-/** Icon component to display with the field */
-icon?: React.ElementType;
-
-/** Conditions for showing this field */
-conditions?: Condition[];
-
-/** Fields that depend on this field's value */
-conditionalFields?: ConditionalField[];
-
-/** Email-specific validation options */
-emailValidation?: {
-    pattern?: boolean;
-    customPattern?: RegExp;
-    domain?: string[];
-    message?: string;
-};
-
-/** Number-specific validation options */
-numberValidation?: {
-    min?: number;
-    max?: number;
-    integer?: boolean;
-    message?: string;
-};
-
-/** Text-specific validation options */
-textValidation?: {
-    minLength?: number;
-    maxLength?: number;
-    pattern?: RegExp;
-    message?: string;
-};
-
-/** Custom color for color input or field accent */
-color?: string;
-
-/** Gradient string for special styling */
-gradient?: string;
-
-/** Custom icon color */
-iconColor?: string;
-}
-
-export interface Notification {
-/** Unique identifier for the notification */
-id: string;
-
-/** Type of notification affecting styling */
-type: 'success' | 'error' | 'info' | 'warning' | 'magic';
-
-/** Message to display */
-message: string;
-
-/** Duration in milliseconds before auto-dismiss */
-duration?: number;
-
-/** Custom icon for the notification */
-icon?: React.ElementType;
+export default function MyForm() {
+  return (
+    <DynamicForm fields={fields} onSubmit={console.log}>
+      <DynamicForm.Header title="Registration" />
+      <DynamicForm.Content />
+      <DynamicForm.Navigation />
+    </DynamicForm>
+  );
 }
 ```
 
-
+### Features
+- **Conditional Rendering:** Dynamically show/hide fields based on logic.
+- **Section Organization:** Group fields into collapsible sections.
+- **Real-time Validation:** Instant feedback on user input.
+- **Multiple Themes:** 10+ visual variants including vibrant and glass.
+- **Debug Mode:** Built-in panel for state inspection.
+- **Compound Components:** Flexible layout composition.
+- **Responsive Design:** Optimized for all screen sizes.
+- **Accessibility:** Full ARIA and keyboard support.
 
 ## Props
 ### DynamicForm Props
 
 | Prop | Type | Default | Description |
 |-----|-----|-----|-----|
-| `fields` | `DynamicFormField[]` | **Required** | Array of field configurations defining the form structure |
-| `initialData` | `FormValues` | `{}` | Initial data to pre-populate the form |
-| `onSubmit` | `(data: FormValues) => Promise<void> \| void` | — | Called when form is submitted |
-| `onCancel` | `() => void` | — | Triggered when cancel button is clicked |
-| `onChange` | `(data: FormValues, visibleFields: string[]) => void` | — | Triggered when any field value changes |
-| `variant` | `"default" \| "vibrant" \| "pastel" \| "neon" \| "earthy" \| "ocean" \| "sunset" \| "forest" \| "galaxy" \| "candy"` | `"default"` | Visual theme variant for the form |
-| `cardVariant` | `"default" \| "glass" \| "border" \| "elevated" \| "neon" \| "vibrant"` | `"default"` | Style of the form card container |
-| `inputVariant` | `string` | `"default"` | Visual variant for input fields |
-| `buttonVariant` | `string` | `"default"` | Visual variant for submit button |
-| `buttonAnimationVariant` | `string` | — | Animation style for the submit button |
-| `submitButtonLabel` | `string` | `"Submit"` | Custom label for submit button |
-| `cancelButtonLabel` | `string` | `"Cancel"` | Custom label for cancel button |
-| `isLoading` | `boolean` | `false` | Shows loading state when fetching initial data |
-| `isSubmitting` | `boolean` | `false` | Controls submitting state |
-| `showCancelButton` | `boolean` | `true` | Whether to display cancel button |
-| `animateFieldChanges` | `boolean` | `true` | Animate fields when visibility changes |
-| `animationIntensity` | `'subtle' \| 'moderate' \| 'high'` | `'moderate'` | Intensity of animations |
-| `showSuccessNotification` | `boolean` | `true` | Show success notification after submission |
-| `successNotificationDuration` | `number` | `3000` | Duration of success notification |
-| `successNotificationMessage` | `string` | `'✨ Form submitted successfully!'` | Success message |
-| `theme` | `'light' \| 'dark' \| 'system'` | `'system'` | Theme preference |
-| `colorScheme` | `'default' \| 'vibrant' \| 'pastel' \| 'neon' \| 'earthy' \| 'ocean' \| 'sunset' \| 'forest'` | `'default'` | Color scheme variant |
-| `debug` | `boolean` | `false` | Enables debug panel |
-| `className` | `string` | — | Extra classes for root element |
-| `containerClassName` | `string` | — | Extra classes for inner container |
+| `fields` | `DynamicFormField[]` | **Required** | Field configurations. |
+| `initialData` | `FormValues` | `{}` | Pre-populated data. |
+| `onSubmit` | `(data: FormValues) => Promise<void> \| void` | — | Submission callback. |
+| `onCancel` | `() => void` | — | Cancel callback. |
+| `onChange` | `(data: FormValues, visibleFields: string[]) => void` | — | Change callback. |
+| `variant` | `"default" \| "vibrant" \| "pastel" \| "neon" \| "earthy" \| "ocean" \| "sunset" \| "forest" \| "galaxy" \| "candy"` | `"default"` | Theme variant. |
+| `cardVariant` | `"default" \| "glass" \| "border" \| "elevated" \| "neon" \| "vibrant"` | `"default"` | Card style. |
+| `inputVariant` | `string` | `"default"` | Input variant. |
+| `buttonVariant` | `string` | `"default"` | Button variant. |
+| `buttonAnimationVariant` | `string` | — | Button animation. |
+| `submitButtonLabel` | `string` | `"Submit"` | Submit label. |
+| `cancelButtonLabel` | `string` | `"Cancel"` | Cancel label. |
+| `isLoading` | `boolean` | `false` | Loading state. |
+| `isSubmitting` | `boolean` | `false` | Submitting state. |
+| `showCancelButton` | `boolean` | `true` | Show cancel. |
+| `animateFieldChanges` | `boolean` | `true` | Animate visibility. |
+| `animationIntensity` | `'subtle' \| 'moderate' \| 'high'` | `'moderate'` | Animation level. |
+| `showSuccessNotification` | `boolean` | `true` | Success toast. |
+| `successNotificationDuration` | `number` | `3000` | Toast duration. |
+| `successNotificationMessage` | `string` | `'✨ Form submitted successfully!'` | Success message. |
+| `theme` | `'light' \| 'dark' \| 'system'` | `'system'` | Theme mode. |
+| `colorScheme` | `'default' \| 'vibrant' \| 'pastel' \| 'neon' \| 'earthy' \| 'ocean' \| 'sunset' \| 'forest'` | `'default'` | Color scheme. |
+| `debug` | `boolean` | `false` | Debug panel. |
+| `className` | `string` | — | Extra classes. |
+| `containerClassName` | `string` | — | Inner classes. |
 
 ### DynamicHeader Props
 
 | Prop | Type | Default | Description |
 |-----|-----|-----|-----|
-| `title` | `string \| React.ReactNode` | — | Header title |
-| `description` | `string` | — | Description text |
-| `icon` | `React.ReactNode` | — | Icon displayed next to title |
-| `children` | `React.ReactNode` | — | Custom header content |
-| `className` | `string` | — | Extra CSS classes |
-| `titleClassName` | `string` | — | Custom classes for title |
-| `descriptionClassName` | `string` | — | Custom classes for description |
-| `iconClassName` | `string` | — | Custom classes for icon container |
-| `containerClassName` | `string` | — | Custom container classes |
-| `titleVariant` | `TypographyVariants` | `'h4'` | Typography style for title |
-| `titleWeight` | `'light' \| 'normal' \| 'medium' \| 'semibold' \| 'bold'` | `'bold'` | Title font weight |
-| `titleColor` | `TypographyColorOptions` | `'default'` | Title text color |
-| `descriptionVariant` | `'body' \| 'body-small' \| 'caption' \| 'muted'` | `'muted'` | Description typography |
-| `iconSize` | `number` | `24` | Icon size |
-| `animated` | `boolean` | `true` | Animate header on mount |
-| `gradient` | `boolean` | `false` | Apply gradient text to title |
+| `title` | `string \| React.ReactNode` | — | Header title. |
+| `description` | `string` | — | Description text. |
+| `icon` | `React.ReactNode` | — | Header icon. |
+| `children` | `React.ReactNode` | — | Custom content. |
+| `className` | `string` | — | Extra classes. |
+| `titleClassName` | `string` | — | Title classes. |
+| `descriptionClassName` | `string` | — | Description classes. |
+| `iconClassName` | `string` | — | Icon classes. |
+| `containerClassName` | `string` | — | Container classes. |
+| `titleVariant` | `TypographyVariants` | `'h4'` | Title style. |
+| `titleWeight` | `'light' \| 'normal' \| 'medium' \| 'semibold' \| 'bold'` | `'bold'` | Title weight. |
+| `titleColor` | `TypographyColorOptions` | `'default'` | Title color. |
+| `descriptionVariant` | `'body' \| 'body-small' \| 'caption' \| 'muted'` | `'muted'` | Description style. |
+| `iconSize` | `number` | `24` | Icon size. |
+| `animated` | `boolean` | `true` | Animate mount. |
+| `gradient` | `boolean` | `false` | Gradient title. |
 
 
 ### DynamicContent Props
 
 | Prop | Type | Default | Description |
 |-----|-----|-----|-----|
-| `children` | `React.ReactNode` | **Required** | Form fields or sections |
-| `className` | `string` | — | Extra container classes |
-| `animateChanges` | `boolean` | `true` | Animate field visibility |
-| `cardVariant` | `CardVariant` | `"default"` | Card visual style |
-| `showFieldCount` | `boolean` | `true` | Display number of visible fields |
+| `children` | `React.ReactNode` | **Required** | Fields/sections. |
+| `className` | `string` | — | Container classes. |
+| `animateChanges` | `boolean` | `true` | Animate fields. |
+| `cardVariant` | `CardVariant` | `"default"` | Card style. |
+| `showFieldCount` | `boolean` | `true` | Show field count. |
 
 ### DynamicField Props
 
 | Prop | Type | Default | Description |
 |-----|-----|-----|-----|
-| `field` | `DynamicFormField` | **Required** | Field configuration |
-| `className` | `string` | — | Extra classes |
-| `showLabel` | `boolean` | `true` | Display field label |
-| `animationVariant` | `'fade' \| 'slide' \| 'scale' \| 'rotate'` | `'fade'` | Field appearance animation |
+| `field` | `DynamicFormField` | **Required** | Field config. |
+| `className` | `string` | — | Extra classes. |
+| `showLabel` | `boolean` | `true` | Show label. |
+| `animationVariant` | `'fade' \| 'slide' \| 'scale' \| 'rotate'` | `'fade'` | Field animation. |
 
 ### DynamicSection Props
 
 | Prop | Type | Default | Description |
 |-----|-----|-----|-----|
-| `title` | `string` | — | Section title |
-| `description` | `string` | — | Section description |
-| `children` | `React.ReactNode` | **Required** | Fields inside section |
-| `className` | `string` | — | Additional classes |
-| `condition` | `Condition \| Condition[]` | — | Visibility condition |
-| `defaultCollapsed` | `boolean` | `false` | Start collapsed |
-| `collapsible` | `boolean` | `false` | Allow collapse toggle |
-| `showWhenEmpty` | `boolean` | `false` | Show section even if empty |
-| `gradient` | `boolean` | `false` | Apply gradient background |
-| `icon` | `React.ElementType` | — | Section icon |
+| `title` | `string` | — | Section title. |
+| `description` | `string` | — | Section desc. |
+| `children` | `React.ReactNode` | **Required** | Section fields. |
+| `className` | `string` | — | Extra classes. |
+| `condition` | `Condition \| Condition[]` | — | Visibility logic. |
+| `defaultCollapsed` | `boolean` | `false` | Initial state. |
+| `collapsible` | `boolean` | `false` | Allow toggle. |
+| `showWhenEmpty` | `boolean` | `false` | Show if empty. |
+| `gradient` | `boolean` | `false` | Gradient bg. |
+| `icon` | `React.ElementType` | — | Section icon. |
 
 ### DynamicNavigation Props
 
 | Prop | Type | Default | Description |
 |-----|-----|-----|-----|
-| `submitButtonLabel` | `string` | `"Submit"` | Custom submit label |
-| `cancelButtonLabel` | `string` | `"Cancel"` | Custom cancel label |
-| `showCancelButton` | `boolean` | `true` | Show cancel button |
-| `onCancel` | `() => void` | — | Cancel callback |
-| `className` | `string` | — | Extra classes |
-| `position` | `'bottom' \| 'sticky'` | `'bottom'` | Navigation bar position |
-| `animated` | `boolean` | `true` | Animate navigation |
-| `children` | `React.ReactNode` | — | Custom navigation UI |
+| `submitButtonLabel` | `string` | `"Submit"` | Submit label. |
+| `cancelButtonLabel` | `string` | `"Cancel"` | Cancel label. |
+| `showCancelButton` | `boolean` | `true` | Show cancel. |
+| `onCancel` | `() => void` | — | Cancel callback. |
+| `className` | `string` | — | Extra classes. |
+| `position` | `'bottom' \| 'sticky'` | `'bottom'` | Bar position. |
+| `animated` | `boolean` | `true` | Animate nav. |
+| `children` | `React.ReactNode` | — | Custom UI. |
 
 ### DynamicNotification Props
 
 | Prop | Type | Default | Description |
 |-----|-----|-----|-----|
-| `type` | `'success' \| 'error' \| 'info' \| 'warning' \| 'magic'` | **Required** | Notification type |
-| `message` | `string` | **Required** | Notification message |
-| `onClose` | `() => void` | **Required** | Close callback |
-| `duration` | `number` | `3000` | Auto close duration |
-| `className` | `string` | — | Extra classes |
-| `icon` | `React.ElementType` | — | Custom icon |
+| `type` | `'success' \| 'error' \| 'info' \| 'warning' \| 'magic'` | **Required** | Toast type. |
+| `message` | `string` | **Required** | Toast message. |
+| `onClose` | `() => void` | **Required** | Close callback. |
+| `duration` | `number` | `3000` | Auto-close. |
+| `className` | `string` | — | Extra classes. |
+| `icon` | `React.ElementType` | — | Custom icon. |
 
 ### DynamicDebugger Props
 
 | Prop | Type | Default | Description |
 |-----|-----|-----|-----|
-| `className` | `string` | — | Additional debugger classes |
+| `className` | `string` | — | Debugger classes. |
 
 ### ThemeToggle Props
 
 | Prop | Type | Default | Description |
 |-----|-----|-----|-----|
-| `className` | `string` | — | Additional classes for toggle button |
+| `className` | `string` | — | Toggle classes. |

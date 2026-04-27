@@ -8,11 +8,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import OtpVerificationDemo from '@site/src/components/Demo/OtpVerificationDemo'
 
-## Overview
-
 A **fully responsive OTP (One-Time Password)** verification component that provides configurable input length, animations, themes, auto-focus behavior, and paste-to-autofill support. It is designed for open-source use, allowing developers to customize cooldown duration, navigation actions, resend logic, and visual styles while maintaining complete control over the verification workflow.
-
-## Preview
 
 <OtpVerificationDemo />
 
@@ -25,7 +21,7 @@ A **fully responsive OTP (One-Time Password)** verification component that provi
     ```
   </TabItem>
 <TabItem value="manual" label="Manual">
-```bash
+```tsx
 import React, { useEffect, useRef, useState, useCallback, useMemo, memo } from "react";
 import { Button } from "@ignix-ui/button";
 import { cn } from "../../../utils/cn";

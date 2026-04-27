@@ -1927,137 +1927,17 @@ function App() {
 
 ```
 
-## Interfaces
+## Features 
 
-```tsx
-export type FilterType = 'text' | 'select' | 'multi-select' | 'date-range' | 'checkbox' | 'numeric-range';
-export type DateRangePreset = 'today' | 'yesterday' | 'last7days' | 'last30days' | 'last90days' | 'thisMonth' | 'lastMonth' | 'custom';
-export type ExportFormat = 'csv' | 'excel' | 'json';
-export type SearchVariant = 'default' | 'dark' | 'light';
-export type LayoutVariant = 'inline' | 'stacked' | 'collapsible';
-
-export interface FilterOption {
-    /** Option value (stored in filter state) */
-    value: string;
-    /** Display label for the option */
-    label: string;
-    /** Optional count to show next to label */
-    count?: number;
-}
-
-export interface BaseFilterConfig {
-    /** Unique identifier for the filter */
-    id: string;
-    /** Display label for the filter */
-    label: string;
-    /** Type of filter to render */
-    type: FilterType;
-    /** Placeholder text for input */
-    placeholder?: string;
-    /** Default value for the filter */
-    defaultValue?: string | string[] | DateRangeValue | NumericRangeValue;
-    /** Whether the filter is required */
-    required?: boolean;
-    /** Whether to take full width on mobile devices */
-    fullWidthOnMobile?: boolean;
-}
-
-export interface TextFilterConfig extends BaseFilterConfig {
-    type: 'text';
-}
-
-export interface SelectFilterConfig extends BaseFilterConfig {
-    type: 'select';
-    /** Options for the select dropdown */
-    options: FilterOption[];
-}
-
-export interface MultiSelectFilterConfig extends BaseFilterConfig {
-    type: 'multi-select';
-    /** Options for multi-select */
-    options: FilterOption[];
-    /** Props to pass to internal Checkbox components */
-    checkboxProps?: Omit<React.ComponentProps<typeof Checkbox>, 'checked' | 'onChange' | 'label'>;
-}
-
-export interface DateRangeFilterConfig extends BaseFilterConfig {
-    type: 'date-range';
-    /** Available preset ranges */
-    presets?: DateRangePreset[];
-    /** Props to pass to internal DatePicker component */
-    datePickerProps?: Omit<React.ComponentProps<typeof DatePicker>, 'value' | 'onChange' | 'variant' | 'themeMode'>;
-}
-
-export interface CheckboxFilterConfig extends BaseFilterConfig {
-    type: 'checkbox';
-    /** Options for checkbox group */
-    options: FilterOption[];
-    /** Props to pass to internal Checkbox components */
-    checkboxProps?: Omit<React.ComponentProps<typeof Checkbox>, 'checked' | 'onChange' | 'label'>;
-}
-
-export interface NumericRangeFilterConfig extends BaseFilterConfig {
-    type: 'numeric-range';
-    /** Minimum allowed value */
-    min?: number;
-    /** Maximum allowed value */
-    max?: number;
-    /** Step increment for number inputs */
-    step?: number;
-}
-
-export type FilterConfig =
-    | TextFilterConfig
-    | SelectFilterConfig
-    | MultiSelectFilterConfig
-    | DateRangeFilterConfig
-    | CheckboxFilterConfig
-    | NumericRangeFilterConfig;
-
-export interface SavedSearch {
-    /** Unique identifier for the saved search */
-    id: string;
-    /** Display name of the saved search */
-    name: string;
-    /** Filter state to restore */
-    filters: Record<string, FilterValue>;
-    /** Optional creation timestamp */
-    createdAt?: Date;
-}
-
-export interface FacetedCategory {
-    /** Unique identifier for the category */
-    id: string;
-    /** Display label for the category */
-    label: string;
-    /** Available options for this category */
-    options: FilterOption[];
-}
-
-export interface DateRangeValue {
-    /** Start date in YYYY-MM-DD format */
-    start?: string;
-    /** End date in YYYY-MM-DD format */
-    end?: string;
-    /** Selected preset */
-    preset?: DateRangePreset;
-}
-
-export interface NumericRangeValue {
-    /** Minimum value */
-    min?: number;
-    /** Maximum value */
-    max?: number;
-}
-
-export type FilterValue =
-    | string
-    | string[]
-    | DateRangeValue
-    | NumericRangeValue
-    | undefined;
-
-```
+- Multiple filter types (text, select, multi-select, date range, checkbox, numeric range)
+- Responsive (mobile, tablet, desktop)
+- Auto-apply with debounce
+- Saved searches
+- Faceted filtering (quick refine)
+- Export support (CSV, Excel, JSON)
+- Collapsible filters (mobile optimized)
+- Theming (light/dark)
+- Fully composable architecture
 
 # Props
 
@@ -2139,16 +2019,3 @@ export type FilterValue =
 | SearchCheckboxFilter | `filter: CheckboxFilterConfig, value: string[], onChange: (value: string[]) => void, className?: string` | Checkbox group filter
 | SearchNumericRangeFilter | `filter: NumericRangeFilterConfig, value: NumericRangeValue, onChange: (value: NumericRangeValue) => void, className?: string` | Min/max number inputs
 | SearchFilterRenderer | `filter: FilterConfig, value: FilterValue, onChange: (value: FilterValue) => void, className?: string` | Automatic renderer based on filter type
-
-
-## Features 
-
-- Multiple filter types (text, select, multi-select, date range, checkbox, numeric range)
-- Responsive (mobile, tablet, desktop)
-- Auto-apply with debounce
-- Saved searches
-- Faceted filtering (quick refine)
-- Export support (CSV, Excel, JSON)
-- Collapsible filters (mobile optimized)
-- Theming (light/dark)
-- Fully composable architecture

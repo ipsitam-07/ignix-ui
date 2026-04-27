@@ -8,11 +8,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import NotificationPageDemo from '@site/src/components/Demo/NotificationSettingsPageDemo';
 
-## Overview
-
 The **Notification Page** provides centralized control over notification preferences: toggle email, push, and SMS notifications; set notification frequency (real-time, daily digest, or weekly summary); control notification types (marketing, updates, alerts); and unsubscribe from all notifications with a single action. It supports both a grid layout and a collapsible list (accordion) layout for compact displays, plus light/dark/auto theme variants.
-
-## Preview
 
 <NotificationPageDemo />
 
@@ -258,26 +254,6 @@ The **Notification Page** provides centralized control over notification prefere
   </TabItem>
 </Tabs>
 
-## Features
-
-- **Notification channels** with toggles for Email, Push, and SMS notifications  
-- **Notification frequency** selection (Real-time, Daily digest, Weekly summary)  
-- **Notification types** control (Marketing, Updates, Alerts) with individual toggles  
-- **Unsubscribe from all** with confirmation dialog  
-- **Save preferences** button with loading and success states  
-- **Status badge** showing "Active" or "Inactive" based on enabled channels  
-- **Layouts**: grid (two-column cards) or list (accordion/fold/unfold)  
-- **Themes**: light, dark, auto; responsive with mobile-friendly design  
-
-## Props
-
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `title` | `string` | `"Notifications"` | Page heading text |
-| `description` | `string` | Description under the heading | Subheading / helper copy |
-| `variant` | `"light" \| "dark" \| "auto"` | `"dark"` | Background/theme variant |
-| `layout` | `"grid" \| "list"` | `"grid"` | Grid cards or accordion list layout |
-
 ## Usage Examples
 
 ### Grid layout (dark)
@@ -313,12 +289,23 @@ The **Notification Page** provides centralized control over notification prefere
 />;
 ```
 
-## Notes
+## Features
 
-- Each notification channel (Email, Push, SMS) can be toggled independently.
-- Frequency selection affects how notifications are delivered across all enabled channels.
-- Notification types (Marketing, Updates, Alerts) provide granular control over content categories.
-- The "Unsubscribe from all" action disables all channels and types but requires saving to persist.
-- The save button shows loading state during API calls and success state after saving.
-- Status badge dynamically updates based on whether any notification channel is enabled.
+- **Notification channels** with toggles for Email, Push, and SMS notifications  
+- **Notification frequency** selection (Real-time, Daily digest, Weekly summary)  
+- **Notification types** control (Marketing, Updates, Alerts) with individual toggles  
+- **Unsubscribe from all** with confirmation dialog  
+- **Save preferences** button with loading and success states  
+- **Status badge** showing "Active" or "Inactive" based on enabled channels  
+- **Layouts**: grid (two-column cards) or list (accordion/fold/unfold)  
+- **Themes**: light, dark, auto; responsive with mobile-friendly design  
+
+## Props
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `title` | `string` | `"Notifications"` | Page heading text |
+| `description` | `string` | Description under the heading | Subheading / helper copy |
+| `variant` | `"light" \| "dark" \| "auto"` | `"dark"` | Background/theme variant |
+| `layout` | `"grid" \| "list"` | `"grid"` | Grid cards or accordion list layout |
 

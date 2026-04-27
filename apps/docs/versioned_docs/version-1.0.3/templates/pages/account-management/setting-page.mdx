@@ -9,8 +9,6 @@ import TabItem from '@theme/TabItem';
 import { SettingsPageBasicDemo, SettingsPageDemo, SettingsPageDemoWithLayout } from '@site/src/components/Demo/SettingPageDemo';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 
-## Overview
-
 **Settings Page** is a highly customizable, animation-rich component designed for modern applications.
 
 It supports:
@@ -21,22 +19,9 @@ It supports:
 - Action confirmations (e.g. data export)
 - Smooth, configurable animations
 
-The component is **UI-only and framework-agnostic in behavior**.  
-It exposes **callback hooks instead of business logic**, allowing consumers to integrate APIs, persistence layers, analytics, or i18n solutions of their choice.
-
-Fully responsive and accessibility-friendly by default.
-
----
-
-## Preview
-
-### Basic
-
 <BrowserOnly>
-  {() => <SettingsPageBasicDemo />}
+  {() => <SettingsPageDemo />}
 </BrowserOnly>
-
----
 
 ## Installation
 
@@ -46,8 +31,8 @@ Fully responsive and accessibility-friendly by default.
     ignix add component settingsPage
     ```
   </TabItem>
-  <TabItem value="manual" label="MANUAL">
-  ```bash
+  <TabItem value="manual" label="Manual">
+  ```tsx
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useDialog } from "@ignix-ui/dialogbox/use-dialog";
@@ -557,51 +542,6 @@ export const SettingsPage = (props: SettingPageProps) => {
   </TabItem>
 </Tabs>
 
----
-
-## Examples
-### Variants
-
-<BrowserOnly>
-  {() => <SettingsPageDemo />}
-</BrowserOnly>
-
----
-
-### Integrated with Layout
-
-<BrowserOnly>
-  {() => <SettingsPageDemoWithLayout />}
-</BrowserOnly>
-
-
----
-
-### Dynamic translation loading
-
-`SettingsPage` does not bundle translations.
-
-To support language switching, provide an `onLanguageChange`
-handler via `I18nProvider`.
-
-```ts
-const loadLanguage = async (lang: string) => {
-  const messages = await fetch(`/i18n/${lang}.json`).then(r => r.json());
-  setMessages(messages);
-};
-
-<I18nProvider
-  value={{
-    language,
-    setLanguage,
-    t,
-    onLanguageChange: loadLanguage,
-  }}
->
-  <SettingsPage />
-</I18nProvider>
-```
-
 ## Usage 
 
 ```tsx
@@ -658,6 +598,41 @@ function App() {
 export default App;
 
 ```
+## Examples
+
+### Integrated with Layout
+
+<BrowserOnly>
+  {() => <SettingsPageDemoWithLayout />}
+</BrowserOnly>
+
+
+
+### Dynamic translation loading
+
+`SettingsPage` does not bundle translations.
+
+To support language switching, provide an `onLanguageChange`
+handler via `I18nProvider`.
+
+```ts
+const loadLanguage = async (lang: string) => {
+  const messages = await fetch(`/i18n/${lang}.json`).then(r => r.json());
+  setMessages(messages);
+};
+
+<I18nProvider
+  value={{
+    language,
+    setLanguage,
+    t,
+    onLanguageChange: loadLanguage,
+  }}
+>
+  <SettingsPage />
+</I18nProvider>
+```
+
 
 ## Props
 
@@ -699,34 +674,3 @@ export default App;
 | Prop | Type | Default | Description |
 |-----|------|---------|-------------|
 | `onExportData` | `() => void \| Promise<void>` | — | Called after export confirmation dialog is accepted. |
-
----
-
-## Design Principles
-
-- **UI-only**: No API calls, no persistence
-- **Open-source friendly**: No forced i18n, state, or backend assumptions
-- **Composable**: Works standalone or inside complex layouts
-- **Accessible**: Keyboard and screen-reader friendly
-- **Animation-first**: Motion enhances UX without locking behavior
-
----
-
-## When to Use
-
-✔ Dashboards  
-✔ Admin panels  
-✔ SaaS settings screens  
-✔ Design systems  
-✔ White-label products  
-
----
-
-## When Not to Use
-
-✖ If you need opinionated backend logic  
-✖ If you want bundled translations  
-✖ If you don’t need animation or configurability  
-
----
-

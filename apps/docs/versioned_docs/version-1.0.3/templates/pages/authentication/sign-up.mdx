@@ -9,11 +9,9 @@ import TabItem from '@theme/TabItem';
 import { SignUp } from '@site/src/components/UI/sign-up';
 import { CenteredDarkDemo, SplitDarkDemo, CompleteRegistrationDemo } from '@site/src/components/Demo/SignUpDemo';
 
-## Overview
-
 The SignUp component provides a complete, production-ready registration form with support for comprehensive user registration flows. It includes all essential fields, password strength validation, CAPTCHA integration, social sign-up options, and extensive customization capabilities.
 
-
+<CenteredDarkDemo />
 ## Installation
 
 <Tabs>
@@ -1858,19 +1856,14 @@ The SignUp component provides a complete, production-ready registration form wit
 </Tabs>
 
 
-## Previews
+## Examples
 
-### 1. Centered Dark Layout
-Complete registration form with dark theme and password strength validation.
-
-<CenteredDarkDemo />
-
-### 2. Split Dark Layout
+### 1. Split Dark Layout
 Enterprise registration with comprehensive left panel content and security features.
 
 <SplitDarkDemo />
 
-### 3. Complete Registration with CAPTCHA
+### 2. Complete Registration with CAPTCHA
 Full registration flow with CAPTCHA verification for enhanced security.
 
 <CompleteRegistrationDemo />
@@ -1923,16 +1916,6 @@ interface SignUpFormData {
 }
 ```
 
-### Accessibility
-The SignUp component is built with accessibility in mind: 
-- **ARIA Labels:** All interactive elements have appropriate ARIA labels
-- **Keyboard Navigation:** Full keyboard navigation support
-- **Focus Management:** Proper focus trapping and management
-- **Screen Reader Support:** All form elements are properly labeled
-- **Color Contrast:** Meets WCAG 2.1 AA standards for color contrast
-- **Error Announcements:** Form errors are announced to screen readers
-- **Loading States:** Loading states are properly communicated
-
 ## Best Practices
 ### 1. Password Security
 ```tsx
@@ -1972,7 +1955,7 @@ termsConfig={{
 ```
 
 
-### Key Features
+### Features
 
 - **Complete Registration Flow**: First name, last name, email confirmation, password confirmation
 - **Password Strength Validation**: Configurable requirements with visual strength meter

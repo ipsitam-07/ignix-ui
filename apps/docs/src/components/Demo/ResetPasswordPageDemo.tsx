@@ -15,16 +15,16 @@ const ResetPasswordPageDemo = () => {
     import ResetPasswordPage from '@ignix-ui/resetpassword';
   
     <ResetPasswordPage
-    token="${token}"
-    inputVariant="${inputVariant}"
-    onSubmit={(password, token) => console.log("Password reset:", password, token)}
-    onTokenValidate={(token) => token.length >= 6 && token.length <= 32}
+      token="${token}"
+      inputVariant="${inputVariant}"
+      onSubmit={(password, token) => console.log("Password reset:", password, token)}
+      onTokenValidate={(token) => token.length >= 6 && token.length <= 32}
     />`;
 
   useEffect(() => {
     setToken('');
-  },[])
-  
+  }, [])
+
   return (
     <div className='space-y-6 mb-8'>
       <div className='flex flex-wrap gap-4 justify-start sm:justify-end'>
@@ -47,9 +47,9 @@ const ResetPasswordPageDemo = () => {
           </div>
         </TabItem>
         <TabItem value='code' label='Code'>
-            <CodeBlock language='tsx' className='whitespace-pre-wrap max-h-[500px] overflow-y-scroll'>
-             {codeString} 
-          </CodeBlock> 
+          <CodeBlock language='tsx' className='whitespace-pre-wrap max-h-[500px] overflow-y-scroll'>
+            {codeString}
+          </CodeBlock>
         </TabItem>
       </Tabs>
     </div>

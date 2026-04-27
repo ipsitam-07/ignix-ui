@@ -14,7 +14,6 @@ import { Users, Award, MapPin, User, UserCircle } from 'lucide-react';
 
 The TeamProfiles component is a comprehensive, customizable team showcase section that displays team members in a professional grid layout. It features multiple card styles, flexible grid configurations, theme variants, and advanced features like modal views and animations.
 
-## Preview
 <AdvancedTeamDemo />
 
 
@@ -1539,6 +1538,144 @@ export const TeamProfiles: React.FC<TeamProfilesProps> = ({
   </TabItem>
 </Tabs>
 
+## Usage
+
+The TeamProfiles system uses a compound component pattern to give you full control over the layout and data displayed for each member.
+
+### Quick Start
+A simple implementation using the core components to display a team grid.
+
+```tsx
+import { 
+  TeamProfiles, 
+  TeamHeader, 
+  TeamGrid, 
+  MemberCard, 
+  MemberPhoto, 
+  MemberContent, 
+  MemberName, 
+  MemberRole 
+} from '@ignix-ui/team-profiles';
+
+const members = [
+  { 
+    id: '1', 
+    name: 'Jane Doe', 
+    role: 'Engineering Manager', 
+    photo: '/jane.jpg' 
+  },
+  { 
+    id: '2', 
+    name: 'John Smith', 
+    role: 'Product Designer', 
+    photo: '/john.jpg' 
+  },
+];
+
+export default function BasicTeam() {
+  return (
+    <TeamProfiles variant="light">
+      <TeamHeader 
+        title="Our Team" 
+        subtitle="Meet the people behind the magic." 
+      />
+      <TeamGrid columns={{ mobile: 1, tablet: 2, desktop: 3 }}>
+        {members.map(member => (
+          <MemberCard key={member.id} member={member}>
+            <MemberPhoto src={member.photo} initials={member.name[0]} />
+            <MemberContent>
+              <MemberName>{member.name}</MemberName>
+              <MemberRole>{member.role}</MemberRole>
+            </MemberContent>
+          </MemberCard>
+        ))}
+      </TeamGrid>
+    </TeamProfiles>
+  );
+}
+```
+
+### Custom Composition
+Utilize all available sub-components and external UI elements like `Button` and `Typography` for a high-fidelity, feature-rich section.
+
+```tsx
+import { 
+  TeamProfiles, 
+  TeamHeader, 
+  TeamGrid, 
+  MemberCard, 
+  MemberPhoto, 
+  MemberContent, 
+  MemberName, 
+  MemberRole,
+  MemberBio,
+  MemberSocialLinks,
+  MemberCardOverlay,
+  TeamFooter
+} from '@ignix-ui/team-profiles';
+import { Typography } from '@ignix-ui/typography';
+import { Button } from '@ignix-ui/button';
+import { Users } from 'lucide-react';
+
+const members = [
+    {
+        id: '1',
+        name: 'Alex Chen',
+        role: 'CEO & Co-Founder',
+        bio: 'Former tech lead with 10+ years of experience.',
+        photo: '/images/alex.jpg',
+        socialLinks: [
+            { platform: 'linkedin', url: 'https://linkedin.com/in/alexchen' },
+            { platform: 'twitter', url: 'https://twitter.com/alexchen' }
+        ]
+    },
+    // ... more members
+];
+
+export default function AdvancedTeam() {
+  return (
+    <TeamProfiles 
+      theme="dark" 
+      cardVariant="elevated" 
+      enableModal={true}
+      animate={true}
+      animationType="stagger"
+    >
+      <TeamHeader>
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <Users className="w-8 h-8 text-primary" />
+          <Typography variant="h2">Leadership Team</Typography>
+        </div>
+        <Typography variant="lead">Experienced professionals driving our vision</Typography>
+      </TeamHeader>
+
+      <TeamGrid columns={{ mobile: 1, tablet: 2, desktop: 3, wide: 4 }}>
+        {members.map(member => (
+          <MemberCard key={member.id} member={member}>
+            <MemberPhoto src={member.photo} />
+            <MemberContent>
+              <MemberName>{member.name}</MemberName>
+              <MemberRole>{member.role}</MemberRole>
+              <MemberBio lines={3}>{member.bio}</MemberBio>
+              <MemberSocialLinks 
+                links={member.socialLinks} 
+                memberId={member.id}
+                memberName={member.name}
+              />
+            </MemberContent>
+            <MemberCardOverlay />
+          </MemberCard>
+        ))}
+      </TeamGrid>
+
+      <TeamFooter className="text-center">
+        <Button variant="primary" size="lg">Join our team</Button>
+      </TeamFooter>
+    </TeamProfiles>
+  );
+}
+```
+
 ## Props
 
 ### TeamProfiles Props
@@ -1704,138 +1841,6 @@ export const TeamProfiles: React.FC<TeamProfilesProps> = ({
 | `onClose` | `() => void` | `required` | Close handler |
 | `member` | `TeamMember \| null` | `required` | Selected team member |
 | `children` | `React.ReactNode` | `-` | Custom modal content |
-
-## Types
-
-```typescript
-interface SocialLink {
-    platform: 'linkedin' | 'github' | 'twitter' | 'website' | 'email' | 'other';
-    url: string;
-    label?: string;
-}
-
-interface TeamMember {
-    id: string;                    // Unique identifier
-    name: string;                   // Member's full name
-    role: string;                   // Job title/role
-    bio: string;                    // Biography/description
-    photo?: string;                  // Photo URL
-    photoAlt?: string;               // Alt text for photo
-    socialLinks?: SocialLink[];      // Social media links
-    department?: string;             // Department name
-    location?: string;               // Location (city, country)
-    expertise?: string[];            // Areas of expertise
-    awards?: string[];               // Awards and recognition
-    joinDate?: string;               // Join date (any format)
-    email?: string;                  // Email address
-}
-
-```
-
-## Basic Usage
-
-```tsx
-import {
-    TeamProfiles,
-    TeamHeader,
-    TeamGrid,
-    MemberCard,
-    MemberPhoto,
-    MemberContent,
-    MemberName,
-    MemberRole,
-    MemberBio,
-    MemberSocialLinks
-} from '@ignix-ui/teamprofiles';
-
-const teamMembers = [
-    {
-        id: '1',
-        name: 'Alex Chen',
-        role: 'CEO & Co-Founder',
-        bio: 'Former tech lead with 10+ years of experience.',
-        photo: '/images/alex.jpg',
-        socialLinks: [
-            { platform: 'linkedin', url: 'https://linkedin.com/in/alexchen' },
-            { platform: 'twitter', url: 'https://twitter.com/alexchen' }
-        ]
-    },
-    // ... more members
-];
-
-<TeamProfiles variant="light" cardVariant="default">
-    <TeamHeader
-        title="Our Team"
-        subtitle="Meet the experts behind our success"
-    />
-    <TeamGrid columns={{ mobile: 1, tablet: 2, desktop: 3 }}>
-        {teamMembers.map((member) => (
-            <MemberCard key={member.id} member={member}>
-                <MemberPhoto
-                    src={member.photo}
-                    initials={member.name.split(' ').map(n => n[0]).join('')}
-                />
-                <MemberContent>
-                    <MemberName>{member.name}</MemberName>
-                    <MemberRole>{member.role}</MemberRole>
-                    <MemberBio>{member.bio}</MemberBio>
-                    <MemberSocialLinks links={member.socialLinks} />
-                </MemberContent>
-            </MemberCard>
-        ))}
-    </TeamGrid>
-</TeamProfiles>
-```
-
-### With all features
-
-```tsx
-<TeamProfiles
-    variant="light"
-    cardVariant="elevated"
-    enableModal={true}
-    enableHover={true}
-    animate={true}
-    animationType="stagger"
->
-    <TeamHeader>
-        <div className="flex items-center gap-2 mb-4">
-            <Users className="w-8 h-8 text-primary" />
-            <Typography variant="h2">Our Leadership Team</Typography>
-        </div>
-        <Typography variant="lead">Experienced professionals driving our vision</Typography>
-    </TeamHeader>
-
-    <TeamGrid columns={{ mobile: 1, tablet: 2, desktop: 3, wide: 4 }}>
-        {teamMembers.map((member) => (
-            <MemberCard key={member.id} member={member}>
-                <MemberPhoto
-                    src={member.photo}
-                    initials={member.name.split(' ').map(n => n[0]).join('')}
-                />
-                <MemberContent>
-                    <MemberName>{member.name}</MemberName>
-                    <MemberRole>{member.role}</MemberRole>
-                    <MemberDepartment>{member.department}</MemberDepartment>
-                    <MemberLocation>{member.location}</MemberLocation>
-                    <MemberBio>{member.bio}</MemberBio>
-                    <MemberExpertise items={member.expertise} />
-                    <MemberAwards items={member.awards} />
-                    <MemberJoinDate>{member.joinDate}</MemberJoinDate>
-                    <MemberSocialLinks links={member.socialLinks} />
-                </MemberContent>
-                <MemberCardOverlay />
-            </MemberCard>
-        ))}
-    </TeamGrid>
-
-    <TeamFooter>
-        <Button variant="primary" size="lg">
-            View All Team Members
-        </Button>
-    </TeamFooter>
-</TeamProfiles>
-```
 
 
 ## Accessibility

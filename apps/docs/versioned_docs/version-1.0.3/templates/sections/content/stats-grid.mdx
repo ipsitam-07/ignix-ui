@@ -14,14 +14,13 @@ import { Users, DollarSign, Download, Clock, Star, Shield, Globe, Award, Rocket,
 
 The StatsGrid component provides a flexible and customizable way to display statistical data with beautiful animations, multiple themes, and intelligent number formatting.
 
-### Simple Demo
 <StatsGridSimpleDemo />
 
 
 ### Installation
 
 <Tabs>
-    <TabItem value="npm" label="NPM">
+    <TabItem value="cli" label="CLI">
     ```bash 
     ignix add component statsGrid
     ```
@@ -1151,6 +1150,93 @@ export default StatsGrid;
 </Tabs>
 
 
+
+## Usage
+
+The StatsGrid component can be used in two ways: via a simple props-based API for quick implementation, or using compound components for maximum layout flexibility.
+
+### Quick Start
+Pass an array of `stats` to the `StatsGrid` component to quickly render a responsive grid with animations.
+
+```tsx
+import { StatsGrid } from '@ignix-ui/stats-grid';
+import { Users, DollarSign, Activity } from 'lucide-react';
+
+const stats = [
+  { 
+    label: 'Total Users', 
+    value: 12500, 
+    icon: Users, 
+    accent: 'blue', 
+    format: 'compact' 
+  },
+  { 
+    label: 'Revenue', 
+    value: 45200, 
+    icon: DollarSign, 
+    accent: 'emerald', 
+    format: 'currency' 
+  },
+  { 
+    label: 'Growth', 
+    value: 24, 
+    icon: Activity, 
+    accent: 'rose', 
+    format: 'percentage',
+    suffix: '+'
+  }
+];
+
+export default function MyDashboard() {
+  return (
+    <StatsGrid 
+      title="Platform Overview"
+      description="Real-time performance metrics for your application."
+      stats={stats}
+      columns={3}
+      variant="default"
+    />
+  );
+}
+```
+
+### Custom Composition
+Use compound components to build custom card layouts or add non-standard content between grid items.
+
+```tsx
+import { 
+  StatsGrid, 
+  StatsGridContainer, 
+  StatsGridCard, 
+  StatValue, 
+  StatLabel 
+} from '@ignix-ui/stats-grid';
+
+export default function CustomStats() {
+  return (
+    <StatsGrid variant="dark">
+      <StatsGrid.Header 
+        title="Custom Layout" 
+        description="Mixing pre-built cards with custom markup."
+      />
+      <StatsGridContainer columns={2}>
+        {/* Standard Card */}
+        <StatsGridCard 
+          stat={{ label: 'Active Sessions', value: 842 }} 
+        />
+        
+        {/* Custom Card */}
+        <div className="p-6 bg-gray-800 rounded-xl border border-gray-700">
+          <StatLabel color="text-primary-400">System Uptime</StatLabel>
+          <StatValue value={99.9} format="percentage" />
+          <div className="mt-2 text-xs text-gray-500">Last 30 days</div>
+        </div>
+      </StatsGridContainer>
+    </StatsGrid>
+  );
+}
+```
+
 ## Props
 
 ### StatsGrid Props
@@ -1277,30 +1363,3 @@ export default StatsGrid;
 | `decimals` | `number` | `1` | Number of decimal places |
 | `accent` | `StatAccent` | `'default'` | Accent color for the icon |
 
-### Type Definitions
-```typescript
-type NumberFormat = 'raw' | 'compact' | 'currency' | 'percentage';
-type AnimationType = 'fade' | 'slide' | 'scale' | 'none';
-type StatAccent = 'default' | 'blue' | 'emerald' | 'amber' | 'rose' | 'violet' | 
-                  'purple' | 'pink' | 'indigo' | 'cyan' | 'orange' | 'yellow' | 
-                  'teal' | 'red' | 'green';
-```
-                  
-## Component Hierarchy
-```tsx
-StatsGrid (Root Provider)
-├── StatsGrid.Header (Optional)
-│   ├── StatsGrid.Title
-│   └── StatsGrid.Description
-├── StatsGrid.Container (Grid layout)
-│   ├── StatsGrid.Card (Pre-built)
-│   │   ├── StatsGrid.Label (internal)
-│   │   ├── StatsGrid.Value (internal)
-│   │   ├── StatsGrid.Icon (internal)
-│   │   └── StatsGrid.Subtext (internal)
-│   └── Custom Card Layouts
-│       ├── StatsGrid.Label
-│       ├── StatsGrid.Value
-│       ├── StatsGrid.Icon
-│       └── StatsGrid.Subtext
-```

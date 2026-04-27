@@ -90,106 +90,6 @@ export function AnalyticsDashboardExample() {
   </TabItem>
 </Tabs>
 
-## Features
-
-- **KPI summary row** with 3–4 top-level metrics (revenue, signups, churn, active users, etc.)
-- **Time-series line chart** for multiple series (e.g. Revenue, New Signups, Churned Accounts) with interactive legend
-- **Date range picker** that drives filtering and can be wired to your backend fetch logic
-- **Scrollable chart viewport** with a fixed maximum width so dense datasets stay readable
-- **Segment and distribution cards** to show breakdowns by segment, plan, geography, or channel
-- **Composable sections** (layout, header, line chart, bar chart, pie chart) that you can mix, match, and reorder
-
-## Props
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `timeSeries` | `TimeSeriesPoint[]` | Time-series data points; each point has a JavaScript `Date` plus a `values` map keyed by series id. |
-| `lineSeriesConfig` | `LineSeriesConfig[]` | Configuration for each logical series (id, label, Tailwind stroke/dot/legend classes, optional pie slice class). |
-| `barAggregates` | `AggregatedSeriesValue[]` (optional) | Pre-computed aggregates for the bar chart. When omitted, they are derived from `timeSeries` and `lineSeriesConfig`. |
-| `distributionSlices` | `DistributionSlice[]` (optional) | Pre-computed distribution slices for the pie chart. When omitted, they are derived from the aggregates. |
-| `dateRange` | `AnalyticsDateRange` (optional) | Controlled date range (start/end). When omitted, the page manages its own internal range. |
-| `onDateRangeChange` | `(range: AnalyticsDateRange) => void` (optional) | Called when the user picks a new date range; ideal place to trigger data refetching. |
-| `onExportCharts` | `() => void` (optional) | Fired when the “Export report” / “Export charts” button is clicked. |
-| `className` | `string` (optional) | Additional class names applied to the root layout container. |
-
-### Page props (`AnalyticsDashboardPage`)
-
-```ts
-interface AnalyticsDateRange {
-  start: Date | null;
-  end: Date | null;
-}
-
-type LineSeriesId = string;
-
-interface LineSeriesConfig {
-  id: LineSeriesId;
-  label: string;
-  strokeClass: string;
-  dotClass: string;
-  legendBgClass: string;
-  pieSliceClass?: string;
-}
-
-interface TimeSeriesPoint {
-  date: Date;
-  values: Record<LineSeriesId, number>;
-}
-
-interface AggregatedSeriesValue {
-  id: LineSeriesId;
-  label: string;
-  total: number;
-}
-
-interface DistributionSlice {
-  id: LineSeriesId;
-  label: string;
-  value: number;
-}
-```
-
-### Composable component props
-
-#### `AnalyticsLayout`
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `children` | `ReactNode` | Page content (header + charts, cards, etc.). |
-| `className` | `string` (optional) | Extra Tailwind classes for the outer layout container. |
-
-#### `AnalyticsHeader`
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `title` | `string` (optional) | Page title; defaults to `"Analytics Dashboard"`. |
-| `description` | `string` (optional) | Short subtitle under the title. |
-| `dateRange` | `AnalyticsDateRange` (optional) | Current filter range, for controlled usage. |
-| `onDateRangeChange` | `(range: AnalyticsDateRange) => void` (optional) | Called when the user picks a new range in the date picker. |
-| `onExportCharts` | `() => void` (optional) | Called when the export button is clicked. |
-
-#### `AnalyticsLineChart`
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `data` | `TimeSeriesPoint[]` | Time-series data points already filtered for the desired range. |
-| `seriesConfig` | `LineSeriesConfig[]` | Series definitions (ids, labels, stroke/dot/legend colors). |
-| `activeSeries` | `Set<LineSeriesId>` | Which series are currently visible (for legend toggling). |
-| `onToggleSeries` | `(id: LineSeriesId) => void` | Called when a legend pill is clicked. |
-
-#### `AnalyticsBarChart`
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `aggregates` | `AggregatedSeriesValue[]` | Aggregated totals per series used to render horizontal bars. |
-
-#### `AnalyticsPieChart`
-
-| Prop | Type | Description |
-| --- | --- | --- |
-| `slices` | `DistributionSlice[]` | Distribution data for each slice of the pie. |
-| `seriesConfig` | `LineSeriesConfig[]` | Used to resolve labels and colors for each slice. |
-
 ## Usage Examples
 
 ### Basic analytics dashboard
@@ -318,6 +218,70 @@ function ComposableAnalyticsPage({
   );
 }
 ```
+## Features
+
+- **KPI summary row** with 3–4 top-level metrics (revenue, signups, churn, active users, etc.)
+- **Time-series line chart** for multiple series (e.g. Revenue, New Signups, Churned Accounts) with interactive legend
+- **Date range picker** that drives filtering and can be wired to your backend fetch logic
+- **Scrollable chart viewport** with a fixed maximum width so dense datasets stay readable
+- **Segment and distribution cards** to show breakdowns by segment, plan, geography, or channel
+- **Composable sections** (layout, header, line chart, bar chart, pie chart) that you can mix, match, and reorder
+
+## Props
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `timeSeries` | `TimeSeriesPoint[]` | Time-series data points; each point has a JavaScript `Date` plus a `values` map keyed by series id. |
+| `lineSeriesConfig` | `LineSeriesConfig[]` | Configuration for each logical series (id, label, Tailwind stroke/dot/legend classes, optional pie slice class). |
+| `barAggregates` | `AggregatedSeriesValue[]` (optional) | Pre-computed aggregates for the bar chart. When omitted, they are derived from `timeSeries` and `lineSeriesConfig`. |
+| `distributionSlices` | `DistributionSlice[]` (optional) | Pre-computed distribution slices for the pie chart. When omitted, they are derived from the aggregates. |
+| `dateRange` | `AnalyticsDateRange` (optional) | Controlled date range (start/end). When omitted, the page manages its own internal range. |
+| `onDateRangeChange` | `(range: AnalyticsDateRange) => void` (optional) | Called when the user picks a new date range; ideal place to trigger data refetching. |
+| `onExportCharts` | `() => void` (optional) | Fired when the “Export report” / “Export charts” button is clicked. |
+| `className` | `string` (optional) | Additional class names applied to the root layout container. |
+
+### Composable Component Props
+
+#### `AnalyticsLayout`
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `children` | `ReactNode` | Page content (header + charts, cards, etc.). |
+| `className` | `string` (optional) | Extra Tailwind classes for the outer layout container. |
+
+#### `AnalyticsHeader`
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `title` | `string` (optional) | Page title; defaults to `"Analytics Dashboard"`. |
+| `description` | `string` (optional) | Short subtitle under the title. |
+| `dateRange` | `AnalyticsDateRange` (optional) | Current filter range, for controlled usage. |
+| `onDateRangeChange` | `(range: AnalyticsDateRange) => void` (optional) | Called when the user picks a new range in the date picker. |
+| `onExportCharts` | `() => void` (optional) | Called when the export button is clicked. |
+
+#### `AnalyticsLineChart`
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `data` | `TimeSeriesPoint[]` | Time-series data points already filtered for the desired range. |
+| `seriesConfig` | `LineSeriesConfig[]` | Series definitions (ids, labels, stroke/dot/legend colors). |
+| `activeSeries` | `Set<LineSeriesId>` | Which series are currently visible (for legend toggling). |
+| `onToggleSeries` | `(id: LineSeriesId) => void` | Called when a legend pill is clicked. |
+
+#### `AnalyticsBarChart`
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `aggregates` | `AggregatedSeriesValue[]` | Aggregated totals per series used to render horizontal bars. |
+
+#### `AnalyticsPieChart`
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `slices` | `DistributionSlice[]` | Distribution data for each slice of the pie. |
+| `seriesConfig` | `LineSeriesConfig[]` | Used to resolve labels and colors for each slice. |
+
+
 
 ## Notes
 

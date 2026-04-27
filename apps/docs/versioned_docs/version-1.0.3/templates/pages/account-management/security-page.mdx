@@ -8,11 +8,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import SecurityPageDemo from '@site/src/components/Demo/SecurityPageDemo';
 
-## Overview
-
 The **Security Page** centralizes key account protections: change password with strength feedback, view and revoke active sessions, toggle two-factor authentication (2FA) with recovery codes, and review recent login activity. It supports both a grid layout and a collapsible list (accordion) layout for compact displays, plus light/dark/auto theme variants.
-
-## Preview
 
 <SecurityPageDemo />
 
@@ -881,24 +877,6 @@ The **Security Page** centralizes key account protections: change password with 
   </TabItem>
 </Tabs>
 
-## Features
-
-- **Change password** with strength meter and match validation  
-- **Active sessions** list with device type icons and “Logout all sessions”  
-- **Two-factor authentication** toggle plus recovery codes (copy/copy-all)  
-- **Login activity** table with status badges and device/location/IP details  
-- **Layouts**: grid (two-column cards) or list (accordion/fold/unfold)  
-- **Themes**: light, dark, auto; responsive with horizontal scroll for tables on small screens  
-
-## Props
-
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `title` | `string` | `"Security"` | Page heading text |
-| `description` | `string` | Description under the heading | Subheading / helper copy |
-| `variant` | `"light" \| "dark" \| "auto"` | `"dark"` | Background/theme variant |
-| `layout` | `"grid" \| "list"` | `"grid"` | Grid cards or accordion list layout |
-
 ## Usage Examples
 
 ### Grid layout (dark)
@@ -933,6 +911,25 @@ The **Security Page** centralizes key account protections: change password with 
   description="Adapts to your app or system theme."
 />;
 ```
+
+## Features
+
+- **Change password** with strength meter and match validation  
+- **Active sessions** list with device type icons and “Logout all sessions”  
+- **Two-factor authentication** toggle plus recovery codes (copy/copy-all)  
+- **Login activity** table with status badges and device/location/IP details  
+- **Layouts**: grid (two-column cards) or list (accordion/fold/unfold)  
+- **Themes**: light, dark, auto; responsive with horizontal scroll for tables on small screens  
+
+## Props
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `title` | `string` | `"Security"` | Page heading text |
+| `description` | `string` | Description under the heading | Subheading / helper copy |
+| `variant` | `"light" \| "dark" \| "auto"` | `"dark"` | Background/theme variant |
+| `layout` | `"grid" \| "list"` | `"grid"` | Grid cards or accordion list layout |
+
 
 ## Notes
 

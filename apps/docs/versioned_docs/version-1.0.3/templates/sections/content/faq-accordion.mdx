@@ -15,7 +15,6 @@ import {
 
 The FAQ Accordion component provides a flexible and accessible way to display frequently asked questions. It features multiple layout variants, dark themes, smooth animations, and comprehensive customization options through a compound component pattern.
 
-## Preview
 ### Centered Layout
 <AccordionCenteredDemo />
 
@@ -2034,90 +2033,71 @@ export {
   </TabItem>
 </Tabs>
 
+
 ## Usage
 
-The FAQ Accordion can be used in two ways:
-1. **Quick Start**: Using the pre-built `FAQSection` component with all features
-2. **Custom Composition**: Using the compound components for full control
+The FAQ Accordion is designed to be both "batteries-included" for quick setup and fully composable for custom requirements.
 
-## Type Definitions
+### Quick Start
+Use the `FAQSection` component for a complete, feature-rich FAQ section with minimal code.
+
 ```tsx
-type LayoutVariant = 
-  | 'standard' 
-  | 'split-left' 
-  | 'split-right' 
-  | 'grid' 
-  | 'minimal-list' 
-  | 'contact-sidebar' 
-  | 'category-tabs' 
-  | 'featured';
+import { FAQSection } from '@ignix-ui/faq-accordion';
 
-type ThemeVariant = 
-  | 'light' 
-  | 'dark' 
-  | 'midnight' 
-  | 'charcoal' 
-  | 'ocean' 
-  | 'forest' 
-  | 'sunset';
+const items = [
+  { 
+    id: '1', 
+    question: 'How do I install Ignix UI?', 
+    answer: 'You can install it via our CLI: `npx ignix init`.' 
+  },
+  { 
+    id: '2', 
+    question: 'Is there a dark mode?', 
+    answer: 'Yes, all components support multiple theme variants including dark and midnight.' 
+  }
+];
 
-type AccordionVariant = 
-  | 'default' 
-  | 'card' 
-  | 'bordered' 
-  | 'minimal' 
-  | 'glass' 
-  | 'gradient';
-
-type AnimationVariant = 
-  | 'fade' 
-  | 'slide' 
-  | 'scale' 
-  | 'flip' 
-  | 'reveal';
-
-type type IconStyle = 
-  | 'chevron' 
-  | 'plus-minus' 
-  | 'arrow' 
-  | 'checkmark';
-
-interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
-  category?: string;
-  icon?: React.ReactNode;
-  link?: {
-    text: string;
-    url: string;
-  };
-}
-
-interface FAQCategory {
-  id: string;
-  name: string;
-  count?: number;
-  icon?: React.ReactNode;
-  description?: string;
-}
-
-interface StatItem {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-}
-
-interface ContactOption {
-  id: string;
-  type: 'email' | 'chat' | 'phone' | 'schedule';
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-  action?: () => void;
+export default function BasicFAQ() {
+  return (
+    <FAQSection 
+      title="Common Questions"
+      description="Everything you need to know about getting started."
+      items={items}
+      layout="standard"
+      theme="light"
+    />
+  );
 }
 ```
 
+### Custom Composition
+For full control over the layout and behavior, use the compound components.
+
+```tsx
+import { 
+  Accordion, 
+  AccordionItem, 
+  AccordionSummary, 
+  AccordionTitle, 
+  AccordionDetails 
+} from '@ignix-ui/faq-accordion';
+
+export default function CustomFAQ() {
+  return (
+    <Accordion variant="card" animation="slide">
+      <AccordionItem value="item-1">
+        <AccordionSummary>
+          <AccordionTitle>Custom Header Logic</AccordionTitle>
+        </AccordionSummary>
+        <AccordionDetails>
+          The details content can include any React components, 
+          allowing for complex FAQ answers.
+        </AccordionDetails>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+```
 
 ## Props
 ### FAQSection Props
