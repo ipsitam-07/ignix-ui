@@ -26,10 +26,6 @@
   --popover: var(--ifm-card-background-color, #ffffff);
   --popover-foreground: var(--ifm-font-color-base, #1c1e21);
 
-  /* FIX: --primary is now an HSL triplet instead of a hex value.
-     Tailwind's opacity modifier syntax (bg-primary/10, border-primary/20)
-     and CSS hsl(var(--primary)/0.x) both require HSL channels to work.
-     With a hex value every opacity variant silently renders as transparent. */
   --primary: 0 100% 50%;
   --primary-light: 2 83% 51%;
   --primary-dark: 357 95% 41%;
@@ -170,9 +166,6 @@
 }
 
 @theme inline {
-  /* FIX: All primary color tokens now wrap in hsl() so Tailwind resolves
-     them as valid CSS colors. Previously these were raw hex values passed
-     through var(), which broke opacity modifiers and hsl() function calls. */
   --color-primary: hsl(var(--primary));
   --color-primary-light: hsl(var(--primary-light));
   --color-primary-dark: hsl(var(--primary-dark));
