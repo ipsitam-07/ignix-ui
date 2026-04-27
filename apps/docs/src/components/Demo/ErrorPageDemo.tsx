@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import CodeBlock from '@theme/CodeBlock';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import VariantSelector from './VariantSelector';
 import {
   ErrorPage,
@@ -39,8 +40,10 @@ const ErrorPageDemo = () => {
   const [showSearch, setShowSearch] = useState<boolean>(true);
   const [showIllustration, setShowIllustration] = useState<boolean>(false);
   const [showBackgroundImage, setShowBackgroundImage] = useState<boolean>(false);
-  
-  // Generate a mock error reference ID for 500 errors
+
+  const img404 = useBaseUrl('/img/404-1.svg');
+  const img500 = useBaseUrl('/img/500-1.svg');
+  const customBg = "https://images.unsplash.com/photo-1557683316-973673baf926?w=1600&h=900&fit=crop&q=90";
   const errorReferenceId = React.useMemo(() => {
     return `ERR-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
   }, []);
@@ -66,7 +69,7 @@ const ErrorPageDemo = () => {
   ];
 
   const generateCodeString = () => {
-    let code =`import {
+    let code = `import {
     ErrorPage,
     ErrorPageErrorCode,
     ErrorPageHeading,
@@ -79,25 +82,25 @@ const ErrorPageDemo = () => {
     ErrorPageIcons,
     ErrorPageErrorReference,
   } from '@ignix-ui/errorpage';\n`
-   code += `import { ButtonWithIcon } from '@ignix-ui/buttonwithicon';\n`
-    code += `\n<ErrorPage\n  variant="${variant}"\n  icon={${errorType === '403' ? 'ShieldAlert' : 'Settings'}}${showBackgroundImage ? '\n  backgroundImage="https://images.unsplash.com/photo-1557683316-973673baf926?w=1600&h=900&fit=crop&q=90"' : ''}\n>`;
-    
+    code += `import { ButtonWithIcon } from '@ignix-ui/buttonwithicon';\n`
+    code += `\n<ErrorPage\n  variant="${variant}"\n  icon={${errorType === '403' ? 'ShieldAlert' : 'Settings'}}${showBackgroundImage ? `\n  backgroundImage="${customBg}"` : ''}\n>`;
+
     if (showIllustration && errorType === '404') {
-      code += `\n  <ErrorPageIllustration\n    position="${illustrationPosition}"\n    illustration="/ignix-ui/img/404-1.svg"\n    className="w-90 h-90 mx-auto"\n  />`;
+      code += `\n  <ErrorPageIllustration\n    position="${illustrationPosition}"\n    illustration="/img/404-1.svg"\n    className="w-90 h-90 mx-auto"\n  />`;
     } else if (showIllustration && errorType === '500') {
-      code += `\n  <ErrorPageIllustration\n    position="${illustrationPosition}"\n    illustration="/ignix-ui/img/500-1.svg"\n    className="w-90 h-90 mx-auto"\n  />`;
+      code += `\n  <ErrorPageIllustration\n    position="${illustrationPosition}"\n    illustration="/img/500-1.svg"\n    className="w-90 h-90 mx-auto"\n  />`;
     } else if (showIllustration && errorType === '403') {
-      code += `\n  <ErrorPageIllustration\n    position="${illustrationPosition}"\n    illustration="/ignix-ui/img/403-1.svg"\n    className="w-90 h-90 mx-auto"\n  />`;
+      code += `\n  <ErrorPageIllustration\n    position="${illustrationPosition}"\n    illustration="/img/403-1.png"\n    className="w-90 h-90 mx-auto"\n  />`;
     }
-    
+
     code += `\n  <ErrorPageContent>`;
-    
+
     if (!showIllustration) {
       code += `\n    <ErrorPageIcons\n      icons={[AlertTriangle, Wrench, Zap, Rocket]}\n    >`;
       code += `\n      <ErrorPageErrorCode\n        errorCode="${errorType}"\n        animationType="${errorType === '500' || errorType === '403' ? 'glow' : animationType}"\n      />`;
       code += `\n    </ErrorPageIcons>`;
     }
-    
+
     if (errorType === '500') {
       code += `\n    <ErrorPageHeading>Server Error</ErrorPageHeading>`;
       code += `\n    <ErrorPageDesc>\n      We apologize for the inconvenience. Something unexpected happened on our server.\n      Our technical team has been automatically notified and is investigating the issue.\n    </ErrorPageDesc>`;
@@ -118,23 +121,23 @@ const ErrorPageDemo = () => {
     } else {
       code += `\n    <ErrorPageHeading>Page Not Found</ErrorPageHeading>`;
       code += `\n    <ErrorPageDesc>\n      The page you're looking for doesn't exist. It might have been moved, deleted, or the URL might be incorrect.\n    </ErrorPageDesc>`;
-      
+
       if (showSearch) {
         code += `\n    <ErrorPageSearch\n      showSearch={true}\n      searchPlaceholder="Search for something else..."\n    />`;
       }
-      
+
       code += `\n    <ErrorPageLinks>`;
       code += `\n      <ButtonWithIcon\n        variant="default"\n        size="lg"\n        icon={<ArrowLeft/>}\n        iconPosition="left"\n        onClick={() => window.history.back()}\n      >\n        Go back\n      </ButtonWithIcon>`;
       code += `\n      <ButtonWithIcon\n        variant="default"\n        size="lg"\n        icon={<Home/>}\n        iconPosition="left"\n        onClick={() => (window.location.href = "/")}\n      >\n        Take me home\n      </ButtonWithIcon>`;
       code += `\n    </ErrorPageLinks>`;
     }
-    
+
     code += `\n  </ErrorPageContent>`;
     code += `\n  <ErrorPageFooter>`;
     code += `\n    ${errorType === '500' ? `ERROR 500 · SERVER ERROR · REF: ${errorReferenceId}` : errorType === '403' ? `ERROR 403 · ACCESS DENIED · REF: ${errorReferenceId}` : 'ERROR 404 · PAGE NOT FOUND'}`;
     code += `\n  </ErrorPageFooter>`;
     code += `\n</ErrorPage>`;
-    
+
     return code;
   };
 
@@ -157,7 +160,7 @@ const ErrorPageDemo = () => {
           <VariantSelector
             variants={[...animationTypes]}
             selectedVariant={animationType}
-            onSelectVariant={(v) =>setAnimationType(v as AnimationType)}
+            onSelectVariant={(v) => setAnimationType(v as AnimationType)}
             type="Error Code Animation"
           />
         )}
@@ -205,163 +208,161 @@ const ErrorPageDemo = () => {
       <Tabs>
         <TabItem value="preview" label="Preview">
           <div className="border border-gray-300 rounded-lg overflow-hidden">
-          <div className="p-3">
-            <ErrorPage
-              variant={variant}
-              icon={errorType === '403' ? ShieldAlert : Settings}
-              className="min-h-0"
-              {...(showBackgroundImage && {
-                backgroundImage:
-                  "https://images.unsplash.com/photo-1557683316-973673baf926?w=1600&h=900&fit=crop&q=90",
-
-              })}
-            >
-              {showIllustration && errorType === '404' && (
-                <ErrorPageIllustration
-                  position={illustrationPosition}
-                  illustration="/ignix-ui/img/404-1.svg"
-                  className="w-90 h-90 mx-auto"
-                />
-              )}
-              {showIllustration && errorType === '500' && (
-                <ErrorPageIllustration
-                  position={illustrationPosition}
-                  illustration="/ignix-ui/img/500-1.svg"
-                  className="w-90 h-90 mx-auto"
-                />
-              )}
-              {showIllustration && errorType === '403' && (
-                <ErrorPageIllustration
-                  position={illustrationPosition}
-                  illustration="/ignix-ui/img/403-1.svg"
-                  className="w-90 h-90 mx-auto"
-                />
-              )}
-              <ErrorPageContent>
-                {!showIllustration && (
-                  <ErrorPageIcons
-                    icons={icons}
-                  >
-                    <ErrorPageErrorCode 
-                      errorCode={errorType}
-                      animationType={animationType} 
-                    />
-                  </ErrorPageIcons>)
-                }
-                {errorType === '500' ? (
-                  <>
-                    <ErrorPageHeading>Server Error</ErrorPageHeading>
-                    <ErrorPageDesc>
-                      We apologize for the inconvenience. Something unexpected happened on our server. 
-                      Our technical team has been automatically notified and is investigating the issue.
-                    </ErrorPageDesc>
-                    <ErrorPageErrorReference
-                      errorReferenceId={errorReferenceId}
-                      onCopy={handleCopyReferenceId}
-                    />
-                    <ErrorPageLinks>
-                      <ButtonWithIcon
-                        variant="default"
-                        size="lg"
-                        icon={<RefreshCw/>}
-                        iconPosition="left"
-                      >
-                        Retry
-                      </ButtonWithIcon>
-                      <ButtonWithIcon
-                        variant="default"
-                        size="lg"
-                        icon={<Bug/>}
-                        iconPosition="left"
-                      >
-                        Report a Bug
-                      </ButtonWithIcon>
-                      <ButtonWithIcon
-                        variant="default"
-                        size="lg"
-                        icon={<MessageCircle/>}
-                        iconPosition="left"
-                      >
-                        Contact Support
-                      </ButtonWithIcon>
-                    </ErrorPageLinks>
-                  </>
-                ) : errorType === '403' ? (
-                  <>
-                    <ErrorPageHeading>Access Restricted</ErrorPageHeading>
-                    <ErrorPageDesc>
-                      You don't have permission to access this resource. Please contact your administrator 
-                      if you believe this is an error.
-                    </ErrorPageDesc>
-                    <ErrorPageErrorReference
-                      errorReferenceId={errorReferenceId}
-                      onCopy={handleCopyReferenceId}
-                    />
-                    <ErrorPageLinks>
-                      <ButtonWithIcon
-                        variant="default"
-                        size="lg"
-                        icon={<ArrowLeft/>}
-                        iconPosition="left"
-                        onClick={() => window.history.back()}
-                      >
-                        Go back
-                      </ButtonWithIcon>
-                      <ButtonWithIcon
-                        variant="outline"
-                        size="lg"
-                        icon={<MessageCircle/>}
-                        iconPosition="left"
-                      >
-                        Request Access
-                      </ButtonWithIcon>
-                    </ErrorPageLinks>
-                  </>
-                ) : (
-                  <>
-                    
-                    <ErrorPageHeading>Page Not Found</ErrorPageHeading>
-                    <ErrorPageDesc>
-                      The page you're looking for doesn't exist. It might have been moved, deleted, or the URL might be incorrect.
-                    </ErrorPageDesc>
-                    {showSearch && (
-                      <ErrorPageSearch
-                        showSearch={true}
-                        searchPlaceholder="Search for something else..."
-                      />
-                    )}
-                    <ErrorPageLinks>
-                      <ButtonWithIcon
-                        variant="default"
-                        size="lg"
-                        icon={<ArrowLeft/>}
-                        iconPosition="left"
-                        onClick={() => window.history.back()}
-                      >
-                        Go back
-                      </ButtonWithIcon>
-                      <ButtonWithIcon
-                        variant="default"
-                        size="lg"
-                        icon={<Home/>}
-                        iconPosition="left"
-                        onClick={() => (window.location.href = "/")}
-                      >
-                        Take me home
-                      </ButtonWithIcon>
-                    </ErrorPageLinks>
-                  </>
+            <div className="p-3">
+              <ErrorPage
+                variant={variant}
+                icon={errorType === '403' ? ShieldAlert : Settings}
+                className="min-h-0"
+                {...(showBackgroundImage && {
+                  backgroundImage: customBg,
+                })}
+              >
+                {showIllustration && errorType === '404' && (
+                  <ErrorPageIllustration
+                    position={illustrationPosition}
+                    illustration={img404}
+                    className="w-90 h-90 mx-auto"
+                  />
                 )}
-              </ErrorPageContent>
-              <ErrorPageFooter>
-                {errorType === '500' 
-                  ? `ERROR 500 · SERVER ERROR · REF: ${errorReferenceId}`
-                  : errorType === '403'
-                  ? `ERROR 403 · ACCESS DENIED · REF: ${errorReferenceId}`
-                  : 'ERROR 404 · PAGE NOT FOUND'
-                }
-              </ErrorPageFooter>
-            </ErrorPage>
+                {showIllustration && errorType === '500' && (
+                  <ErrorPageIllustration
+                    position={illustrationPosition}
+                    illustration={img500}
+                    className="w-90 h-90 mx-auto"
+                  />
+                )}
+                {showIllustration && errorType === '403' && (
+                  <ErrorPageIllustration
+                    position={illustrationPosition}
+                    illustration={img500}
+                    className="w-90 h-90 mx-auto"
+                  />
+                )}
+                <ErrorPageContent>
+                  {!showIllustration && (
+                    <ErrorPageIcons
+                      icons={icons}
+                    >
+                      <ErrorPageErrorCode
+                        errorCode={errorType}
+                        animationType={animationType}
+                      />
+                    </ErrorPageIcons>)
+                  }
+                  {errorType === '500' ? (
+                    <>
+                      <ErrorPageHeading>Server Error</ErrorPageHeading>
+                      <ErrorPageDesc>
+                        We apologize for the inconvenience. Something unexpected happened on our server.
+                        Our technical team has been automatically notified and is investigating the issue.
+                      </ErrorPageDesc>
+                      <ErrorPageErrorReference
+                        errorReferenceId={errorReferenceId}
+                        onCopy={handleCopyReferenceId}
+                      />
+                      <ErrorPageLinks>
+                        <ButtonWithIcon
+                          variant="default"
+                          size="lg"
+                          icon={<RefreshCw />}
+                          iconPosition="left"
+                        >
+                          Retry
+                        </ButtonWithIcon>
+                        <ButtonWithIcon
+                          variant="default"
+                          size="lg"
+                          icon={<Bug />}
+                          iconPosition="left"
+                        >
+                          Report a Bug
+                        </ButtonWithIcon>
+                        <ButtonWithIcon
+                          variant="default"
+                          size="lg"
+                          icon={<MessageCircle />}
+                          iconPosition="left"
+                        >
+                          Contact Support
+                        </ButtonWithIcon>
+                      </ErrorPageLinks>
+                    </>
+                  ) : errorType === '403' ? (
+                    <>
+                      <ErrorPageHeading>Access Restricted</ErrorPageHeading>
+                      <ErrorPageDesc>
+                        You don't have permission to access this resource. Please contact your administrator
+                        if you believe this is an error.
+                      </ErrorPageDesc>
+                      <ErrorPageErrorReference
+                        errorReferenceId={errorReferenceId}
+                        onCopy={handleCopyReferenceId}
+                      />
+                      <ErrorPageLinks>
+                        <ButtonWithIcon
+                          variant="default"
+                          size="lg"
+                          icon={<ArrowLeft />}
+                          iconPosition="left"
+                          onClick={() => window.history.back()}
+                        >
+                          Go back
+                        </ButtonWithIcon>
+                        <ButtonWithIcon
+                          variant="outline"
+                          size="lg"
+                          icon={<MessageCircle />}
+                          iconPosition="left"
+                        >
+                          Request Access
+                        </ButtonWithIcon>
+                      </ErrorPageLinks>
+                    </>
+                  ) : (
+                    <>
+
+                      <ErrorPageHeading>Page Not Found</ErrorPageHeading>
+                      <ErrorPageDesc>
+                        The page you're looking for doesn't exist. It might have been moved, deleted, or the URL might be incorrect.
+                      </ErrorPageDesc>
+                      {showSearch && (
+                        <ErrorPageSearch
+                          showSearch={true}
+                          searchPlaceholder="Search for something else..."
+                        />
+                      )}
+                      <ErrorPageLinks>
+                        <ButtonWithIcon
+                          variant="default"
+                          size="lg"
+                          icon={<ArrowLeft />}
+                          iconPosition="left"
+                          onClick={() => window.history.back()}
+                        >
+                          Go back
+                        </ButtonWithIcon>
+                        <ButtonWithIcon
+                          variant="default"
+                          size="lg"
+                          icon={<Home />}
+                          iconPosition="left"
+                          onClick={() => (window.location.href = "/")}
+                        >
+                          Take me home
+                        </ButtonWithIcon>
+                      </ErrorPageLinks>
+                    </>
+                  )}
+                </ErrorPageContent>
+                <ErrorPageFooter>
+                  {errorType === '500'
+                    ? `ERROR 500 · SERVER ERROR · REF: ${errorReferenceId}`
+                    : errorType === '403'
+                      ? `ERROR 403 · ACCESS DENIED · REF: ${errorReferenceId}`
+                      : 'ERROR 404 · PAGE NOT FOUND'
+                  }
+                </ErrorPageFooter>
+              </ErrorPage>
             </div>
           </div>
         </TabItem>
@@ -376,6 +377,7 @@ const ErrorPageDemo = () => {
 };
 
 const CustomDesignDemo = () => {
+  const astronautGif = useBaseUrl('/img/error-astranaut.gif');
   return (
     <div className="space-y-6 mb-8">
       <div>
@@ -399,7 +401,7 @@ const CustomDesignDemo = () => {
                     />
                   ))}
                 </div>
-                
+
                 {/* Content */}
                 <ErrorPageContent>
                   {/* Error Code */}
@@ -408,37 +410,37 @@ const CustomDesignDemo = () => {
                     animationType="bounce"
                     className="text-center text-8xl sm:text-9xl lg:text-[12rem] font-bold text-primary mb-6 tracking-tight [text-shadow:0_0_20px_rgba(75,85,99,0.6),0_0_40px_rgba(75,85,99,0.35)] [filter:drop-shadow(0_10px_25px_rgba(0,0,0,0.3))]"
                   />
-                  
+
                   {/* Illustration - Astronaut GIF */}
                   <ErrorPageIllustration
-                    illustration="/ignix-ui/img/error-astranaut.gif"
+                    illustration={astronautGif}
                     className="w-64 h-64 mx-auto"
                   />
-                  
+
                   {/* Heading */}
                   <ErrorPageHeading
                     title="Lost in space?"
                     className="text-white text-center text-4xl sm:text-5xl lg:text-6xl font-bold mb-4"
                   />
-                  
+
                   {/* Description */}
                   <ErrorPageDesc
                     description="The page you're looking for drifted off into the void. Let's get you back on course."
                     className="text-center text-slate-300 mb-8 leading-relaxed text-lg"
                   />
-                  
+
                   {/* Search */}
                   <ErrorPageSearch
                     showSearch={true}
                     searchPlaceholder="Search for something else..."
                   />
-                  
+
                   {/* Navigation Links */}
                   <ErrorPageLinks>
                     <ButtonWithIcon
                       variant="default"
                       size="lg"
-                      icon={<ArrowLeft/>}
+                      icon={<ArrowLeft />}
                       iconPosition="left"
                       onClick={() => window.history.back()}
                     >
@@ -447,7 +449,7 @@ const CustomDesignDemo = () => {
                     <ButtonWithIcon
                       variant="default"
                       size="lg"
-                      icon={<Home/>}
+                      icon={<Home />}
                       iconPosition="left"
                       onClick={() => (window.location.href = "/")}
                     >
@@ -455,7 +457,7 @@ const CustomDesignDemo = () => {
                     </ButtonWithIcon>
                   </ErrorPageLinks>
                 </ErrorPageContent>
-                
+
                 {/* Footer */}
                 <ErrorPageFooter>
                   <p className="text-sm text-slate-400">ERROR 404 • PAGE NOT FOUND</p>
@@ -465,7 +467,7 @@ const CustomDesignDemo = () => {
           </TabItem>
           <TabItem value="custom-code" label="Code">
             <CodeBlock language="tsx" className="whitespace-pre-wrap max-h-[500px] overflow-y-scroll">
-{`import {
+              {`import {
     ErrorPage,
     ErrorPageErrorCode,
     ErrorPageHeading,
@@ -566,5 +568,5 @@ import { ButtonWithIcon } from '@ignix-ui/buttonwithicon';\n
   );
 };
 
-export {ErrorPageDemo, CustomDesignDemo};
+export { ErrorPageDemo, CustomDesignDemo };
 
