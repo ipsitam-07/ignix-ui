@@ -125,8 +125,8 @@ const PricingGridBasicDemo = () => {
     title="Plans that scale"
     titleHighlight="with your growth"
     description="Start free, upgrade when you're ready. No hidden fees, cancel anytime."
-    tiers={tiers}${showToggle ? `\n    showToggle`: ''}
-    defaultBilling="monthly"${scaleRecommended ? `\n    scaleRecommended`: ''}
+    tiers={tiers}${showToggle ? `\n    showToggle` : ''}
+    defaultBilling="monthly"${scaleRecommended ? `\n    scaleRecommended` : ''}
     animation="${animation}"${showBackgroundImage ? `\n    sectionBackgroundImage="https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80"` : ''}
   />
   `;
@@ -176,7 +176,7 @@ const PricingGridBasicDemo = () => {
         <TabItem value="preview" label="Preview">
           <div className="border border-gray-300 rounded-lg overflow-hidden">
             <div className="p-4">
-              <PricingGrid 
+              <PricingGrid
                 key={animationKey}
                 scaleRecommended={scaleRecommended}
                 title="Plans that scale"
@@ -304,20 +304,20 @@ const PricingGridHorizontalDisplay = () => {
         <TabItem value="preview" label="Preview">
           <div className="border border-gray-300 rounded-lg overflow-hidden">
             <div className="p-4">
-            <PricingGrid 
-              title="Plans that scale"
-              titleHighlight="with your growth"
-              description="Start free, upgrade when you're ready. No hidden fees, cancel anytime."
-              tiers={tiers}
-              horizontalHeader
-              showToggle={true}
-              defaultBilling="monthly"
-              sectionBackgroundImage={
-                showBackgroundImage
-                  ? "https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80"
-                  : undefined
-              }
-            />
+              <PricingGrid
+                title="Plans that scale"
+                titleHighlight="with your growth"
+                description="Start free, upgrade when you're ready. No hidden fees, cancel anytime."
+                tiers={tiers}
+                horizontalHeader
+                showToggle={true}
+                defaultBilling="monthly"
+                sectionBackgroundImage={
+                  showBackgroundImage
+                    ? "https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80"
+                    : undefined
+                }
+              />
             </div>
           </div>
         </TabItem>
@@ -336,47 +336,47 @@ const PricingGridHorizontalDisplay = () => {
 
 
 const PricingGridWithCardImages = () => {
- 
-  const tiers= [
-      {
-        name: 'STARTER',
-        price: {
-          monthly: '$9 /mo',
-        },
-        description: 'Perfect for side projects and experiments.',
-        features: [
-          { label: 'Up to 3 projects' },
-          { label: '1 GB storage' },
-          { label: 'Basic analytics' },
-        ],
-        ctaLabel: 'Get Started',
-        recommended: false,
-        cardBackgroundImage: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80',
-        cardBackgroundOverlay: 'bg-black/50',
-        buttonColor: 'bg-gray-100 hover:bg-gray-200',
-        buttonTextColor: 'text-black',
+
+  const tiers = [
+    {
+      name: 'STARTER',
+      price: {
+        monthly: '$9 /mo',
       },
-      {
-        name: 'PRO',
-        price: {
-          monthly: '$29 /mo',
-        },
-        description: 'For growing teams that need more power.',
-        features: [
-          { label: 'Unlimited projects' },
-          { label: '50 GB storage' },
-          { label: 'Advanced analytics' },
-          { label: 'Priority email support' },
-        ],
-        ctaLabel: 'Start Free Trial',
-        recommended: true,
-        cardBackgroundImage: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80',
-        cardBackgroundOverlay: 'bg-black/50',
-        badgeColor: 'bg-white text-gray-900',
-        buttonColor: 'bg-gray-100 hover:bg-gray-200',
-        buttonTextColor: 'text-black',
+      description: 'Perfect for side projects and experiments.',
+      features: [
+        { label: 'Up to 3 projects' },
+        { label: '1 GB storage' },
+        { label: 'Basic analytics' },
+      ],
+      ctaLabel: 'Get Started',
+      recommended: false,
+      cardBackgroundImage: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80',
+      cardBackgroundOverlay: 'bg-black/50',
+      buttonColor: 'bg-gray-100 hover:bg-gray-200',
+      buttonTextColor: 'text-black',
+    },
+    {
+      name: 'PRO',
+      price: {
+        monthly: '$29 /mo',
       },
-    ];
+      description: 'For growing teams that need more power.',
+      features: [
+        { label: 'Unlimited projects' },
+        { label: '50 GB storage' },
+        { label: 'Advanced analytics' },
+        { label: 'Priority email support' },
+      ],
+      ctaLabel: 'Start Free Trial',
+      recommended: true,
+      cardBackgroundImage: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80',
+      cardBackgroundOverlay: 'bg-black/50',
+      badgeColor: 'bg-white text-gray-900',
+      buttonColor: 'bg-gray-100 hover:bg-gray-200',
+      buttonTextColor: 'text-black',
+    },
+  ];
 
   const codeString = `
   import { PricingGrid } from '@ignix-ui/pricinggrid';
@@ -439,17 +439,17 @@ const PricingGridWithCardImages = () => {
       <Tabs>
         <TabItem value="preview" label="Preview">
           <div className="border border-gray-300 rounded-lg overflow-hidden">
-              <PricingGrid 
-                title="Plans that scale"
-                titleHighlight="with your growth"
-                horizontalHeader
-                description="Start free, upgrade when you're ready. No hidden fees, cancel anytime."
-                tiers={tiers}
-                showToggle={true}
-                defaultBilling="monthly"
-                scaleRecommended={true}
-              />
-            </div>
+            <PricingGrid
+              title="Plans that scale"
+              titleHighlight="with your growth"
+              horizontalHeader
+              description="Start free, upgrade when you're ready. No hidden fees, cancel anytime."
+              tiers={tiers}
+              showToggle={true}
+              defaultBilling="monthly"
+              scaleRecommended={true}
+            />
+          </div>
         </TabItem>
 
         <TabItem value="code" label="Code">

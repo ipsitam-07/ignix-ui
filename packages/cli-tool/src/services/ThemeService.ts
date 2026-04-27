@@ -123,6 +123,10 @@ export const ${variableName}Theme: ThemeConfig = ${JSON.stringify(themeConfig.th
           logger.error(error.message);
         }
       }
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(String(error));
     }
   }
 }

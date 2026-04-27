@@ -68,6 +68,7 @@ async function showThemeMenu(): Promise<void> {
 
           if (installResponse.themeId) {
             await themeService.install(installResponse.themeId);
+            logger.success(`Theme ${installResponse.themeId} installed!`);
           }
           break;
         }
@@ -109,92 +110,80 @@ async function showThemeMenu(): Promise<void> {
       }
     }
 
-    console.log(''); // Add spacing before next menu
+    console.log('');
   }
 }
 
-// export const themesCommand = new Command()
-//   .name('themes')
-//   .description(chalk.hex('#FF7F50')('Manage, export, and validate themes.'))
-//   .action(async () => {
-//     await showThemeMenu();
-//   });
+export function createThemesCommand() {
+  return new Command()
+    .name('themes')
+    .option('-y, --yes', 'Skip prompts')
+    .option('--json', 'Machine output')
+    .option('--cwd <path>', 'Working directory', '.')
+    .description(chalk.hex('#FF7F50')('Manage, export, and validate themes.'))
+    .action(async (opts) => {
+      const ctx = {
+        isYes: !!opts.yes,
+        isJson: !!opts.json,
+        cwd: path.resolve(opts.cwd || '.'),
+      };
 
-export const themesCommand = new Command()
-  .name('themes')
-  .option('-y, --yes', 'Skip prompts')
-  .option('--json', 'Machine output')
-  .option('--cwd <path>', 'Working directory', '.')
-  .description(chalk.hex('#FF7F50')('Manage, export, and validate themes.'))
-  .action(async (opts) => {
-    const ctx = {
-      isYes: !!opts.yes,
-      isJson: !!opts.json,
-      cwd: path.resolve(opts.cwd || '.'),
-    };
+      const originalCwd = process.cwd();
 
-    const originalCwd = process.cwd();
+      try {
+        process.chdir(ctx.cwd);
 
-    try {
-      process.chdir(ctx.cwd);
+        if (ctx.isJson) {
+          logger.setSilent(true);
+        }
 
-      // 🔇 silent logs for JSON mode
-      if (ctx.isJson) {
-        const silent = (): void => {
+        if (ctx.isJson) {
+          const themeService = new ThemeService();
+          themeService.setSilent?.(true);
+
+          const themes = await themeService.getAvailableThemes();
+
+          const sorted = themes
+            .filter((t) => t.id)
+            .map((t) => t.id.toLowerCase())
+            .sort((a, b) => a.localeCompare(b));
+
+          console.log(
+            JSON.stringify(
+              {
+                success: true,
+                themes: sorted,
+              },
+              null,
+              2
+            )
+          );
+
           return;
-        };
-        logger.info = silent;
-        logger.warn = silent;
-        logger.error = silent;
-        logger.success = silent;
-      }
+        }
 
-      // machine-mode: list themes
-      if (ctx.isYes && ctx.isJson) {
-        const themeService = new ThemeService();
-        themeService.setSilent?.(true);
+        await showThemeMenu();
+      } catch (error) {
+        if (ctx.isJson) {
+          console.log(
+            JSON.stringify(
+              {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error',
+              },
+              null,
+              2
+            )
+          );
+          process.exit(1);
+        }
 
-        const themes = await themeService.getAvailableThemes();
-
-        const sorted = themes
-          .filter((t) => t.id)
-          .map((t) => t.id.toLowerCase())
-          .sort((a, b) => a.localeCompare(b));
-
-        console.log(
-          JSON.stringify(
-            {
-              success: true,
-              themes: sorted,
-            },
-            null,
-            2
-          )
-        );
-
-        return;
-      }
-
-      // normal interactive mode
-      await showThemeMenu();
-    } catch (error) {
-      if (ctx.isJson) {
-        console.log(
-          JSON.stringify(
-            {
-              success: false,
-              error: error instanceof Error ? error.message : 'Unknown error',
-            },
-            null,
-            2
-          )
-        );
+        logger.error(error instanceof Error ? error.message : String(error));
         process.exit(1);
+      } finally {
+        process.chdir(originalCwd);
       }
+    });
+}
 
-      logger.error(error instanceof Error ? error.message : String(error));
-      process.exit(1);
-    } finally {
-      process.chdir(originalCwd);
-    }
-  });
+export const themesCommand = createThemesCommand();

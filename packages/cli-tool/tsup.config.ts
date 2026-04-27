@@ -9,7 +9,7 @@ export default defineConfig({
   tsconfig: './tsconfig.json',
   splitting: false,
   sourcemap: false,
-  minify: true,
+  minify: false,
   treeshake: true,
   banner: {
     js: '#!/usr/bin/env node',

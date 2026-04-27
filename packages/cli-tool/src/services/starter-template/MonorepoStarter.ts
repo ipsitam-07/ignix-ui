@@ -49,7 +49,7 @@ export async function ensureRootTsconfig(root: string) {
     compilerOptions: {
       target: 'ES2021',
       module: 'ESNext',
-      moduleResolution: 'Bundler',
+      moduleResolution: 'bundler',
       strict: true,
       jsx: 'react-jsx',
       resolveJsonModule: true,
@@ -70,7 +70,7 @@ export async function scaffoldConfigPackage(root: string) {
   await fs.ensureDir(base);
 
   const pkg = {
-    name: '@acme/config',
+    name: '@ignix/config',
     version: '0.0.0',
     private: true,
     main: 'eslint/index.cjs',
@@ -81,7 +81,8 @@ export async function scaffoldConfigPackage(root: string) {
       eslint: '^9.0.0',
       'eslint-config-prettier': '^9.0.0',
       typescript: '^5.6.0',
-      tailwindcss: '^3.4.0',
+      tailwindcss: '^4.0.0',
+      '@tailwindcss/postcss': '^4.0.0',
     },
   };
   await fs.writeJSON(path.join(base, 'package.json'), pkg, { spaces: 2 });
@@ -105,17 +106,18 @@ export async function scaffoldConfigPackage(root: string) {
   await fs.ensureDir(twDir);
   await fs.writeFile(
     path.join(twDir, 'tailwind.config.cjs'),
-    `module.exports = { content: ['../../apps/**/*.{ts,tsx}', '../../packages/**/*.{ts,tsx}'], theme: { extend: {} }, plugins: [] };\n`
+    `module.exports = { content: ['../../apps/**/*.{ts,tsx}', '../../packages/**/*.{ts,tsx}'] };\n`
   );
 }
 
-// Helper function to scaffold components package
-export async function scaffoldComponentsPackage(root: string) {
-  const base = path.join(root, 'packages', 'components');
-  await fs.ensureDir(path.join(base, 'src'));
+// Helper function to scaffold UI package
+export async function scaffoldUiPackage(root: string) {
+  const base = path.join(root, 'packages', 'ui');
+  await fs.ensureDir(path.join(base, 'src', 'components', 'ui'));
+  await fs.ensureDir(path.join(base, 'src', 'utils'));
 
   const pkg = {
-    name: '@acme/components',
+    name: '@ignix/ui',
     version: '0.0.0',
     private: true,
     type: 'module',
@@ -127,9 +129,17 @@ export async function scaffoldComponentsPackage(root: string) {
       dev: 'tsc -w -p tsconfig.build.json',
       lint: 'eslint "src/**/*.{ts,tsx}"',
     },
-    dependencies: {},
+    dependencies: {
+      '@mindfiredigital/ignix-ui': '^1.0.5',
+      'framer-motion': '^11.0.0',
+      'lucide-react': '^0.446.0',
+      clsx: '^2.1.1',
+      'tailwind-merge': '^2.3.0',
+      '@radix-ui/react-slot': '^1.1.0',
+      'class-variance-authority': '^0.7.0',
+    },
     devDependencies: {
-      '@acme/config': 'workspace:*',
+      '@ignix/config': 'workspace:*',
       typescript: '^5.6.0',
       eslint: '^9.0.0',
       '@types/react': '^18.0.0',
@@ -145,8 +155,14 @@ export async function scaffoldComponentsPackage(root: string) {
   await fs.writeJSON(
     path.join(base, 'tsconfig.json'),
     {
-      extends: '@acme/config/tsconfig/base.json',
-      compilerOptions: { outDir: 'dist' },
+      extends: '@ignix/config/tsconfig/base.json',
+      compilerOptions: {
+        outDir: 'dist',
+        baseUrl: '.',
+        paths: {
+          '@ignix-ui/*': ['./src/components/ui/*', './src/components/templates/*'],
+        },
+      },
       include: ['src'],
     },
     { spaces: 2 }
@@ -160,11 +176,122 @@ export async function scaffoldComponentsPackage(root: string) {
     { spaces: 2 }
   );
 
-  const tokens = `export const tokens = { colors: { primary: '#4f46e5' } } as const;\n`;
-  await fs.writeFile(path.join(base, 'src', 'tokens.ts'), tokens);
-  const btn = `import React from 'react';\nexport function Button({ children }: { children: React.ReactNode }) {\n  return <button style={{ padding: '8px 12px' }}>{children}</button>;\n}\n`;
-  await fs.writeFile(path.join(base, 'src', 'Button.tsx'), btn);
-  const index = `export * from './Button';\nexport * from './tokens';\n`;
+  // 1. Create cn utility
+  const cnTs = `import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+`;
+  await fs.writeFile(path.join(base, 'src', 'utils', 'cn.ts'), cnTs);
+
+  // 2. Create official Button component
+  const buttonTsx = `'use client';
+
+import { motion } from 'framer-motion';
+import * as React from 'react';
+import { Slot } from '@radix-ui/react-slot';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '../../utils/cn';
+
+export interface ButtonProps
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onDrag'>,
+  VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+  animationVariant?: string;
+  children?: React.ReactNode;
+}
+
+const buttonVariants = cva(
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  {
+    variants: {
+      variant: {
+        default: 'px-4 py-2 bg-primary text-white hover:bg-primary/90',
+        primary: 'px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/90',
+        secondary: 'bg-muted text-muted-foreground hover:bg-muted/90',
+        success: 'bg-success text-success-foreground hover:bg-success/90',
+        warning: 'bg-warning text-warning-foreground hover:bg-warning/90',
+        danger: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+        outline: 'border border-input bg-transparent hover:bg-accent hover:text-accent-foreground',
+        ghost: 'hover:bg-accent hover:text-accent-foreground',
+        link: 'text-primary underline-offset-4 hover:underline',
+        subtle: 'bg-accent text-accent-foreground hover:bg-accent/80',
+        elevated: 'bg-background shadow-md hover:shadow-lg',
+        glass: 'bg-black/10 backdrop-blur-lg text-primary hover:bg-black/20',
+        neon: 'bg-pink-500 text-white shadow-lg shadow-pink-500/50 hover:bg-pink-600',
+        none: '',
+      },
+      size: {
+        xs: 'h-8 px-2 text-xs rounded-sm',
+        sm: 'h-9 px-3 text-sm rounded-md',
+        md: 'h-10 px-4 text-base rounded-md',
+        lg: 'h-12 px-6 text-lg rounded-lg',
+        xl: 'h-14 px-8 text-xl rounded-lg',
+        icon: 'h-10 w-10 p-2',
+        pill: 'h-10 px-6 text-base rounded-full',
+        block: 'w-full py-3 text-lg',
+        compact: 'h-8 px-2 text-xs',
+        wide: 'px-12 py-3 text-lg',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'md',
+    },
+  }
+);
+
+const animations = {
+  bounce: {
+    animate: { y: [0, -10, 0] },
+    transition: { repeat: Infinity, duration: 0.5 },
+  },
+  scalePulse: {
+    animate: { scale: [1, 1.1, 1] },
+    transition: { repeat: Infinity, duration: 0.6 },
+  },
+  press3D: {
+    whileTap: { scale: 0.9, y: 5 },
+    transition: { duration: 0.1 },
+  },
+};
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, animationVariant, children, ...props }, ref) => {
+    const animationProps = animationVariant ? animations[animationVariant as keyof typeof animations] || {} : {};
+
+    const slotProps = asChild ? { ...props } : {};
+    const motionProps = !asChild ? { ...props, ...animationProps } : {};
+
+    if (asChild) {
+      return (
+        <Slot className={cn(buttonVariants({ variant, size }), className)} ref={ref} {...slotProps}>
+          {children}
+        </Slot>
+      );
+    }
+
+    return (
+      <motion.button
+        className={cn(buttonVariants({ variant, size }), className)}
+        ref={ref}
+        {...(motionProps as any)}
+      >
+        {children}
+      </motion.button>
+    );
+  }
+);
+
+Button.displayName = 'Button';
+
+export { Button, buttonVariants };
+`;
+  await fs.writeFile(path.join(base, 'src', 'components', 'ui', 'button.tsx'), buttonTsx);
+
+  const index = `export * from './components/ui/button';\nexport * from './utils/cn';\n`;
   await fs.writeFile(path.join(base, 'src', 'index.ts'), index);
 }
 
@@ -202,10 +329,11 @@ export async function scaffoldNextApp(root: string) {
       next: '14.2.10',
       react: '^18.3.1',
       'react-dom': '^18.3.1',
-      '@acme/components': 'workspace:*',
+      '@ignix/ui': 'workspace:*',
+      '@mindfiredigital/ignix-ui': '^1.0.5',
     },
     devDependencies: {
-      '@acme/config': 'workspace:*',
+      '@ignix/config': 'workspace:*',
       '@types/node': '^20.16.11',
       typescript: '^5.6.0',
     },
@@ -213,11 +341,12 @@ export async function scaffoldNextApp(root: string) {
   await fs.writeJSON(path.join(base, 'package.json'), pkg, { spaces: 2 });
   await fs.writeJSON(
     path.join(base, 'tsconfig.json'),
-    { extends: '@acme/config/tsconfig/base.json', compilerOptions: { jsx: 'react-jsx' } },
+    { extends: '@ignix/config/tsconfig/base.json', compilerOptions: { jsx: 'react-jsx' } },
     { spaces: 2 }
   );
 
-  const nextConfig = `const nextConfig = {
+  const nextConfig = `/** @type {import('next').NextConfig} */
+const nextConfig = {
   experimental: {
     turbo: {},
   },
@@ -226,6 +355,178 @@ export async function scaffoldNextApp(root: string) {
 export default nextConfig; `;
   await fs.writeFile(path.join(base, 'next.config.mjs'), nextConfig);
 
-  const page = `import { Button } from '@acme/components/src';\nexport default function Page() {\n  return (<main style={{ padding: 24 }}><h1>Ignix Monorepo</h1><Button>From components pkg</Button></main>);\n}\n`;
+  // Create Root Layout with ThemeProvider
+  const layout = `import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { ThemeProvider } from '@mindfiredigital/ignix-ui';
+import './globals.css';
+
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'Ignix Monorepo App',
+  description: 'Built with Ignix UI',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider enableSystemPreference>
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
+`;
+  await fs.writeFile(path.join(base, 'app', 'layout.tsx'), layout);
+
+  const page = `import { Button } from '@ignix/ui';
+
+export default function Page() {
+  return (
+    <main className="min-h-screen bg-background flex flex-col items-center justify-center p-24 space-y-8">
+      <div className="text-center space-y-4">
+        <h1 className="text-5xl font-extrabold tracking-tight">
+          Ignix <span className="text-primary">Monorepo</span>
+        </h1>
+        <p className="text-xl text-muted-foreground max-w-[600px]">
+          Your professional design system workspace is ready.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-8 border border-border rounded-2xl bg-card/50 backdrop-blur-sm">
+        <Button variant="default" animationVariant="press3D">
+          3D Default
+        </Button>
+        <Button variant="neon">
+          Neon Style
+        </Button>
+        <Button variant="glass">
+          Glassmorphism
+        </Button>
+        <Button variant="outline" animationVariant="scalePulse">
+          Pulsing Outline
+        </Button>
+      </div>
+
+      <div className="flex gap-4 text-sm text-muted-foreground pt-8">
+        <code>packages/ui</code>
+        <span>•</span>
+        <code>apps/web</code>
+      </div>
+    </main>
+  );
+}
+`;
   await fs.writeFile(path.join(base, 'app', 'page.tsx'), page);
+
+  const globalsCss = `@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+:root {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(222.2 84% 4.9%);
+  --primary: hsl(221.2 83.2% 53.3%);
+  --primary-foreground: hsl(210 40% 98%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(222.2 84% 4.9%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(222.2 84% 4.9%);
+  --secondary: hsl(210 40% 96.1%);
+  --secondary-foreground: hsl(222.2 47.4% 11.2%);
+  --muted: hsl(210 40% 96.1%);
+  --muted-foreground: hsl(215.4 16.3% 46.9%);
+  --accent: hsl(210 40% 96.1%);
+  --accent-foreground: hsl(222.2 47.4% 11.2%);
+  --destructive: hsl(0 84.2% 60.2%);
+  --destructive-foreground: hsl(210 40% 98%);
+  --border: hsl(214.3 31.8% 91.4%);
+  --input: hsl(214.3 31.8% 91.4%);
+  --ring: hsl(221.2 83.2% 53.3%);
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: hsl(222.2 84% 4.9%);
+  --foreground: hsl(210 40% 98%);
+  --primary: hsl(217.2 91.2% 59.8%);
+  --primary-foreground: hsl(222.2 47.4% 11.2%);
+  --card: hsl(222.2 84% 4.9%);
+  --card-foreground: hsl(210 40% 98%);
+  --popover: hsl(222.2 84% 4.9%);
+  --popover-foreground: hsl(210 40% 98%);
+  --secondary: hsl(217.2 32.6% 17.5%);
+  --secondary-foreground: hsl(210 40% 98%);
+  --muted: hsl(217.2 32.6% 17.5%);
+  --muted-foreground: hsl(215 20.2% 65.1%);
+  --accent: hsl(217.2 32.6% 17.5%);
+  --accent-foreground: hsl(210 40% 98%);
+  --destructive: hsl(0 62.8% 30.6%);
+  --destructive-foreground: hsl(210 40% 98%);
+  --border: hsl(217.2 32.6% 17.5%);
+  --input: hsl(217.2 32.6% 17.5%);
+  --ring: hsl(224.3 76.3% 48%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+`;
+  await fs.writeFile(path.join(base, 'app', 'globals.css'), globalsCss);
+}
+
+// 12. Create Ignix config
+export async function createIgnixConfig(root: string): Promise<void> {
+  const ignixConfig = `/* eslint-env node */
+/** @type {import('@mindfiredigital/ignix-cli').IgnixConfig} */
+export default {
+  // URL to the raw registry.json file on GitHub
+  registryUrl:
+    'https://raw.githubusercontent.com/mindfiredigital/ignix-ui/main/packages/registry/registry.json',
+
+  // URL to the raw themes.json file on GitHub
+  themeUrl:
+    'https://raw.githubusercontent.com/mindfiredigital/ignix-ui/main/packages/registry/themes.json',
+
+  // Default directory for UI components in a monorepo
+  componentsDir: 'packages/ui/src/components/ui',
+
+  // Default directory for themes
+  themesDir: 'packages/ui/src/themes',
+};
+`;
+  await fs.writeFile(path.join(root, 'ignix.config.js'), ignixConfig);
 }

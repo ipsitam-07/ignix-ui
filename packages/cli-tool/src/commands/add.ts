@@ -8,109 +8,155 @@ import { ThemeService } from '../services/ThemeService';
 import { TemplateService } from '../services/TemplateService';
 import path from 'path';
 
-export const addCommand = new Command()
-  .name('add')
-  .option('-y, --yes', 'Skip prompts')
-  .option('--json', 'Machine output')
-  .option('--cwd <path>', 'Working directory', '.')
-  .description(chalk.hex('#FF8C00')('Add components, or tokens to your project.'))
-  .argument('<namespace>', chalk.green('The type of asset to add (e.g., component, theme)'))
-  .argument('[identifiers...]', 'The names/IDs of the assets to add')
-  .action(async (namespace, identifiers, opts) => {
-    const ctx = {
-      isYes: !!opts.yes,
-      isJson: !!opts.json,
-      cwd: path.resolve(opts.cwd || '.'),
-    };
+export function createAddCommand() {
+  return new Command()
+    .name('add')
+    .option('-y, --yes', 'Skip prompts')
+    .option('--json', 'Machine output')
+    .option('--cwd <path>', 'Working directory', '.')
+    .description(chalk.hex('#FF8C00')('Add components, or tokens to your project.'))
+    .argument('<namespace>', chalk.green('The type of asset to add (e.g., component, theme)'))
+    .argument('[identifiers...]', 'The names/IDs of the assets to add')
+    .action(async (namespace, identifiers, opts) => {
+      const ctx = {
+        isYes: !!opts.yes,
+        isJson: !!opts.json,
+        cwd: path.resolve(opts.cwd || '.'),
+      };
 
-    const originalCwd = process.cwd();
-    try {
-      process.chdir(ctx.cwd);
+      const originalCwd = process.cwd();
+      try {
+        process.chdir(ctx.cwd);
 
-      if (ctx.isJson) {
-        const silent = (): void => {
-          return;
-        };
-        logger.info = silent;
-        logger.warn = silent;
-        logger.error = silent;
-        logger.success = silent;
-      }
+        if (ctx.isJson) {
+          logger.setSilent(true);
+        }
 
-      const installed: string[] = [];
-      const skipped: string[] = [];
-      const registryService = new RegistryService();
-      if (ctx.isJson) {
-        registryService.setSilent(true);
-      }
+        const installed: string[] = [];
+        const skipped: string[] = [];
+        const registryService = new RegistryService();
+        if (ctx.isJson) {
+          registryService.setSilent(true);
+        }
 
-      switch (namespace) {
-        case 'component':
-        case 'components': {
-          const dependencySet = new Set<string>();
-          const componentService = new ComponentService();
-          if (ctx.isJson) {
-            componentService.setSilent(true);
-          }
-          const templateService = new TemplateService();
-          if (ctx.isJson) {
-            templateService.setSilent(true);
-          }
-          logger.info('Adding components...');
-          const availableComponents = await registryService.getAvailableComponents();
-
-          type SelectedComponent = {
-            name: string;
-            type: string;
-          };
-
-          let selectedItems: SelectedComponent[] = [];
-
-          if (identifiers.length === 0 && !ctx.isYes) {
-            const installResponse = await prompts({
-              type: 'select',
-              name: 'component',
-              message: chalk.green('Select a component to add:'),
-              choices: availableComponents.map((c) => ({
-                title: c.name,
-                value: {
-                  name: c.name.toLowerCase(),
-                  type: c.files.main.type,
-                },
-              })),
-            });
-
-            if (installResponse.component) {
-              selectedItems = [installResponse.component];
+        switch (namespace) {
+          case 'component':
+          case 'components': {
+            const dependencySet = new Set<string>();
+            const componentService = new ComponentService();
+            if (ctx.isJson) {
+              componentService.setSilent(true);
             }
-          } else {
-            // Deterministic processing based on user input
-            const normalized = identifiers.map((i: string) => i.toLowerCase());
+            const templateService = new TemplateService();
+            logger.info('Adding components...');
+            const availableComponents = await registryService.getAvailableComponents();
 
-            // Build lookup map
-            const componentMap = new Map<string, any>();
-            for (const c of availableComponents) {
-              if (c.name) componentMap.set(c.name.toLowerCase(), c);
-              if (c.id) componentMap.set(c.id.toLowerCase(), c);
-            }
+            type SelectedComponent = {
+              name: string;
+              type: string;
+            };
 
-            selectedItems = [];
+            let selectedItems: SelectedComponent[] = [];
 
-            for (const id of normalized) {
-              const component = componentMap.get(id);
+            if (identifiers.length === 0 && !ctx.isYes) {
+              const installResponse = await prompts({
+                type: 'select',
+                name: 'component',
+                message: chalk.green('Select a component to add:'),
+                choices: availableComponents
+                  .filter((c) => c && (c.name || c.id))
+                  .map((c) => ({
+                    title: c.name || c.id || 'Unknown',
+                    value: {
+                      name: String(c.id || c.name).toLowerCase(),
+                      type: c.files?.main?.type || 'component',
+                    },
+                  })),
+              });
 
-              if (!component) {
-                skipped.push(id);
-                continue;
+              if (installResponse && installResponse.component) {
+                selectedItems = [installResponse.component];
+              }
+            } else {
+              // Deterministic processing based on user input
+              const normalized = identifiers
+                .filter((i: any) => typeof i === 'string')
+                .map((i: string) => i.toLowerCase());
+
+              // Build lookup map
+              const componentMap = new Map<string, any>();
+              for (const c of availableComponents) {
+                if (c.name) componentMap.set(String(c.name).toLowerCase(), c);
+                if (c.id) componentMap.set(String(c.id).toLowerCase(), c);
               }
 
-              selectedItems.push({
-                name: (component.id || component.name).toLowerCase(),
-                type: component.files.main.type,
-              });
+              selectedItems = [];
+
+              for (const id of normalized) {
+                const component = componentMap.get(id);
+
+                if (!component) {
+                  skipped.push(id);
+                  if (!ctx.isJson) {
+                    logger.warn(`Component '${id}' not found. Skipping.`);
+                  }
+                  continue;
+                }
+
+                selectedItems.push({
+                  name: String(component.id || component.name).toLowerCase(),
+                  type: component.files?.main?.type || 'component',
+                });
+              }
             }
-          }
-          if (!selectedItems || selectedItems.length === 0) {
+            if (!selectedItems || selectedItems.length === 0) {
+              if (ctx.isJson) {
+                const result = {
+                  success: false,
+                  requested: identifiers,
+                  installed,
+                  dependencies: Array.from(dependencySet),
+                  skipped,
+                  error: 'No components selected.',
+                };
+
+                console.log(JSON.stringify(result, null, 2));
+
+                // 🔥 EXIT CODE LOGIC
+                process.exit(1);
+              } else {
+                logger.warn('No component selected. Exiting.');
+              }
+              process.chdir(originalCwd);
+              return;
+            }
+
+            for (const item of selectedItems) {
+              if (!ctx.isJson) {
+                console.log('Installing:', item.name, 'Type:', item.type);
+              }
+
+              if (item.type === 'component') {
+                // await componentService.install(item.name);
+                // installed.push(item.name);
+                const deps = await componentService.install(item.name);
+
+                installed.push(item.name);
+
+                deps?.forEach((d) => {
+                  if (d !== item.name) dependencySet.add(d);
+                });
+              } else if (item.type === 'template') {
+                await templateService.install(item.name);
+                installed.push(item.name);
+              } else {
+                skipped.push(item.name);
+                if (!ctx.isJson) {
+                  logger.error(`Unknown type '${item.type}' for '${item.name}'`);
+                }
+              }
+            }
+
             if (ctx.isJson) {
               const result = {
                 success: installed.length > 0,
@@ -122,257 +168,230 @@ export const addCommand = new Command()
 
               console.log(JSON.stringify(result, null, 2));
 
-              // 🔥 EXIT CODE LOGIC
-              const nothingInstalled = installed.length === 0;
-              process.exit(nothingInstalled ? 1 : 0);
-            } else {
-              logger.warn('No component selected. Exiting.');
+              process.exit(installed.length === 0 ? 1 : 0);
             }
-            process.chdir(originalCwd);
-            return;
+            break;
           }
 
-          for (const item of selectedItems) {
-            if (!ctx.isJson) {
-              console.log('Installing:', item.name, 'Type:', item.type);
+          case 'theme':
+          case 'themes': {
+            const themeService = new ThemeService();
+
+            if (ctx.isJson) {
+              themeService.setSilent(true);
             }
 
-            if (item.type === 'component') {
-              // await componentService.install(item.name);
-              // installed.push(item.name);
-              const deps = await componentService.install(item.name);
+            const availableThemes = await themeService.getAvailableThemes();
+            const themeMap = new Map<string, string>();
 
-              installed.push(item.name);
+            for (const t of availableThemes) {
+              themeMap.set(t.id.toLowerCase(), t.id.toLowerCase());
+            }
 
-              deps?.forEach((d) => {
-                if (d !== item.name) dependencySet.add(d);
-              });
-            } else if (item.type === 'template') {
-              await templateService.install(item.name);
-              installed.push(item.name);
-            } else {
-              skipped.push(item.name);
-              if (!ctx.isJson) {
-                logger.error(`Unknown type '${item.type}' for '${item.name}'`);
+            const installed: string[] = [];
+            const skipped: string[] = [];
+
+            // interactive only in human mode
+            if (identifiers.length === 0 && !ctx.isYes) {
+              if (availableThemes.length === 0) {
+                logger.warn('No themes available in the registry.');
+                break;
               }
+
+              const response = await prompts({
+                type: 'select',
+                name: 'theme',
+                message: chalk.green('Select a theme to install:'),
+                choices: availableThemes.map((t) => ({
+                  title: t.name,
+                  value: t.id.toLowerCase(),
+                })),
+              });
+
+              identifiers = response && response.theme ? [response.theme] : [];
             }
-          }
 
-          if (ctx.isJson) {
-            const result = {
-              success: installed.length > 0,
-              requested: identifiers,
-              installed,
-              dependencies: Array.from(dependencySet),
-              skipped,
-            };
+            // no selection
+            if (!identifiers || identifiers.length === 0) {
+              if (ctx.isJson) {
+                const result = {
+                  success: false,
+                  requested: [],
+                  installed: [],
+                  skipped: [],
+                  error: 'No themes selected.',
+                };
 
-            console.log(JSON.stringify(result, null, 2));
+                console.log(JSON.stringify(result, null, 2));
+                process.exit(1);
+              }
 
-            process.exit(installed.length === 0 ? 1 : 0);
-          }
-          break;
-        }
+              logger.warn('No themes selected. Exiting.');
+              break;
+            }
 
-        case 'theme':
-        case 'themes': {
-          const themeService = new ThemeService();
+            const normalized = identifiers.map((i: string) => i.toLowerCase());
 
-          if (ctx.isJson) {
-            themeService.setSilent(true);
-          }
+            for (const id of normalized) {
+              const match = themeMap.get(id);
 
-          const availableThemes = await themeService.getAvailableThemes();
-          const themeMap = new Map<string, string>();
+              if (!match) {
+                skipped.push(id);
+                if (!ctx.isJson) {
+                  logger.warn(`Theme '${id}' not found. Skipping.`);
+                }
+                continue;
+              }
 
-          for (const t of availableThemes) {
-            themeMap.set(t.id.toLowerCase(), t.id.toLowerCase());
-          }
+              await themeService.install(match);
+              installed.push(match);
+            }
 
-          const installed: string[] = [];
-          const skipped: string[] = [];
+            // deterministic sort
+            installed.sort((a, b) => a.localeCompare(b));
+            skipped.sort((a, b) => a.localeCompare(b));
 
-          // interactive only in human mode
-          if (identifiers.length === 0 && !ctx.isYes) {
-            const response = await prompts({
-              type: 'multiselect',
-              name: 'themes',
-              message: chalk.green('Select themes to install:'),
-              choices: availableThemes.map((t) => ({
-                title: t.name,
-                value: t.id.toLowerCase(),
-              })),
-            });
-
-            identifiers = response.themes || [];
-          }
-
-          // no selection
-          if (!identifiers || identifiers.length === 0) {
             if (ctx.isJson) {
               const result = {
-                success: false,
-                requested: [],
-                installed: [],
-                skipped: [],
+                success: installed.length > 0,
+                requested: normalized,
+                installed,
+                skipped,
               };
 
               console.log(JSON.stringify(result, null, 2));
-              process.exit(1);
+              process.exit(installed.length === 0 ? 1 : 0);
             }
 
-            logger.warn('No themes selected. Exiting.');
             break;
           }
 
-          const normalized = identifiers.map((i: string) => i.toLowerCase());
+          case 'template':
+          case 'templates': {
+            const registryService = new RegistryService();
+            const templateService = new TemplateService();
 
-          for (const id of normalized) {
-            const match = themeMap.get(id);
-
-            if (!match) {
-              skipped.push(id);
-              continue;
+            if (ctx.isJson) {
+              registryService.setSilent(true);
+              templateService.setSilent?.(true);
             }
 
-            await themeService.install(match);
-            installed.push(match);
-          }
+            const availableTemplates = await registryService.getAvailableTemplates();
 
-          // deterministic sort
-          installed.sort((a, b) => a.localeCompare(b));
-          skipped.sort((a, b) => a.localeCompare(b));
+            const templateMap = new Map<string, string>();
+            // for (const t of availableTemplates) {
+            //   templateMap.set(t.id.toLowerCase(), t.id.toLowerCase());
+            // }
+            for (const t of availableTemplates) {
+              if (!t.id) continue;
+              const id = t.id.toLowerCase();
+              templateMap.set(id, id);
+            }
 
-          if (ctx.isJson) {
-            const result = {
-              success: installed.length > 0,
-              requested: normalized,
-              installed,
-              skipped,
-            };
+            const installed: string[] = [];
+            const skipped: string[] = [];
 
-            console.log(JSON.stringify(result, null, 2));
-            process.exit(installed.length === 0 ? 1 : 0);
-          }
+            // interactive only in human mode
+            if (identifiers.length === 0 && !ctx.isYes) {
+              const installResponse = await prompts({
+                type: 'select',
+                name: 'template',
+                message: chalk.green('Select a template to add:'),
+                // choices: availableTemplates.map((c) => ({
+                //   title: c.name,
+                //   value: c.id.toLowerCase(),
+                // })),
+                choices: availableTemplates
+                  .filter((c) => c.id)
+                  .map((c) => ({
+                    title: c.name,
+                    value: c.id!.toLowerCase(),
+                  })),
+              });
 
-          break;
-        }
+              identifiers =
+                installResponse && installResponse.template ? [installResponse.template] : [];
+            }
 
-        case 'template':
-        case 'templates': {
-          const registryService = new RegistryService();
-          const templateService = new TemplateService();
+            // nothing selected
+            if (!identifiers || identifiers.length === 0) {
+              if (ctx.isJson) {
+                const result = {
+                  success: false,
+                  requested: [],
+                  installed: [],
+                  skipped: [],
+                  error: 'No templates selected.',
+                };
 
-          if (ctx.isJson) {
-            registryService.setSilent(true);
-            templateService.setSilent?.(true);
-          }
+                console.log(JSON.stringify(result, null, 2));
+                process.exit(1);
+              }
 
-          const availableTemplates = await registryService.getAvailableTemplates();
+              logger.warn('No template selected. Exiting.');
+              break;
+            }
 
-          const templateMap = new Map<string, string>();
-          // for (const t of availableTemplates) {
-          //   templateMap.set(t.id.toLowerCase(), t.id.toLowerCase());
-          // }
-          for (const t of availableTemplates) {
-            const id = (t.id || t.name).toLowerCase();
-            templateMap.set(id, id);
-          }
+            const normalized = identifiers.map((i: string) => i.toLowerCase());
 
-          const installed: string[] = [];
-          const skipped: string[] = [];
+            for (const id of normalized) {
+              const match = templateMap.get(id);
 
-          // interactive only in human mode
-          if (identifiers.length === 0 && !ctx.isYes) {
-            const installResponse = await prompts({
-              type: 'select',
-              name: 'template',
-              message: chalk.green('Select a template to add:'),
-              // choices: availableTemplates.map((c) => ({
-              //   title: c.name,
-              //   value: c.id.toLowerCase(),
-              // })),
-              choices: availableTemplates.map((c) => ({
-                title: c.name,
-                value: (c.id || c.name).toLowerCase(),
-              })),
-            });
+              if (!match) {
+                skipped.push(id);
+                if (!ctx.isJson) {
+                  logger.warn(`Template '${id}' not found. Skipping.`);
+                }
+                continue;
+              }
 
-            identifiers = installResponse.template ? [installResponse.template] : [];
-          }
+              await templateService.install(match);
+              installed.push(match);
+            }
 
-          // nothing selected
-          if (!identifiers || identifiers.length === 0) {
+            // deterministic sort
+            installed.sort((a, b) => a.localeCompare(b));
+            skipped.sort((a, b) => a.localeCompare(b));
+
             if (ctx.isJson) {
               const result = {
-                success: false,
-                requested: [],
-                installed: [],
-                skipped: [],
+                success: installed.length > 0,
+                requested: normalized,
+                installed,
+                skipped,
               };
 
               console.log(JSON.stringify(result, null, 2));
-              process.exit(1);
+              process.exit(installed.length === 0 ? 1 : 0);
             }
 
-            logger.warn('No template selected. Exiting.');
             break;
           }
 
-          const normalized = identifiers.map((i: string) => i.toLowerCase());
-
-          for (const id of normalized) {
-            const match = templateMap.get(id);
-
-            if (!match) {
-              skipped.push(id);
-              continue;
-            }
-
-            await templateService.install(match);
-            installed.push(match);
-          }
-
-          // deterministic sort
-          installed.sort((a, b) => a.localeCompare(b));
-          skipped.sort((a, b) => a.localeCompare(b));
-
-          if (ctx.isJson) {
-            const result = {
-              success: installed.length > 0,
-              requested: normalized,
-              installed,
-              skipped,
-            };
-
-            console.log(JSON.stringify(result, null, 2));
-            process.exit(installed.length === 0 ? 1 : 0);
-          }
-
-          break;
+          default:
+            logger.error(`Unknown namespace: '${namespace}'. Please use 'component' or 'theme'.`);
+            process.exit(1);
         }
+      } catch (error) {
+        if (ctx.isJson) {
+          console.log(
+            JSON.stringify(
+              {
+                success: false,
+                error: error instanceof Error ? error.message : 'Unknown error',
+              },
+              null,
+              2
+            )
+          );
+        } else {
+          logger.error(error instanceof Error ? error.message : String(error));
+        }
+        process.exit(1);
+      } finally {
+        process.chdir(originalCwd);
+      }
+    });
+}
 
-        default:
-          logger.error(`Unknown namespace: '${namespace}'. Please use 'component' or 'theme'.`);
-          process.exit(1);
-      }
-    } catch (error) {
-      if (ctx.isJson) {
-        console.log(
-          JSON.stringify(
-            {
-              success: false,
-              error: error instanceof Error ? error.message : 'Unknown error',
-            },
-            null,
-            2
-          )
-        );
-      } else {
-        logger.error(error instanceof Error ? error.message : String(error));
-      }
-      process.exit(1);
-    } finally {
-      process.chdir(originalCwd);
-    }
-  });
+export const addCommand = createAddCommand();

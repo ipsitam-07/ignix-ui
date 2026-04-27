@@ -6,7 +6,7 @@
     // "../ignix-mcp-server/src/commands/mcp-status.ts",
     // "../ignix-mcp-server/src/commands/mcp.ts"
   ],
-  "exclude": ["dist", "node_modules"],
+  "exclude": ["dist", "node_modules", "templates"],
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
