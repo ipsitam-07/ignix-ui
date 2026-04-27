@@ -65,6 +65,9 @@ export class ComponentService {
 
       // 2. Fetch and write files
       spinner.text = `Getting component files for ${name}...`;
+      if (!config.registryUrl) {
+        throw new Error('Registry URL not found in config. Please check your `ignix.config.js`.');
+      }
       const registryBaseUrl = config.registryUrl.substring(0, config.registryUrl.lastIndexOf('/'));
       const installedFiles: string[] = [];
 

@@ -41,7 +41,16 @@ export async function loadConfig(): Promise<IgnixConfig> {
       // For ESM, use dynamic import with file URL
       const fileUrl = `file://${configPath}?t=${Date.now()}`;
       const module = await import(fileUrl);
-      return module.default || module;
+      const config = module.default || module;
+
+      // Handle case where config is nested under 'config' property
+      const finalConfig = config && config.config && !config.registryUrl ? config.config : config;
+
+      if (!finalConfig.registryUrl) {
+        logger.warn('registryUrl not found in config. Please check your `ignix.config.js`.');
+      }
+
+      return finalConfig;
     } else {
       // For CommonJS, create a temporary file with proper exports
       const tempFile = path.join(path.dirname(configPath), `temp-config-${Date.now()}.cjs`);
@@ -56,11 +65,20 @@ export async function loadConfig(): Promise<IgnixConfig> {
         // Use dynamic import for better compatibility
         const module = await import(`file://${tempFile}?t=${Date.now()}`);
         const config = module.default || module;
+
+        // Handle case where config is nested under 'config' property
+        const finalConfig = config && config.config && !config.registryUrl ? config.config : config;
+
         // Clean up the temporary file
         await fs.remove(tempFile).catch((e) => {
           logger.warn(`Failed to remove temporary file: ${e}`);
         });
-        return config;
+
+        if (!finalConfig.registryUrl) {
+          logger.warn('registryUrl not found in config. Please check your `ignix.config.js`.');
+        }
+
+        return finalConfig;
       } catch (e) {
         // Clean up the temporary file if it exists
         await fs.remove(tempFile).catch((e) => {
