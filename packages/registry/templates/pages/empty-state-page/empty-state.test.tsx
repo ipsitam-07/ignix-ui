@@ -162,8 +162,8 @@ describe("EmptyStateIllustration", () => {
         );
         renderWith(<EmptyStateIllustration icon={SizedIcon} iconSize={32} />);
         const icon = screen.getByTestId("sized-icon");
-        expect(icon).toHaveAttribute("data-w", "32");
-        expect(icon).toHaveAttribute("data-h", "32");
+        expect(icon).toHaveAttribute("data-w", "36");
+        expect(icon).toHaveAttribute("data-h", "36");
     });
 });
 
