@@ -89,7 +89,15 @@ export class RegistryService {
 
     const config = await loadConfig();
 
-    logger.info(`[Registry] Fetching templates from: ${config.templateLayoutUrl}`);
+    const templateLayoutUrl = config.templateLayoutUrl || config.templateUrl;
+
+    if (!templateLayoutUrl) {
+      throw new Error(
+        'Template registry URL not found in config. Please check your `ignix.config.js`.'
+      );
+    }
+
+    logger.info(`[Registry] Fetching templates from: ${templateLayoutUrl}`);
 
     let spinner: ReturnType<typeof ora> | null = null;
     if (!this.silent) {
@@ -97,7 +105,7 @@ export class RegistryService {
     }
 
     try {
-      const response = await axios.get<ComponentRegistry>(config.templateLayoutUrl);
+      const response = await axios.get<ComponentRegistry>(templateLayoutUrl);
 
       spinner?.succeed('Template registry fetched.');
 

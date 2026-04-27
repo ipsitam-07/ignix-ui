@@ -7,10 +7,12 @@ const DEFAULT_CONFIG_FILENAME = 'ignix.config.js';
 export interface IgnixConfig {
   registryUrl: string;
   themeUrl: string;
+  templateUrl?: string;
+  templateLayoutUrl?: string;
   componentsDir: string;
   themesDir: string;
-  templateLayoutUrl: string;
-  templateLayoutDir: string;
+  templatesDir?: string;
+  templateLayoutDir?: string;
 }
 
 export async function loadConfig(): Promise<IgnixConfig> {

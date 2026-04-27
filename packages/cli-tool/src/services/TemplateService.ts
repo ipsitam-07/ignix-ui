@@ -74,7 +74,8 @@ export class TemplateService {
       //--------------------------------------------------
       spinner && (spinner.text = 'Downloading template files...');
 
-      const templateDir = path.resolve(config.templateLayoutDir, name.toLowerCase());
+      const templateLayoutDir = config.templateLayoutDir || config.templatesDir || 'src/templates';
+      const templateDir = path.resolve(templateLayoutDir, name.toLowerCase());
       await fs.ensureDir(templateDir);
 
       const baseUrl = config.registryUrl.replace('/registry.json', '');
