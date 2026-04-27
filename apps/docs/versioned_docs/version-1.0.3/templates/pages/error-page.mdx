@@ -1286,40 +1286,6 @@ function NotFoundPage() {
 }
 ```
 
-## 500 Server Error Example
-
-The `server` variant provides a specialized theme for 500 errors, featuring a dark background with a grid pattern and red glow effects.
-
-```tsx
-function ServerErrorPage() {
-  const errorReferenceId = "ERR-X92J-L10";
-
-  return (
-    <ErrorPage variant="server" icon={Server}>
-      <ErrorPageContent>
-        <ErrorPageIcons icons={[AlertTriangle, Wrench, Activity, ShieldAlert]}>
-          <ErrorPageErrorCode errorCode="500" animationType="glow" />
-        </ErrorPageIcons>
-        <ErrorPageHeading>Internal Server Error</ErrorPageHeading>
-        <ErrorPageDesc>
-          Something went wrong on our end. Our technical team is investigating.
-        </ErrorPageDesc>
-        <ErrorPageErrorReference errorReferenceId={errorReferenceId} />
-        <ErrorPageLinks>
-          <ButtonWithIcon variant="primary" icon={<RefreshCw />}>
-            Retry
-          </ButtonWithIcon>
-          <Button variant="outline">Contact Support</Button>
-        </ErrorPageLinks>
-      </ErrorPageContent>
-      <ErrorPageFooter>
-        ERROR 500 · SERVER ERROR · REF: {errorReferenceId}
-      </ErrorPageFooter>
-    </ErrorPage>
-  );
-}
-```
-
 ## Props
 
 ### ErrorPage
@@ -1328,7 +1294,7 @@ The main container component that wraps all error page content.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `variant` | `"default" \| "minimal" \| "gradient" \| "dark" \| "server"` | `"default"` | Visual variant of the error page |
+| `variant` | `"default" \| "minimal" \| "gradient" \| "dark" \| "server" \| "forbidden"` | `"default"` | Visual variant of the error page |
 | `backgroundImage` | `string` | - | URL for background image |
 | `icon` | `LucideIcon` | - | Icon to display throughout the page with continuous motion |
 | `iconColor` | `string` | - | Custom color class for the icon (e.g., "text-blue-500", "text-white"). Defaults to white when backgroundImage is present |

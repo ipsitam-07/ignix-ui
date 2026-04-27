@@ -17,15 +17,15 @@ import {
   ErrorPageErrorReference,
 } from '@site/src/components/UI/error-page';
 import { ButtonWithIcon } from '@site/src/components/UI/button-with-icon';
-import { Home, ArrowLeft, RefreshCw, Bug, MessageCircle, AlertTriangle, Wrench, Zap, Rocket, Settings } from 'lucide-react';
+import { Home, ArrowLeft, RefreshCw, Bug, MessageCircle, AlertTriangle, Wrench, Zap, Rocket, Settings, ShieldAlert } from 'lucide-react';
 
-type ErrorPageVariant = 'default' | 'minimal' | 'gradient' | 'dark';
+type ErrorPageVariant = 'default' | 'minimal' | 'gradient' | 'dark' | 'server' | 'forbidden';
 type AnimationType = 'none' | 'pulse' | 'bounce' | 'glow' | 'shake' | 'rotate';
 type IllustrationPosition = 'left' | 'right' | 'topCenter';
-type ErrorType = '404' | '500';
+type ErrorType = '404' | '500' | '403';
 
-const variants: ErrorPageVariant[] = ['default', 'minimal', 'gradient', 'dark'];
-const errorTypes: ErrorType[] = ['404', '500'];
+const variants: ErrorPageVariant[] = ['default', 'minimal', 'gradient', 'dark', 'server', 'forbidden'];
+const errorTypes: ErrorType[] = ['404', '500', '403'];
 
 const animationTypes: AnimationType[] = ['none', 'pulse', 'bounce', 'glow', 'shake', 'rotate'];
 
@@ -80,19 +80,21 @@ const ErrorPageDemo = () => {
     ErrorPageErrorReference,
   } from '@ignix-ui/errorpage';\n`
    code += `import { ButtonWithIcon } from '@ignix-ui/buttonwithicon';\n`
-    code += `\n<ErrorPage\n  variant="${variant}"\n  icon={Settings}${showBackgroundImage ? '\n  backgroundImage="https://images.unsplash.com/photo-1557683316-973673baf926?w=1600&h=900&fit=crop&q=90"' : ''}\n>`;
+    code += `\n<ErrorPage\n  variant="${variant}"\n  icon={${errorType === '403' ? 'ShieldAlert' : 'Settings'}}${showBackgroundImage ? '\n  backgroundImage="https://images.unsplash.com/photo-1557683316-973673baf926?w=1600&h=900&fit=crop&q=90"' : ''}\n>`;
     
     if (showIllustration && errorType === '404') {
       code += `\n  <ErrorPageIllustration\n    position="${illustrationPosition}"\n    illustration="/ignix-ui/img/404-1.svg"\n    className="w-90 h-90 mx-auto"\n  />`;
     } else if (showIllustration && errorType === '500') {
       code += `\n  <ErrorPageIllustration\n    position="${illustrationPosition}"\n    illustration="/ignix-ui/img/500-1.svg"\n    className="w-90 h-90 mx-auto"\n  />`;
+    } else if (showIllustration && errorType === '403') {
+      code += `\n  <ErrorPageIllustration\n    position="${illustrationPosition}"\n    illustration="/ignix-ui/img/403-1.svg"\n    className="w-90 h-90 mx-auto"\n  />`;
     }
     
     code += `\n  <ErrorPageContent>`;
     
     if (!showIllustration) {
       code += `\n    <ErrorPageIcons\n      icons={[AlertTriangle, Wrench, Zap, Rocket]}\n    >`;
-      code += `\n      <ErrorPageErrorCode\n        errorCode="${errorType}"\n        animationType="${errorType === '500' ? 'rotate' : animationType}"\n      />`;
+      code += `\n      <ErrorPageErrorCode\n        errorCode="${errorType}"\n        animationType="${errorType === '500' || errorType === '403' ? 'glow' : animationType}"\n      />`;
       code += `\n    </ErrorPageIcons>`;
     }
     
@@ -101,9 +103,17 @@ const ErrorPageDemo = () => {
       code += `\n    <ErrorPageDesc>\n      We apologize for the inconvenience. Something unexpected happened on our server.\n      Our technical team has been automatically notified and is investigating the issue.\n    </ErrorPageDesc>`;
       code += `\n    <ErrorPageErrorReference\n      errorReferenceId="${errorReferenceId}"\n      onCopy={handleCopyReferenceId}\n    />`;
       code += `\n    <ErrorPageLinks>`;
-      code += `\n      <ButtonWithIcon\n        variant="default"\n        size="lg"\n        icon={<RefreshCw/>}\n        iconPosition="left"\n        onClick={handleRetry}\n      >\n        Retry\n      </ButtonWithIcon>`;
-      code += `\n      <ButtonWithIcon\n        variant="default"\n        size="lg"\n        icon={<Bug/>}\n        iconPosition="left"\n        onClick={handleReportBug}\n      >\n        Report a Bug\n      </ButtonWithIcon>`;
-      code += `\n      <ButtonWithIcon\n        variant="default"\n        size="lg"\n        icon={<MessageCircle/>}\n        iconPosition="left"\n        onClick={handleContactSupport}\n      >\n        Contact Support\n      </ButtonWithIcon>`;
+      code += `\n      <ButtonWithIcon\n        variant="default"\n        size="lg"\n        icon={<RefreshCw/>}\n        iconPosition="left"\n      >\n        Retry\n      </ButtonWithIcon>`;
+      code += `\n      <ButtonWithIcon\n        variant="default"\n        size="lg"\n        icon={<Bug/>}\n        iconPosition="left"\n      >\n        Report a Bug\n      </ButtonWithIcon>`;
+      code += `\n      <ButtonWithIcon\n        variant="default"\n        size="lg"\n        icon={<MessageCircle/>}\n        iconPosition="left"\n      >\n        Contact Support\n      </ButtonWithIcon>`;
+      code += `\n    </ErrorPageLinks>`;
+    } else if (errorType === '403') {
+      code += `\n    <ErrorPageHeading>Access Restricted</ErrorPageHeading>`;
+      code += `\n    <ErrorPageDesc>\n      You don't have permission to access this resource. Please contact your administrator \n      if you believe this is an error.\n    </ErrorPageDesc>`;
+      code += `\n    <ErrorPageErrorReference\n      errorReferenceId="${errorReferenceId}"\n      onCopy={handleCopyReferenceId}\n    />`;
+      code += `\n    <ErrorPageLinks>`;
+      code += `\n      <ButtonWithIcon\n        variant="default"\n        size="lg"\n        icon={<ArrowLeft/>}\n        iconPosition="left"\n        onClick={() => window.history.back()}\n      >\n        Go back\n      </ButtonWithIcon>`;
+      code += `\n      <ButtonWithIcon\n        variant="outline"\n        size="lg"\n        icon={<MessageCircle/>}\n        iconPosition="left"\n      >\n        Request Access\n      </ButtonWithIcon>`;
       code += `\n    </ErrorPageLinks>`;
     } else {
       code += `\n    <ErrorPageHeading>Page Not Found</ErrorPageHeading>`;
@@ -121,7 +131,7 @@ const ErrorPageDemo = () => {
     
     code += `\n  </ErrorPageContent>`;
     code += `\n  <ErrorPageFooter>`;
-    code += `\n    ${errorType === '500' ? `ERROR 500 · SERVER ERROR · REF: ${errorReferenceId}` : 'ERROR 404 · PAGE NOT FOUND'}`;
+    code += `\n    ${errorType === '500' ? `ERROR 500 · SERVER ERROR · REF: ${errorReferenceId}` : errorType === '403' ? `ERROR 403 · ACCESS DENIED · REF: ${errorReferenceId}` : 'ERROR 404 · PAGE NOT FOUND'}`;
     code += `\n  </ErrorPageFooter>`;
     code += `\n</ErrorPage>`;
     
@@ -198,7 +208,7 @@ const ErrorPageDemo = () => {
           <div className="p-3">
             <ErrorPage
               variant={variant}
-              icon={Settings}
+              icon={errorType === '403' ? ShieldAlert : Settings}
               className="min-h-0"
               {...(showBackgroundImage && {
                 backgroundImage:
@@ -217,6 +227,13 @@ const ErrorPageDemo = () => {
                 <ErrorPageIllustration
                   position={illustrationPosition}
                   illustration="/ignix-ui/img/500-1.svg"
+                  className="w-90 h-90 mx-auto"
+                />
+              )}
+              {showIllustration && errorType === '403' && (
+                <ErrorPageIllustration
+                  position={illustrationPosition}
+                  illustration="/ignix-ui/img/403-1.svg"
                   className="w-90 h-90 mx-auto"
                 />
               )}
@@ -269,6 +286,37 @@ const ErrorPageDemo = () => {
                       </ButtonWithIcon>
                     </ErrorPageLinks>
                   </>
+                ) : errorType === '403' ? (
+                  <>
+                    <ErrorPageHeading>Access Restricted</ErrorPageHeading>
+                    <ErrorPageDesc>
+                      You don't have permission to access this resource. Please contact your administrator 
+                      if you believe this is an error.
+                    </ErrorPageDesc>
+                    <ErrorPageErrorReference
+                      errorReferenceId={errorReferenceId}
+                      onCopy={handleCopyReferenceId}
+                    />
+                    <ErrorPageLinks>
+                      <ButtonWithIcon
+                        variant="default"
+                        size="lg"
+                        icon={<ArrowLeft/>}
+                        iconPosition="left"
+                        onClick={() => window.history.back()}
+                      >
+                        Go back
+                      </ButtonWithIcon>
+                      <ButtonWithIcon
+                        variant="outline"
+                        size="lg"
+                        icon={<MessageCircle/>}
+                        iconPosition="left"
+                      >
+                        Request Access
+                      </ButtonWithIcon>
+                    </ErrorPageLinks>
+                  </>
                 ) : (
                   <>
                     
@@ -308,6 +356,8 @@ const ErrorPageDemo = () => {
               <ErrorPageFooter>
                 {errorType === '500' 
                   ? `ERROR 500 · SERVER ERROR · REF: ${errorReferenceId}`
+                  : errorType === '403'
+                  ? `ERROR 403 · ACCESS DENIED · REF: ${errorReferenceId}`
                   : 'ERROR 404 · PAGE NOT FOUND'
                 }
               </ErrorPageFooter>

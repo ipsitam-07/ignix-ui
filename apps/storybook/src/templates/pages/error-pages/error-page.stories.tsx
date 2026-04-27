@@ -16,6 +16,7 @@ import {
   Wrench,
   Rocket,
   Settings,
+  ShieldAlert,
 } from "lucide-react";
 
 const meta: Meta<typeof ErrorPage> = {
@@ -466,6 +467,42 @@ export const ErrorCodeAnimations: Story = {
   ),
 };
 
+/**
+ * Specialized Server variant for internal server errors.
+ */
+export const ServerVariant: Story = {
+  render: () => (
+    <ErrorPage variant="server">
+      <ErrorPageContent>
+        <ErrorPageErrorCode errorCode="500" animationType="glow" />
+        <ErrorPageHeading title="Internal Server Error" />
+        <ErrorPageDesc description="Something went wrong on our end. Please try again later." />
+        <ErrorPageLinks>
+          <ButtonWithIcon icon={<RefreshCw className="h-4 w-4" />} onClick={() => window.location.reload()}>Retry</ButtonWithIcon>
+        </ErrorPageLinks>
+      </ErrorPageContent>
+    </ErrorPage>
+  ),
+};
+
+/**
+ * Specialized Forbidden variant for restricted access errors.
+ */
+export const ForbiddenVariant: Story = {
+  render: () => (
+    <ErrorPage variant="forbidden" icon={ShieldAlert}>
+      <ErrorPageContent>
+        <ErrorPageErrorCode errorCode="403" animationType="glow" />
+        <ErrorPageHeading title="Access Denied" />
+        <ErrorPageDesc description="You don't have permission to access this resource." />
+        <ErrorPageLinks>
+          <ButtonWithIcon variant="outline" icon={<ArrowLeft className="h-4 w-4" />} onClick={() => window.history.back()}>Go Back</ButtonWithIcon>
+        </ErrorPageLinks>
+      </ErrorPageContent>
+    </ErrorPage>
+  ),
+};
+
 // ============================================================================
 // 500 SERVER ERROR PAGE STORIES
 // ============================================================================
@@ -741,6 +778,75 @@ export const WithBackgroundIcons: Story = {
         {/* Footer */}
         <ErrorPageFooter>
           ERROR 500 · SERVER ERROR · REF: {errorReferenceId}
+        </ErrorPageFooter>
+      </ErrorPage>
+    );
+  },
+};
+// ============================================================================
+// 403 FORBIDDEN PAGE STORIES
+// ============================================================================
+
+/**
+ * 403 Forbidden error page with ShieldAlert icon and restricted access design.
+ */
+export const Forbidden403: Story = {
+  name: "403 - Forbidden",
+  render: () => {
+    // Generate a mock error reference ID
+    const errorReferenceId = React.useMemo(() => {
+      return `SEC-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    }, []);
+
+    const handleCopyReferenceId = (referenceId: string) => {
+      alert(`Security Reference ID copied: ${referenceId}`);
+    };
+
+    return (
+      <ErrorPage variant="forbidden" icon={ShieldAlert}>
+        <ErrorPageContent>
+          <ErrorPageErrorCode 
+            errorCode="403" 
+            animationType="glow" 
+          />
+          <ErrorPageHeading>Access Restricted</ErrorPageHeading>
+          <ErrorPageDesc>
+            You don't have permission to access this area of the application. 
+            Access to this resource is restricted to authorized personnel only.
+          </ErrorPageDesc>
+          
+          {/* Error Reference ID */}
+          <ErrorPageErrorReference
+            errorReferenceId={errorReferenceId}
+            onCopy={handleCopyReferenceId}
+          />
+          
+          {/* Action Buttons */}
+          <ErrorPageLinks>
+            <ButtonWithIcon
+              variant="default"
+              size="lg"
+              icon={<ArrowLeft className="h-4 w-4" />}
+              iconPosition="left"
+              onClick={() => window.history.back()}
+            >
+              Go Back
+            </ButtonWithIcon>
+            <ButtonWithIcon
+              variant="outline"
+              size="lg"
+              icon={<MessageCircle className="h-4 w-4" />}
+              iconPosition="left"
+              className="border-amber-500/50 text-amber-500 hover:bg-amber-500/10"
+            >
+              Request Access
+            </ButtonWithIcon>
+          </ErrorPageLinks>
+        </ErrorPageContent>
+        
+        {/* Footer */}
+        <ErrorPageFooter>
+          SECURITY POLICY · ACCESS DENIED · REF: {errorReferenceId}
         </ErrorPageFooter>
       </ErrorPage>
     );

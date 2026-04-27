@@ -4,7 +4,7 @@
  * This test suite covers all functionality of the ErrorPage component including:
  * - Basic rendering and default behavior
  * - All sub-components (ErrorPageHead, ErrorPageErrorCode, ErrorPageHeading, ErrorPageDesc, ErrorPageIllustration, ErrorPageContent, ErrorPageSearch, ErrorPageFooter, ErrorPageLinks)
- * - Variant handling (default, minimal, gradient, dark, server)
+ * - Variant handling (default, minimal, gradient, dark, server, forbidden, forbidden-modern, forbidden-terminal)
  * - Background image support
  * - Dark variant text color changes
  * - Animation types for error code
@@ -338,6 +338,17 @@ describe('ErrorPage', () => {
       );
       expect(container.firstChild).toBeInTheDocument();
     });
+
+    it('should render with forbidden variant', () => {
+      const { container } = render(
+        <ErrorPage variant="forbidden">
+          <ErrorPageContent>
+            <ErrorPageErrorCode>403</ErrorPageErrorCode>
+          </ErrorPageContent>
+        </ErrorPage>
+      );
+      expect(container.firstChild).toBeInTheDocument();
+    });
   });
 
   // Test 6-7: Background image
@@ -641,6 +652,19 @@ describe('ErrorPage', () => {
       expect(errorCode?.className).toContain('drop-shadow');
     });
 
+    it('should apply amber glow text to ErrorPageErrorCode in forbidden variant', () => {
+      const { container } = render(
+        <ErrorPage variant="forbidden">
+          <ErrorPageContent>
+            <ErrorPageErrorCode errorCode="403" />
+          </ErrorPageContent>
+        </ErrorPage>
+      );
+      const errorCode = container.querySelector('h1');
+      expect(errorCode?.className).toContain('text-amber-500');
+      expect(errorCode?.className).toContain('drop-shadow');
+    });
+
     it('should apply white text to ErrorPageHeading in dark variant', () => {
       const { container } = render(
         <ErrorPage variant="dark">
@@ -665,6 +689,18 @@ describe('ErrorPage', () => {
       expect(heading?.className).toContain('text-white');
     });
 
+    it('should apply white text to ErrorPageHeading in forbidden variant', () => {
+      const { container } = render(
+        <ErrorPage variant="forbidden">
+          <ErrorPageContent>
+            <ErrorPageHeading title="Test" />
+          </ErrorPageContent>
+        </ErrorPage>
+      );
+      const heading = container.querySelector('h2');
+      expect(heading?.className).toContain('text-white');
+    });
+
     it('should apply white text to ErrorPageDesc in dark variant', () => {
       const { container } = render(
         <ErrorPage variant="dark">
@@ -680,6 +716,18 @@ describe('ErrorPage', () => {
     it('should apply white text to ErrorPageDesc in server variant', () => {
       const { container } = render(
         <ErrorPage variant="server">
+          <ErrorPageContent>
+            <ErrorPageDesc description="Test" />
+          </ErrorPageContent>
+        </ErrorPage>
+      );
+      const desc = container.querySelector('p');
+      expect(desc?.className).toContain('text-white');
+    });
+
+    it('should apply white text to ErrorPageDesc in forbidden variant', () => {
+      const { container } = render(
+        <ErrorPage variant="forbidden">
           <ErrorPageContent>
             <ErrorPageDesc description="Test" />
           </ErrorPageContent>

@@ -103,6 +103,7 @@ const containerVariants = cva("min-h-screen w-full flex items-center justify-cen
           gradient: "bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/10",
           dark: "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950",
           server: "bg-slate-950",
+          forbidden: "bg-zinc-950",
       },
     },
     defaultVariants: {
@@ -230,7 +231,7 @@ const renderIllustration = (
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ErrorPageContext = React.createContext<{ 
-  variant?: "default" | "minimal" | "gradient" | "dark" | "server";
+  variant?: "default" | "minimal" | "gradient" | "dark" | "server" | "forbidden";
   backgroundImage?: string;
 }>({
   variant: "default",
@@ -295,6 +296,7 @@ export const ErrorPage: React.FC<ErrorPageProps> = React.memo(({
   const isTopCenter = illustrationPosition === "topCenter";
   const isDark = variant === "dark";
   const isServer = variant === "server";
+  const isForbidden = variant === "forbidden";
 
   const backgroundStyle = React.useMemo(() => 
     backgroundImage ? {
@@ -345,10 +347,20 @@ export const ErrorPage: React.FC<ErrorPageProps> = React.memo(({
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-red-500/5 blur-[120px] rounded-full" />
           </div>
         )}
+
+        {/* Forbidden variant background */}
+        {isForbidden && (
+          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(245,158,11,0.1),transparent)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_60%,transparent_100%)]" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
+          </div>
+        )}
         
         {/* Animated icons throughout the page */}
         {Icon && iconInstances.map((instance, index) => {
-          const iconColorClass = iconColor ? iconColor : (backgroundImage  || isDark || isServer ? "text-white" : "");
+          const iconColorClass = iconColor ? iconColor : (backgroundImage  || isDark || isServer || isForbidden ? "text-white" : "");
           const opacityRange = iconColor ? [0.2, 0.5, 0.2] : [0.1, 0.3, 0.1];
           
           return (
@@ -479,6 +491,7 @@ export const ErrorPageErrorCode: React.FC<ErrorPageErrorCodeProps> = React.memo(
   const { variant, backgroundImage } = React.useContext(ErrorPageContext);
   const isDark = variant === "dark";
   const isServer = variant === "server";
+  const isForbidden = variant === "forbidden";
   const hasBackgroundImage = !!backgroundImage;
 
   const selectedAnimation = React.useMemo(() => 
@@ -493,8 +506,9 @@ export const ErrorPageErrorCode: React.FC<ErrorPageErrorCodeProps> = React.memo(
 
   const textColorClass = React.useMemo(() => {
     if (animationType === "glow" || isServer) return "text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]";
+    if (isForbidden) return "text-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.4)]";
     return isDark || hasBackgroundImage ? "text-white" : "text-primary";
-  }, [isDark, hasBackgroundImage, isServer, animationType]);
+  }, [isDark, hasBackgroundImage, isServer, isForbidden, animationType]);
 
   const illustrationContent = React.useMemo(() => 
     illustration ? renderIllustration(illustration) : null,
@@ -711,10 +725,11 @@ export const ErrorPageHeading: React.FC<ErrorPageHeadingProps> = React.memo(({
   const { variant, backgroundImage } = React.useContext(ErrorPageContext);
   const isDark = variant === "dark";
   const isServer = variant === "server";
+  const isForbidden = variant === "forbidden";
   const hasBackgroundImage = !!backgroundImage;
   const textColorClass = React.useMemo(() => 
-    isDark || isServer || hasBackgroundImage ? "text-white" : "text-primary",
-    [isDark, isServer, hasBackgroundImage]
+    isDark || isServer || isForbidden || hasBackgroundImage ? "text-white" : "text-primary",
+    [isDark, isServer, isForbidden, hasBackgroundImage]
   );
 
   if (children) {
@@ -754,10 +769,11 @@ export const ErrorPageDesc: React.FC<ErrorPageDescProps> = React.memo(({
   const { variant, backgroundImage } = React.useContext(ErrorPageContext);
   const isDark = variant === "dark";
   const isServer = variant === "server";
+  const isForbidden = variant === "forbidden";
   const hasBackgroundImage = !!backgroundImage;
   const textColorClass = React.useMemo(() => 
-    isDark || isServer || hasBackgroundImage ? "text-white/80" : "text-muted-foreground",
-    [isDark, isServer, hasBackgroundImage]
+    isDark || isServer || isForbidden || hasBackgroundImage ? "text-white/80" : "text-muted-foreground",
+    [isDark, isServer, isForbidden, hasBackgroundImage]
   );
 
   if (children) {
