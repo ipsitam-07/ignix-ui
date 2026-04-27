@@ -169,7 +169,9 @@ export class RegistryService {
     const registry = await this.fetchRegistry();
 
     return Object.values(registry.components).find(
-      (c) => c.name.toLowerCase() === name.toLowerCase()
+      (c) =>
+        c.name.toLowerCase() === name.toLowerCase() ||
+        (c.id && c.id.toLowerCase() === name.toLowerCase())
     );
   }
 

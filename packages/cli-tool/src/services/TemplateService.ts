@@ -78,11 +78,18 @@ export class TemplateService {
       const templateDir = path.resolve(templateLayoutDir, name.toLowerCase());
       await fs.ensureDir(templateDir);
 
-      const baseUrl = config.registryUrl.replace('/registry.json', '');
+      const baseUrl = config.registryUrl?.replace('/registry.json', '') || '';
+      if (!baseUrl) {
+        throw new Error('Registry URL not found in config. Please check your `ignix.config.js`.');
+      }
       logger.info(`[Template] Base URL: ${baseUrl}`);
 
       for (const fileKey in templateConfig.files) {
         const fileInfo = templateConfig.files[fileKey];
+        if (!fileInfo || !fileInfo.path) {
+          logger.warn(`[Template] Missing file info for ${fileKey} in template ${name}`);
+          continue;
+        }
 
         const fileUrl = new URL(fileInfo.path, baseUrl + '/').toString();
         logger.info(`[Template] Downloading: ${fileUrl}`);

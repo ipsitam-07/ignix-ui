@@ -53,6 +53,9 @@ export const addCommand = new Command()
             componentService.setSilent(true);
           }
           const templateService = new TemplateService();
+          if (ctx.isJson) {
+            templateService.setSilent(true);
+          }
           logger.info('Adding components...');
           const availableComponents = await registryService.getAvailableComponents();
 
@@ -272,8 +275,7 @@ export const addCommand = new Command()
           //   templateMap.set(t.id.toLowerCase(), t.id.toLowerCase());
           // }
           for (const t of availableTemplates) {
-            if (!t.id) continue;
-            const id = t.id.toLowerCase();
+            const id = (t.id || t.name).toLowerCase();
             templateMap.set(id, id);
           }
 
@@ -290,12 +292,10 @@ export const addCommand = new Command()
               //   title: c.name,
               //   value: c.id.toLowerCase(),
               // })),
-              choices: availableTemplates
-                .filter((c) => c.id)
-                .map((c) => ({
-                  title: c.name,
-                  value: c.id!.toLowerCase(),
-                })),
+              choices: availableTemplates.map((c) => ({
+                title: c.name,
+                value: (c.id || c.name).toLowerCase(),
+              })),
             });
 
             identifiers = installResponse.template ? [installResponse.template] : [];

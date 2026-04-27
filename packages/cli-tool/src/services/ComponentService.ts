@@ -67,7 +67,8 @@ export class ComponentService {
       spinner.text = `Getting component files for ${name}...`;
       const registryBaseUrl = config.registryUrl.substring(0, config.registryUrl.lastIndexOf('/'));
       const installedFiles: string[] = [];
-      const componentsDir = path.resolve(config.componentsDir);
+
+      const componentsDir = path.resolve(config.componentsDir || 'src/components/ui');
       const componentDir = path.join(componentsDir, name.toLowerCase());
 
       // Create component directory
@@ -76,7 +77,13 @@ export class ComponentService {
       // Fetch and write each file
       for (const fileKey in componentConfig.files) {
         const fileInfo = componentConfig.files[fileKey];
+        if (!fileInfo || !fileInfo.path) {
+          logger.warn(`[Component] Missing file info for ${fileKey} in component ${name}`);
+          continue;
+        }
+
         const fileUrl = `${registryBaseUrl}/${fileInfo.path}`;
+        logger.info(`[Component] Downloading: ${fileUrl}`);
 
         const { data: content } = await axios.get(fileUrl, { responseType: 'text' });
 
@@ -86,6 +93,7 @@ export class ComponentService {
 
         await fs.writeFile(filePath, content);
         installedFiles.push(filePath);
+        logger.info(`[Component] Saved: ${filePath}`);
       }
 
       if (!this.silent) {
@@ -96,7 +104,10 @@ export class ComponentService {
       if (!this.silent) {
         spinner.fail(`Failed to install component: ${name}.`);
         if (error instanceof Error) {
-          logger.error(error.message);
+          logger.error(`[Component] Error: ${error.message}`);
+          if (process.env.DEBUG === 'true') {
+            logger.error(`[Component] Stack: ${error.stack}`);
+          }
         }
       }
 
