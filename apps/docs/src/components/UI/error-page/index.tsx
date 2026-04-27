@@ -102,6 +102,7 @@ const containerVariants = cva("min-h-screen w-full flex items-center justify-cen
           minimal: "bg-background",
           gradient: "bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/10",
           dark: "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950",
+          server: "bg-slate-950",
       },
     },
     defaultVariants: {
@@ -229,7 +230,7 @@ const renderIllustration = (
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ErrorPageContext = React.createContext<{ 
-  variant?: "default" | "minimal" | "gradient" | "dark";
+  variant?: "default" | "minimal" | "gradient" | "dark" | "server";
   backgroundImage?: string;
 }>({
   variant: "default",
@@ -293,6 +294,7 @@ export const ErrorPage: React.FC<ErrorPageProps> = React.memo(({
   const isRight = illustrationPosition === "right";
   const isTopCenter = illustrationPosition === "topCenter";
   const isDark = variant === "dark";
+  const isServer = variant === "server";
 
   const backgroundStyle = React.useMemo(() => 
     backgroundImage ? {
@@ -335,9 +337,18 @@ export const ErrorPage: React.FC<ErrorPageProps> = React.memo(({
         {/* Background overlay for better text readability when background image is present */}
         {backgroundImage && (<div className="relative inset-0 bg-black/40 backdrop-blur-sm z-0" />)}
         
+        {/* Server variant grid background */}
+        {isServer && (
+          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-red-500/10 via-transparent to-transparent" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-red-500/5 blur-[120px] rounded-full" />
+          </div>
+        )}
+        
         {/* Animated icons throughout the page */}
         {Icon && iconInstances.map((instance, index) => {
-          const iconColorClass = iconColor ? iconColor : (backgroundImage  || isDark ? "text-white" : "");
+          const iconColorClass = iconColor ? iconColor : (backgroundImage  || isDark || isServer ? "text-white" : "");
           const opacityRange = iconColor ? [0.2, 0.5, 0.2] : [0.1, 0.3, 0.1];
           
           return (
@@ -467,6 +478,7 @@ export const ErrorPageErrorCode: React.FC<ErrorPageErrorCodeProps> = React.memo(
 }) => {
   const { variant, backgroundImage } = React.useContext(ErrorPageContext);
   const isDark = variant === "dark";
+  const isServer = variant === "server";
   const hasBackgroundImage = !!backgroundImage;
 
   const selectedAnimation = React.useMemo(() => 
@@ -479,10 +491,10 @@ export const ErrorPageErrorCode: React.FC<ErrorPageErrorCodeProps> = React.memo(
     [errorCode, children]
   );
 
-  const textColorClass = React.useMemo(() => 
-    isDark || hasBackgroundImage ? "text-white" : "text-primary",
-    [isDark, hasBackgroundImage]
-  );
+  const textColorClass = React.useMemo(() => {
+    if (animationType === "glow" || isServer) return "text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]";
+    return isDark || hasBackgroundImage ? "text-white" : "text-primary";
+  }, [isDark, hasBackgroundImage, isServer, animationType]);
 
   const illustrationContent = React.useMemo(() => 
     illustration ? renderIllustration(illustration) : null,
@@ -698,10 +710,11 @@ export const ErrorPageHeading: React.FC<ErrorPageHeadingProps> = React.memo(({
 }) => {
   const { variant, backgroundImage } = React.useContext(ErrorPageContext);
   const isDark = variant === "dark";
+  const isServer = variant === "server";
   const hasBackgroundImage = !!backgroundImage;
   const textColorClass = React.useMemo(() => 
-    isDark || hasBackgroundImage ? "text-white" : "text-primary",
-    [isDark, hasBackgroundImage]
+    isDark || isServer || hasBackgroundImage ? "text-white" : "text-primary",
+    [isDark, isServer, hasBackgroundImage]
   );
 
   if (children) {
@@ -740,10 +753,11 @@ export const ErrorPageDesc: React.FC<ErrorPageDescProps> = React.memo(({
 }) => {
   const { variant, backgroundImage } = React.useContext(ErrorPageContext);
   const isDark = variant === "dark";
+  const isServer = variant === "server";
   const hasBackgroundImage = !!backgroundImage;
   const textColorClass = React.useMemo(() => 
-    isDark || hasBackgroundImage ? "text-white" : "text-muted-foreground",
-    [isDark, hasBackgroundImage]
+    isDark || isServer || hasBackgroundImage ? "text-white/80" : "text-muted-foreground",
+    [isDark, isServer, hasBackgroundImage]
   );
 
   if (children) {
@@ -891,7 +905,7 @@ export const ErrorPageFooter: React.FC<ErrorPageClassProps> = React.memo(({
   children,
   className,
 }) => {
-  const { backgroundImage } = React.useContext(ErrorPageContext);
+  const { variant, backgroundImage } = React.useContext(ErrorPageContext);
   
   if (!children) return null;
 
@@ -900,7 +914,7 @@ export const ErrorPageFooter: React.FC<ErrorPageClassProps> = React.memo(({
       variants={itemAnimation} 
       className={cn(
         "text-sm pt-8 border-t border-border text-center",
-        backgroundImage ? "text-white border-white/20" : "text-slate-500",
+        backgroundImage || variant === "server" ? "text-white border-white/20" : "text-slate-500",
         className
       )}
     >
@@ -955,6 +969,7 @@ export const ErrorPageErrorReference: React.FC<ErrorPageErrorReferenceProps> = R
 }) => {
   const { variant, backgroundImage } = React.useContext(ErrorPageContext);
   const isDark = variant === "dark";
+  const isServer = variant === "server";
   const hasBackgroundImage = !!backgroundImage;
 
   const handleCopy = React.useCallback(() => {
@@ -984,31 +999,31 @@ export const ErrorPageErrorReference: React.FC<ErrorPageErrorReferenceProps> = R
   if (!errorReferenceId) return null;
 
   const containerBgClass = React.useMemo(() => 
-    isDark || hasBackgroundImage 
+    isDark || isServer || hasBackgroundImage 
       ? "bg-slate-800/90 border-slate-700" 
       : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700",
-    [isDark, hasBackgroundImage]
+    [isDark, isServer, hasBackgroundImage]
   );
 
   const labelTextClass = React.useMemo(() => 
-    isDark || hasBackgroundImage 
+    isDark || isServer || hasBackgroundImage 
       ? "text-slate-300" 
       : "text-slate-600 dark:text-slate-400",
-    [isDark, hasBackgroundImage]
+    [isDark, isServer, hasBackgroundImage]
   );
 
   const idTextClass = React.useMemo(() => 
-    isDark || hasBackgroundImage 
+    isDark || isServer || hasBackgroundImage 
       ? "text-white" 
       : "text-slate-900 dark:text-slate-100",
-    [isDark, hasBackgroundImage]
+    [isDark, isServer, hasBackgroundImage]
   );
 
   const helperTextClass = React.useMemo(() => 
-    isDark || hasBackgroundImage 
+    isDark || isServer || hasBackgroundImage 
       ? "text-slate-400" 
       : "text-slate-500 dark:text-slate-500",
-    [isDark, hasBackgroundImage]
+    [isDark, isServer, hasBackgroundImage]
   );
 
   return (

@@ -4,7 +4,7 @@
  * This test suite covers all functionality of the ErrorPage component including:
  * - Basic rendering and default behavior
  * - All sub-components (ErrorPageHead, ErrorPageErrorCode, ErrorPageHeading, ErrorPageDesc, ErrorPageIllustration, ErrorPageContent, ErrorPageSearch, ErrorPageFooter, ErrorPageLinks)
- * - Variant handling (default, minimal, gradient, dark)
+ * - Variant handling (default, minimal, gradient, dark, server)
  * - Background image support
  * - Dark variant text color changes
  * - Animation types for error code
@@ -327,6 +327,17 @@ describe('ErrorPage', () => {
       );
       expect(container.firstChild).toBeInTheDocument();
     });
+
+    it('should render with server variant', () => {
+      const { container } = render(
+        <ErrorPage variant="server">
+          <ErrorPageContent>
+            <ErrorPageErrorCode>500</ErrorPageErrorCode>
+          </ErrorPageContent>
+        </ErrorPage>
+      );
+      expect(container.firstChild).toBeInTheDocument();
+    });
   });
 
   // Test 6-7: Background image
@@ -603,8 +614,8 @@ describe('ErrorPage', () => {
     });
   });
 
-  // Test 29-33: Dark variant text colors
-  describe('Dark Variant Text Colors', () => {
+  // Test 29-35: Dark/Server Variant Text Colors
+  describe('Dark/Server Variant Text Colors', () => {
     it('should apply white text to ErrorPageErrorCode in dark variant', () => {
       const { container } = render(
         <ErrorPage variant="dark">
@@ -615,6 +626,19 @@ describe('ErrorPage', () => {
       );
       const errorCode = container.querySelector('h1');
       expect(errorCode?.className).toContain('text-white');
+    });
+
+    it('should apply red glow text to ErrorPageErrorCode in server variant', () => {
+      const { container } = render(
+        <ErrorPage variant="server">
+          <ErrorPageContent>
+            <ErrorPageErrorCode errorCode="500" />
+          </ErrorPageContent>
+        </ErrorPage>
+      );
+      const errorCode = container.querySelector('h1');
+      expect(errorCode?.className).toContain('text-red-500');
+      expect(errorCode?.className).toContain('drop-shadow');
     });
 
     it('should apply white text to ErrorPageHeading in dark variant', () => {
@@ -629,9 +653,33 @@ describe('ErrorPage', () => {
       expect(heading?.className).toContain('text-white');
     });
 
+    it('should apply white text to ErrorPageHeading in server variant', () => {
+      const { container } = render(
+        <ErrorPage variant="server">
+          <ErrorPageContent>
+            <ErrorPageHeading title="Test" />
+          </ErrorPageContent>
+        </ErrorPage>
+      );
+      const heading = container.querySelector('h2');
+      expect(heading?.className).toContain('text-white');
+    });
+
     it('should apply white text to ErrorPageDesc in dark variant', () => {
       const { container } = render(
         <ErrorPage variant="dark">
+          <ErrorPageContent>
+            <ErrorPageDesc description="Test" />
+          </ErrorPageContent>
+        </ErrorPage>
+      );
+      const desc = container.querySelector('p');
+      expect(desc?.className).toContain('text-white');
+    });
+
+    it('should apply white text to ErrorPageDesc in server variant', () => {
+      const { container } = render(
+        <ErrorPage variant="server">
           <ErrorPageContent>
             <ErrorPageDesc description="Test" />
           </ErrorPageContent>

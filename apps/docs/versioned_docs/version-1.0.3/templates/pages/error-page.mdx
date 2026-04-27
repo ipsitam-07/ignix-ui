@@ -1288,90 +1288,28 @@ function NotFoundPage() {
 
 ## 500 Server Error Example
 
-Here's a complete example for a 500 server error page with animated icons and error reference tracking:
+The `server` variant provides a specialized theme for 500 errors, featuring a dark background with a grid pattern and red glow effects.
 
 ```tsx
-import {
-  ErrorPage,
-  ErrorPageContent,
-  ErrorPageErrorCode,
-  ErrorPageHeading,
-  ErrorPageDesc,
-  ErrorPageLinks,
-  ErrorPageFooter,
-  ErrorPageIcons,
-  ErrorPageErrorReference,
-} from '@ignix-ui/errorpage';
-import { ButtonWithIcon } from '@ignix-ui/buttonwithicon';
-import { RefreshCw, Bug, MessageCircle, AlertTriangle, Wrench, Zap, Rocket } from 'lucide-react';
-
 function ServerErrorPage() {
-  // Generate error reference ID
-  const errorReferenceId = `ERR-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-
-  const handleRetry = () => {
-    // write your code here
-  };
-
-  const handleReportBug = () => {
-    // write your code here
-  };
-
-  const handleContactSupport = () => {
-    // write your code here
-  };
-
-  const handleCopyReferenceId = (referenceId: string) => {
-    // write your code here
-  };
+  const errorReferenceId = "ERR-X92J-L10";
 
   return (
-    <ErrorPage variant="dark">
+    <ErrorPage variant="server" icon={Server}>
       <ErrorPageContent>
-        <ErrorPageIcons
-          icons={[AlertTriangle,Wrench,Zap,Rocket]}>
-          <ErrorPageErrorCode 
-            errorCode="500" 
-            animationType="rotate" 
-          />
+        <ErrorPageIcons icons={[AlertTriangle, Wrench, Activity, ShieldAlert]}>
+          <ErrorPageErrorCode errorCode="500" animationType="glow" />
         </ErrorPageIcons>
-        <ErrorPageHeading>Server Error</ErrorPageHeading>
+        <ErrorPageHeading>Internal Server Error</ErrorPageHeading>
         <ErrorPageDesc>
-          We apologize for the inconvenience. Something unexpected happened on our server. 
-          Our technical team has been automatically notified and is investigating the issue.
+          Something went wrong on our end. Our technical team is investigating.
         </ErrorPageDesc>
-        <ErrorPageErrorReference
-          errorReferenceId={errorReferenceId}
-          onCopy={handleCopyReferenceId}
-        />
+        <ErrorPageErrorReference errorReferenceId={errorReferenceId} />
         <ErrorPageLinks>
-          <ButtonWithIcon
-            variant="default"
-            size="lg"
-            icon={<RefreshCw />}
-            iconPosition="left"
-            onClick={handleRetry}
-          >
+          <ButtonWithIcon variant="primary" icon={<RefreshCw />}>
             Retry
           </ButtonWithIcon>
-          <ButtonWithIcon
-            variant="default"
-            size="lg"
-            icon={<Bug />}
-            iconPosition="left"
-            onClick={handleReportBug}
-          >
-            Report a Bug
-          </ButtonWithIcon>
-          <ButtonWithIcon
-            variant="default"
-            size="lg"
-            icon={<MessageCircle />}
-            iconPosition="left"
-            onClick={handleContactSupport}
-          >
-            Contact Support
-          </ButtonWithIcon>
+          <Button variant="outline">Contact Support</Button>
         </ErrorPageLinks>
       </ErrorPageContent>
       <ErrorPageFooter>
@@ -1390,7 +1328,7 @@ The main container component that wraps all error page content.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `variant` | `"default" \| "minimal" \| "gradient" \| "dark"` | `"default"` | Visual variant of the error page |
+| `variant` | `"default" \| "minimal" \| "gradient" \| "dark" \| "server"` | `"default"` | Visual variant of the error page |
 | `backgroundImage` | `string` | - | URL for background image |
 | `icon` | `LucideIcon` | - | Icon to display throughout the page with continuous motion |
 | `iconColor` | `string` | - | Custom color class for the icon (e.g., "text-blue-500", "text-white"). Defaults to white when backgroundImage is present |
