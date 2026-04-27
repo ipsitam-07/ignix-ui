@@ -6,7 +6,7 @@ import { Button } from "../button";
 import { Typography } from "../typography";
 import { PlusIcon, QuestionMarkCircledIcon, UploadIcon, FileTextIcon } from "@radix-ui/react-icons";
 
-// Interfaces 
+// Interfaces
 
 export interface EmptyStateProps
     extends Omit<HTMLMotionProps<"div">, "ref">,
@@ -61,29 +61,31 @@ const emptyStateVariants = cva(
         variants: {
             variant: {
                 default:
-                    "bg-white/80 dark:bg-background/40 backdrop-blur-xl border-white/50 dark:border-border/60 " +
+                    "bg-background/80 backdrop-blur-xl border-border/50 " +
                     "shadow-[0_15px_35px_rgba(0,0,0,0.03),0_5px_15px_rgba(0,0,0,0.02)] " +
                     "dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] " +
                     "before:absolute before:inset-0 before:rounded-[inherit] " +
                     "before:bg-[radial-gradient(circle_at_50%_0%,hsl(var(--primary)/0.06),transparent_70%)] " +
                     "before:pointer-events-none",
+
                 card:
-                    "bg-white dark:bg-card/95 dark:bg-gradient-to-br dark:from-card/90 dark:via-card/50 dark:to-card/30 " +
-                    "backdrop-blur-2xl border-slate-200 dark:border-white/10 " +
+                    "bg-card backdrop-blur-2xl border-border/40 " +
                     "shadow-[0_20px_50px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] " +
                     "dark:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.5)] " +
-                    "dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] " +
                     "before:absolute before:inset-0 before:rounded-[inherit] " +
                     "before:bg-[conic-gradient(from_0deg_at_50%_0%,transparent,hsl(var(--primary)/0.02),transparent)] " +
                     "before:animate-spin-slow before:pointer-events-none",
+
                 minimal:
-                    "bg-slate-50/50 dark:bg-muted/10 border border-dashed border-slate-300 dark:border-border/50 min-h-[360px] " +
-                    "hover:bg-slate-50 dark:hover:bg-muted/15 hover:border-solid hover:border-primary/40 " +
-                    "hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 ease-in-out group/minimal",
+                    "bg-white dark:bg-white/5 dark:backdrop-blur-md shadow-2xl shadow-black/[0.03] dark:shadow-black/20 " +
+                    "border-2 border-dashed border-border dark:border-white/15 min-h-[360px] " +
+                    "hover:bg-slate-50 dark:hover:bg-white/10 hover:border-solid hover:border-primary/50 dark:hover:border-primary/40 " +
+                    "hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 ease-in-out",
+
                 gradient:
-                    "bg-gradient-to-tr from-primary/[0.04] via-white to-primary/[0.02] " +
-                    "dark:from-primary/[0.12] dark:to-primary/[0.05] dark:via-background " +
-                    "border-primary/10 dark:border-primary/20 shadow-sm dark:shadow-[0_20px_40px_-12px_rgba(var(--primary),0.1)]",
+                    "bg-gradient-to-tr from-[hsl(var(--primary)/0.04)] via-background to-[hsl(var(--primary)/0.02)] " +
+                    "dark:from-[hsl(var(--primary)/0.12)] dark:to-[hsl(var(--primary)/0.05)] dark:via-background " +
+                    "border-primary/10 dark:border-primary/20 shadow-sm",
             },
         },
         defaultVariants: { variant: "default" },
@@ -193,17 +195,19 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
                     {...props}
                 >
                     {/* Noise Texture Overlay */}
-                    <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-overlay"
+                    <div
+                        className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-overlay"
                         style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
                     />
 
-                    {/* Sophisticated light beam effect */}
+                    {/* Light beam — uses primary/10 which now resolves correctly */}
                     <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[inherit]">
                         <div className="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[1px] h-[140%] bg-gradient-to-b from-transparent via-primary/10 dark:via-primary/20 to-transparent blur-[60px]" />
+                        {/* FIX: Replaced bg-primary/5 dark:bg-primary/10 — now resolves because --primary is HSL */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-primary/5 dark:bg-primary/10 blur-[80px] rounded-full" />
                     </div>
 
-                    {/* Background pattern */}
+                    {/* Background dot pattern — uses currentColor from foreground */}
                     <div
                         aria-hidden
                         className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
@@ -212,17 +216,6 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
                             backgroundSize: "44px 44px",
                         }}
                     />
-
-                    {/* Corner accents for minimal variant */}
-                    {variant === 'minimal' && (
-                        <div className="absolute inset-0 pointer-events-none">
-                            <div className="absolute top-6 left-6 w-8 h-8 border-t border-l border-primary/30 dark:border-primary/20 rounded-tl-xl group-hover/card:border-primary/50 transition-colors duration-500" />
-                            <div className="absolute top-6 right-6 w-8 h-8 border-t border-r border-primary/30 dark:border-primary/20 rounded-tr-xl group-hover/card:border-primary/50 transition-colors duration-500" />
-                            <div className="absolute bottom-6 left-6 w-8 h-8 border-b border-l border-primary/30 dark:border-primary/20 rounded-bl-xl group-hover/card:border-primary/50 transition-colors duration-500" />
-                            <div className="absolute bottom-6 right-6 w-8 h-8 border-b border-r border-primary/30 dark:border-primary/20 rounded-br-xl group-hover/card:border-primary/50 transition-colors duration-500" />
-                            <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-primary/5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-700" />
-                        </div>
-                    )}
 
                     <div className="relative z-10 flex flex-col items-center max-w-sm w-full">
                         {children}
@@ -234,33 +227,33 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
 );
 EmptyState.displayName = "EmptyState";
 
-// Illustration / Icon 
+//  Illustration / Icon
 
 const accentTokens = {
     primary: {
-        ring: "border-primary/20 dark:border-primary/40 shadow-[inset_0_0_12px_hsl(var(--primary)/0.05)] dark:shadow-[inset_0_0_12px_hsl(var(--primary)/0.15)]",
+        ring: "border-primary/20 dark:border-primary/40",
         ringInner: "border-primary/10 dark:border-primary/25",
-        dot: "bg-primary shadow-[0_0_10px_hsl(var(--primary))] dark:shadow-[0_0_15px_hsl(var(--primary)),0_0_30px_hsl(var(--primary))]",
-        core: "bg-white dark:bg-primary/10 border-primary/10 dark:border-primary/30 backdrop-blur-md shadow-sm",
-        float: "drop-shadow-[0_8px_16px_hsl(var(--primary)/0.15)] dark:drop-shadow-[0_0_25px_hsl(var(--primary)/0.6)]",
+        dot: "bg-primary shadow-primary/50 shadow-md",
+        core: "bg-background dark:bg-primary/10 border-primary/10 dark:border-primary/30 backdrop-blur-md shadow-sm",
+        float: "drop-shadow-md",
         iconColor: "text-primary",
         glow: "bg-primary/10 dark:bg-primary/25 blur-[40px]",
     },
     teal: {
-        ring: "border-teal-500/20 dark:border-teal-500/40 shadow-[inset_0_0_12px_theme(colors.teal.500/0.05)] dark:shadow-[inset_0_0_12px_theme(colors.teal.500/0.15)]",
+        ring: "border-teal-500/20 dark:border-teal-500/40",
         ringInner: "border-teal-500/10 dark:border-teal-500/25",
-        dot: "bg-teal-500 shadow-[0_0_10px_theme(colors.teal.500)] dark:shadow-[0_0_15px_theme(colors.teal.500),0_0_30px_theme(colors.teal.500)]",
-        core: "bg-white dark:bg-teal-500/10 border-teal-500/10 dark:border-teal-500/30 backdrop-blur-md shadow-sm",
-        float: "drop-shadow-[0_8px_16px_theme(colors.teal.500/0.15)] dark:drop-shadow-[0_0_25px_theme(colors.teal.500/0.6)]",
+        dot: "bg-teal-500 shadow-teal-500/50 shadow-md",
+        core: "bg-background dark:bg-teal-950 border-teal-500/10 dark:border-teal-500/30 backdrop-blur-md shadow-sm",
+        float: "drop-shadow-md",
         iconColor: "text-teal-600 dark:text-teal-400",
         glow: "bg-teal-500/10 dark:bg-teal-500/25 blur-[40px]",
     },
     amber: {
-        ring: "border-amber-500/20 dark:border-amber-500/40 shadow-[inset_0_0_12px_theme(colors.amber.500/0.05)] dark:shadow-[inset_0_0_12px_theme(colors.amber.500/0.15)]",
+        ring: "border-amber-500/20 dark:border-amber-500/40",
         ringInner: "border-amber-500/10 dark:border-amber-500/25",
-        dot: "bg-amber-500 shadow-[0_0_10px_theme(colors.amber.500)] dark:shadow-[0_0_15px_theme(colors.amber.500),0_0_30px_theme(colors.amber.500)]",
-        core: "bg-white dark:bg-amber-500/10 border-amber-500/10 dark:border-amber-500/30 backdrop-blur-md shadow-sm",
-        float: "drop-shadow-[0_8px_16px_theme(colors.amber.500/0.15)] dark:drop-shadow-[0_0_25px_theme(colors.amber.500/0.6)]",
+        dot: "bg-amber-500 shadow-amber-500/50 shadow-md",
+        core: "bg-background dark:bg-amber-950 border-amber-500/10 dark:border-amber-500/30 backdrop-blur-md shadow-sm",
+        float: "drop-shadow-md",
         iconColor: "text-amber-600 dark:text-amber-400",
         glow: "bg-amber-500/10 dark:bg-amber-500/25 blur-[40px]",
     },
@@ -286,7 +279,6 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                     )
                 ) : (
                     <div className="relative w-[120px] h-[120px]" style={{ transformStyle: "preserve-3d" }}>
-                        {/* Central light source */}
                         <div className={cn("absolute inset-0 rounded-full opacity-30", tk.glow)} aria-hidden />
 
                         {/* Floating particles */}
@@ -315,7 +307,7 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                             ))}
                         </div>
 
-                        {/* Outer spinning ring with orbiters */}
+                        {/* Outer spinning ring */}
                         <motion.div
                             aria-hidden
                             className={cn("absolute inset-0 rounded-full border-2", tk.ring)}
@@ -326,7 +318,7 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                             <div className={cn("absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full opacity-50", tk.dot)} />
                         </motion.div>
 
-                        {/* Middle ring with dash effect */}
+                        {/* Middle dashed ring */}
                         <motion.div
                             aria-hidden
                             className={cn("absolute inset-[10px] rounded-full border border-dashed opacity-40", tk.ringInner)}
@@ -337,12 +329,12 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                         {/* Inner counter-rotating ring */}
                         <motion.div
                             aria-hidden
-                            className={cn("absolute inset-[20px] rounded-full border border-primary/10", tk.ringInner)}
+                            className={cn("absolute inset-[20px] rounded-full border", tk.ringInner)}
                             animate={{ rotate: 360 }}
                             transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                         />
 
-                        {/* Icon core — advanced floating */}
+                        {/* Icon core */}
                         <motion.div
                             className={cn(
                                 "absolute inset-[28px] rounded-full border flex items-center justify-center shadow-2xl",
@@ -362,8 +354,6 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                             ) : (
                                 <FileTextIcon width={iconSize + 4} height={iconSize + 4} className="text-muted-foreground/60" />
                             )}
-
-                            {/* Inner core glow */}
                             <div className="absolute inset-0 rounded-full bg-primary/5 blur-lg -z-10 animate-pulse" />
                         </motion.div>
                     </div>
@@ -382,7 +372,8 @@ const EmptyStateBadge = React.forwardRef<HTMLDivElement, EmptyStateBadgeProps>(
             className={cn(
                 "mb-6 inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border",
                 "text-[10px] font-bold tracking-[0.1em] uppercase",
-                "bg-primary/10 dark:bg-primary/15 border-primary/20 dark:border-primary/20 text-primary shadow-sm dark:shadow-lg dark:shadow-primary/10 backdrop-blur-md",
+                "bg-primary/10 dark:bg-primary/15 border-primary/20 dark:border-primary/20 text-primary",
+                "shadow-sm backdrop-blur-md",
                 className
             )}
             {...props}
@@ -390,7 +381,7 @@ const EmptyStateBadge = React.forwardRef<HTMLDivElement, EmptyStateBadgeProps>(
             {dot && (
                 <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary shadow-[0_0_8px_hsl(var(--primary))]"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                 </span>
             )}
             {label}
@@ -398,7 +389,6 @@ const EmptyStateBadge = React.forwardRef<HTMLDivElement, EmptyStateBadgeProps>(
     )
 );
 EmptyStateBadge.displayName = "EmptyStateBadge";
-
 
 const EmptyStateHeading = React.forwardRef<HTMLHeadingElement, EmptyStateHeadingProps>(
     ({ className, title, children, variant = "h3", ...props }, ref) => (
@@ -419,8 +409,6 @@ const EmptyStateHeading = React.forwardRef<HTMLHeadingElement, EmptyStateHeading
 );
 EmptyStateHeading.displayName = "EmptyStateHeading";
 
-//  Description 
-
 const EmptyStateDesc = React.forwardRef<HTMLParagraphElement, EmptyStateDescProps>(
     ({ className, description, children, color = "muted", ...props }, ref) => (
         <motion.div variants={itemVariants} className="w-full">
@@ -429,7 +417,7 @@ const EmptyStateDesc = React.forwardRef<HTMLParagraphElement, EmptyStateDescProp
                 variant="body"
                 color={color}
                 className={cn(
-                    "mb-10 max-w-[360px] mx-auto text-slate-500 dark:text-slate-400 text-lg leading-relaxed text-balance font-medium",
+                    "mb-10 max-w-[360px] mx-auto text-muted-foreground text-lg leading-relaxed text-balance font-medium",
                     className
                 )}
                 {...props}
@@ -440,8 +428,6 @@ const EmptyStateDesc = React.forwardRef<HTMLParagraphElement, EmptyStateDescProp
     )
 );
 EmptyStateDesc.displayName = "EmptyStateDesc";
-
-//  Actions 
 
 const EmptyStateActions = React.forwardRef<HTMLDivElement, EmptyStateActionsProps>(
     ({ className, children, ...props }, ref) => (
@@ -456,8 +442,6 @@ const EmptyStateActions = React.forwardRef<HTMLDivElement, EmptyStateActionsProp
     )
 );
 EmptyStateActions.displayName = "EmptyStateActions";
-
-//  Help 
 
 const EmptyStateHelp = React.forwardRef<HTMLDivElement, EmptyStateHelpProps>(
     (
@@ -474,7 +458,7 @@ const EmptyStateHelp = React.forwardRef<HTMLDivElement, EmptyStateHelpProps>(
             ref={ref}
             variants={itemVariants}
             className={cn(
-                "mt-8 pt-5 border-t border-border/80 dark:border-border/60 w-full flex items-center justify-center text-sm",
+                "mt-8 pt-5 border-t border-border w-full flex items-center justify-center text-sm",
                 className
             )}
             {...props}
@@ -494,7 +478,7 @@ const EmptyStateHelp = React.forwardRef<HTMLDivElement, EmptyStateHelpProps>(
 );
 EmptyStateHelp.displayName = "EmptyStateHelp";
 
-//  Preset compositions 
+// Preset compositions
 
 const EmptyStateDefault = (): React.JSX.Element => (
     <EmptyState>

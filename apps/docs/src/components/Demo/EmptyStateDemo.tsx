@@ -65,7 +65,7 @@ import { ArchiveIcon, PlusIcon, UploadIcon } from '@radix-ui/react-icons';
 
       <Tabs>
         <TabItem value="preview" label="Preview">
-          <div className="border border-border rounded-xl overflow-hidden bg-white dark:bg-slate-950 transition-colors duration-300">
+          <div className="border border-border rounded-xl overflow-hidden bg-background transition-colors duration-300">
             <div className="p-8 flex justify-center items-center min-h-[500px]">
               {variant === 'card' ? (
                 <div className="w-full max-w-2xl p-12 rounded-[3rem] bg-gradient-to-b from-primary/5 to-transparent border border-primary/10 shadow-inner">

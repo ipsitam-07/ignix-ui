@@ -25,13 +25,19 @@
   --card-foreground: var(--ifm-font-color-base, #1c1e21);
   --popover: var(--ifm-card-background-color, #ffffff);
   --popover-foreground: var(--ifm-font-color-base, #1c1e21);
-  --primary: var(--ifm-color-primary);
-  --primary-light: var(--ifm-color-primary-light);
-  --primary-dark: var(--ifm-color-primary-dark);
-  --primary-darker: var(--ifm-color-primary-darker);
-  --primary-darkest: var(--ifm-color-primary-darkest);
-  --primary-lighter: var(--ifm-color-primary-lighter);
-  --primary-lightest: var(--ifm-color-primary-lightest);
+
+  /* FIX: --primary is now an HSL triplet instead of a hex value.
+     Tailwind's opacity modifier syntax (bg-primary/10, border-primary/20)
+     and CSS hsl(var(--primary)/0.x) both require HSL channels to work.
+     With a hex value every opacity variant silently renders as transparent. */
+  --primary: 0 100% 50%;
+  --primary-light: 2 83% 51%;
+  --primary-dark: 357 95% 41%;
+  --primary-darker: 357 93% 37%;
+  --primary-darkest: 358 92% 31%;
+  --primary-lighter: 358 86% 58%;
+  --primary-lightest: 357 88% 72%;
+
   --primary-foreground: #ffffff;
   --secondary: var(--ifm-color-emphasis-200, #f5f5f5);
   --secondary-foreground: var(--ifm-color-emphasis-800, #3e3e3e);
@@ -45,12 +51,12 @@
   --ring: var(--ifm-color-primary-light);
   --sidebar: var(--ifm-background-color, #ffffff);
   --sidebar-foreground: var(--ifm-font-color-base, #1c1e21);
-  --sidebar-primary: var(--ifm-color-primary);
+  --sidebar-primary: hsl(var(--primary));
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: var(--ifm-color-emphasis-200, #f5f5f5);
   --sidebar-accent-foreground: var(--ifm-color-emphasis-800, #3e3e3e);
   --sidebar-border: var(--ifm-color-emphasis-300, #e0e0e0);
-  --sidebar-ring: var(--ifm-color-primary-light);
+  --sidebar-ring: hsl(var(--primary-light));
   --warning: var(--ifm-color-warning);
   --warning-foreground: var(--ifm-color-warning-foreground);
   --success: var(--ifm-color-success);
@@ -68,11 +74,11 @@
   --info-light: #22d3ee;
   --info-dark: #0e7490;
   --info-foreground: #ffffff;
-  --red-primary: #f12828;
+  --red-primary: hsl(var(--primary));
 
   --ifm-paragraph-margin-bottom: 0rem;
 
-    /* Floating Dock */
+  /* Floating Dock */
   --dock-solid: #1e293b;
   --dock-solid-foreground: #f8fafc;
   --dock-glass: rgba(255, 255, 255, 0.12);
@@ -82,18 +88,18 @@
   --dock-icon-bg: #334155;
   --dock-icon-hover: #475569;
   --dock-separator: #94a3b8;
-  --dock-outlined-dot: #0f172a; /* slate-900 */
+  --dock-outlined-dot: #0f172a;
 }
 
 [data-theme='dark'] {
   --ifm-background-color: #000000;
-  --ifm-color-primary: #ff0000;
-  --ifm-color-primary-dark: #e7333e;
-  --ifm-color-primary-darker: #c92b34;
-  --ifm-color-primary-darkest: #a4232a;
-  --ifm-color-primary-light: #ff5a64;
-  --ifm-color-primary-lighter: #ff8087;
-  --ifm-color-primary-lightest: #ffb3b7;
+  --ifm-color-primary: hsl(0 100% 50%);
+  --ifm-color-primary-dark: hsl(357 73% 55%);
+  --ifm-color-primary-darker: hsl(357 63% 48%);
+  --ifm-color-primary-darkest: hsl(357 56% 40%);
+  --ifm-color-primary-light: hsl(0 100% 67%);
+  --ifm-color-primary-lighter: hsl(0 100% 75%);
+  --ifm-color-primary-lightest: hsl(0 100% 84%);
   --radius: 0.625rem;
   --background: var(--ifm-background-color, #000000);
   --foreground: var(--ifm-font-color-base, #ffffff);
@@ -101,13 +107,16 @@
   --card-foreground: var(--ifm-font-color-base, #ffffff);
   --popover: var(--ifm-card-background-color, #242526);
   --popover-foreground: var(--ifm-font-color-base, #ffffff);
-  --primary: var(--ifm-color-primary);
-  --primary-light: var(--ifm-color-primary-light);
-  --primary-dark: var(--ifm-color-primary-dark);
-  --primary-darker: var(--ifm-color-primary-darker);
-  --primary-darkest: var(--ifm-color-primary-darkest);
-  --primary-lighter: var(--ifm-color-primary-lighter);
-  --primary-lightest: var(--ifm-color-primary-lightest);
+
+  /* FIX: dark mode primary also uses HSL triplet so opacity modifiers work */
+  --primary: 0 100% 50%;
+  --primary-light: 0 100% 67%;
+  --primary-dark: 357 73% 55%;
+  --primary-darker: 357 63% 48%;
+  --primary-darkest: 357 56% 40%;
+  --primary-lighter: 0 100% 75%;
+  --primary-lightest: 0 100% 84%;
+
   --primary-foreground: #121212;
   --secondary: var(--ifm-color-emphasis-200, #303030);
   --secondary-foreground: var(--ifm-color-emphasis-800, #d4d4d4);
@@ -118,15 +127,15 @@
   --destructive: var(--ifm-color-danger, #ff6b6b);
   --border: var(--ifm-color-emphasis-300, #424242);
   --input: var(--ifm-color-emphasis-300, #424242);
-  --ring: var(--ifm-color-primary-light);
+  --ring: hsl(var(--primary-light));
   --sidebar: var(--ifm-background-color, #121212);
   --sidebar-foreground: var(--ifm-font-color-base, #ffffff);
-  --sidebar-primary: var(--ifm-color-primary);
+  --sidebar-primary: hsl(var(--primary));
   --sidebar-primary-foreground: #121212;
   --sidebar-accent: var(--ifm-color-emphasis-200, #303030);
   --sidebar-accent-foreground: var(--ifm-color-emphasis-800, #d4d4d4);
   --sidebar-border: var(--ifm-color-emphasis-300, #424242);
-  --sidebar-ring: var(--ifm-color-primary-light);
+  --sidebar-ring: hsl(var(--primary-light));
   --warning: var(--ifm-color-warning);
   --warning-foreground: var(--ifm-color-warning-foreground);
   --success: var(--ifm-color-success);
@@ -134,26 +143,17 @@
   --error: var(--ifm-color-error);
   --error-foreground: var(--ifm-color-error-foreground);
 
-  --red-primary: var(--ifm-color-primary);
+  --red-primary: hsl(var(--primary));
 
   --destructive-light: #ef4444;
-  /* red-400 */
   --destructive-dark: #b91c1c;
-  /* red-700 */
   --success-light: #34d399;
-  /* emerald-400 */
   --success-dark: #047857;
-  /* emerald-700 */
   --warning-light: #fbbf24;
-  /* yellow-300 */
   --warning-dark: #b45309;
-  /* yellow-500 */
   --info: #06b6d4;
-  /* cyan-500 */
   --info-light: #22d3ee;
-  /* cyan-400 */
   --info-dark: #0e7490;
-  /* cyan-600 */
   --info-foreground: #ffffff;
 
   /* Floating Dock */
@@ -166,27 +166,27 @@
   --dock-icon-bg: #1e293b;
   --dock-icon-hover: #334155;
   --dock-separator: #475569;
-  --dock-outlined-dot: #f1f5f9; /* slate-100 */
+  --dock-outlined-dot: #f1f5f9;
 }
 
-/* html[data-theme='dark'] {
-  --ifm-background-color: #000000;
-} */
-
 @theme inline {
-  --color-primary: var(--primary);
+  /* FIX: All primary color tokens now wrap in hsl() so Tailwind resolves
+     them as valid CSS colors. Previously these were raw hex values passed
+     through var(), which broke opacity modifiers and hsl() function calls. */
+  --color-primary: hsl(var(--primary));
+  --color-primary-light: hsl(var(--primary-light));
+  --color-primary-dark: hsl(var(--primary-dark));
+  --color-primary-darker: hsl(var(--primary-darker));
+  --color-primary-darkest: hsl(var(--primary-darkest));
+  --color-primary-lighter: hsl(var(--primary-lighter));
+  --color-primary-lightest: hsl(var(--primary-lightest));
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary-light: var(--primary-light);
-  --color-primary-dark: var(--primary-dark);
-  --color-primary-darker: var(--primary-darker);
-  --color-primary-darkest: var(--primary-darkest);
-  --color-primary-lighter: var(--primary-lighter);
-  --color-primary-lightest: var(--primary-lightest);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -229,12 +229,10 @@
 
   --hero-bg: var(--background);
   --hero-fg: var(--foreground);
-  --hero-primary: var(--primary);
+  --hero-primary: hsl(var(--primary));
   --hero-accent: var(--secondary);
   --hero-muted: var(--muted);
 
-  --animate-shine: shine var(--duration) infinite linear;
-  
   /* Floating Dock */
   --color-dock-solid: var(--dock-solid);
   --color-dock-solid-foreground: var(--dock-solid-foreground);
@@ -246,32 +244,17 @@
   --color-dock-icon-hover: var(--dock-icon-hover);
   --color-dock-separator: var(--dock-separator);
   --color-dock-outlined-dot: var(--dock-outlined-dot);
+
   @keyframes shine {
-    0% {
-      background-position: 0% 0%;
-    }
-
-    50% {
-      background-position: 100% 100%;
-    }
-
-    to {
-      background-position: 0% 0%;
-    }
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 100%; }
+    to { background-position: 0% 0%; }
   }
 
   @keyframes gradient {
-    0% {
-      background-position: 0% 50%;
-    }
-
-    50% {
-      background-position: 100% 50%;
-    }
-
-    100% {
-      background-position: 0% 50%;
-    }
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
   --animate-gradient: gradient 8s linear infinite;
@@ -280,23 +263,13 @@
   --animate-aurora: aurora 8s ease-in-out infinite alternate;
 
   @keyframes marquee {
-    from {
-      transform: translateX(0);
-    }
-
-    to {
-      transform: translateX(calc(-100% - var(--gap)));
-    }
+    from { transform: translateX(0); }
+    to { transform: translateX(calc(-100% - var(--gap))); }
   }
 
   @keyframes marquee-vertical {
-    from {
-      transform: translateY(0);
-    }
-
-    to {
-      transform: translateY(calc(-100% - var(--gap)));
-    }
+    from { transform: translateY(0); }
+    to { transform: translateY(calc(-100% - var(--gap))); }
   }
 
   @keyframes aurora {
@@ -304,22 +277,18 @@
       background-position: 0% 50%;
       transform: rotate(-5deg) scale(0.9);
     }
-
     25% {
       background-position: 50% 100%;
       transform: rotate(5deg) scale(1.1);
     }
-
     50% {
       background-position: 100% 50%;
       transform: rotate(-3deg) scale(0.95);
     }
-
     75% {
       background-position: 50% 0%;
       transform: rotate(3deg) scale(1.05);
     }
-
     100% {
       background-position: 0% 50%;
       transform: rotate(-5deg) scale(0.9);
@@ -401,12 +370,10 @@ h1 {
   margin: 0.5rem;
 }
 
-
 .text-amber-800 {
   color: rgb(230, 112, 9) !important;
   font-weight: 600 !important;
 }
-
 
 /* ---------- hero typography ---------- */
 .hero-h1 {
@@ -416,7 +383,6 @@ h1 {
   text-wrap: balance;
 }
 
-/* emphasis / animated gradient on rotating word */
 .gradient-anim,
 .emphasis {
   background: linear-gradient(90deg, #ff6b6b 0%, #ff2b2b 40%, #ff8a00 100%);
@@ -425,37 +391,14 @@ h1 {
   background-size: 200% 100%;
   animation: gradientShift 6s linear infinite;
   -webkit-text-stroke: 0.3px rgba(255, 255, 255, 0.03);
-  /* subtle edge */
   font-weight: 800;
   text-shadow: 0 0 rgba(255, 77, 77, 0.2);
 }
 
 @keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%
-  }
-
-  50% {
-    background-position: 100% 50%
-  }
-
-  100% {
-    background-position: 0% 50%
-  }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .hero-noise {
@@ -466,9 +409,8 @@ h1 {
   mix-blend-mode: overlay;
 }
 
-/* primary button (tactile) */
 .btn-primary {
-  background: linear-gradient(90deg, var(--primary), color-mix(in oklab, var(--primary) 70%, #000 20%));
+  background: linear-gradient(90deg, hsl(var(--primary)), color-mix(in oklab, hsl(var(--primary)) 70%, #000 20%));
   color: white;
   box-shadow: 0 10px 30px rgba(255, 60, 60, 0.12), inset 0 -3px 8px rgba(0, 0, 0, 0.5);
   transition: transform .18s ease, box-shadow .18s ease;
@@ -479,58 +421,51 @@ h1 {
   box-shadow: 0 18px 48px rgba(255, 60, 60, 0.18);
 }
 
-/* glass-like outline button */
 .btn-glass {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
   border: 1px solid rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(6px);
 }
 
-/* code pill */
 .code-pill {
   background: color-mix(in oklab, var(--background) 75%, transparent);
   border: 1px solid rgba(255, 255, 255, 0.04);
   color: var(--muted-foreground);
 }
 
-/* copy button inside pill */
 .copy-btn {
-  background: color-mix(in oklab, var(--primary) 10%, transparent);
+  background: color-mix(in oklab, hsl(var(--primary)) 10%, transparent);
   border-radius: 6px;
   padding: 0.25rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid color-mix(in oklab, var(--primary) 20%, transparent);
+  border: 1px solid color-mix(in oklab, hsl(var(--primary)) 20%, transparent);
   transition: transform .12s ease, background .12s ease;
 }
 
 .copy-btn:hover {
   transform: translateY(-2px);
-  background: color-mix(in oklab, var(--primary) 14%, transparent);
+  background: color-mix(in oklab, hsl(var(--primary)) 14%, transparent);
 }
 
 .copy-btn.copied {
-  background: color-mix(in oklab, var(--primary) 28%, transparent);
+  background: color-mix(in oklab, hsl(var(--primary)) 28%, transparent);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
-/* monospace for install text */
 .text-mono,
 .text-mono * {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
 }
 
-/* focus rings for accessibility */
 :focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px color-mix(in oklab, var(--primary) 14%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in oklab, hsl(var(--primary)) 14%, transparent);
   border-radius: 8px;
 }
 
-/* respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
-
   .gradient-anim,
   .hero-spotlight {
     animation: none !important;
@@ -538,14 +473,11 @@ h1 {
   }
 }
 
-
-/* Keyframes for all animations */
 @keyframes fade-in-up {
   from {
     opacity: 0;
     transform: translateY(16px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -553,26 +485,14 @@ h1 {
 }
 
 @keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-8px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
-
-
-/* Applying the animations to the component's elements */
 
 .glass-card {
   position: relative;
   width: 96px;
-  /* w-24 */
   height: 96px;
-  /* h-24 */
   margin: auto;
 }
 
@@ -586,11 +506,9 @@ h1 {
 
 .glass-card-logo {
   width: 32px;
-  /* w-8 */
   height: 100%;
 }
 
-/* Hover effect for the logo */
 .glass-card:hover .glass-card-logo {
   transform: scale(1.1);
 }
@@ -603,23 +521,19 @@ h1 {
 .table-of-contents>li>ul {
   padding: 0px;
   list-style-type: none;
-  /* disables disc bullets */
 }
 
 .table-of-contents>li>ul>li {
   margin-left: 0px;
 }
 
-/* Hide scrollbar but allow scrolling */
 .scrollbar-hidden::-webkit-scrollbar {
   display: none;
 }
 
 .scrollbar-hidden {
   -ms-overflow-style: none;
-  /* IE and Edge */
   scrollbar-width: none;
-  /* Firefox */
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -634,14 +548,9 @@ h1 {
   border-radius: 9999px;
 }
 
-/* Firefox */
 .scrollbar-thin {
   scrollbar-width: thin;
 }
-
-/* .change-color {
-  color: inherit;
-} */
 
 .change-color:hover {
   text-decoration: none;
