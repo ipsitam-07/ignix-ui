@@ -2063,8 +2063,8 @@ export default function BasicFAQ() {
       title="Common Questions"
       description="Everything you need to know about getting started."
       items={items}
-      layout="standard"
-      theme="light"
+      layoutVariant="standard"
+      themeVariant="light"
     />
   );
 }
@@ -2084,12 +2084,12 @@ import {
 
 export default function CustomFAQ() {
   return (
-    <Accordion variant="card" animation="slide">
-      <AccordionItem value="item-1">
-        <AccordionSummary>
+    <Accordion variant="card" animationVariant="slide">
+      <AccordionItem id="item-1">
+        <AccordionSummary id="item-1">
           <AccordionTitle>Custom Header Logic</AccordionTitle>
         </AccordionSummary>
-        <AccordionDetails>
+        <AccordionDetails id="item-1">
           The details content can include any React components, 
           allowing for complex FAQ answers.
         </AccordionDetails>

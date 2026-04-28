@@ -1214,12 +1214,12 @@ import {
 
 export default function CustomStats() {
   return (
-    <StatsGrid variant="dark">
+    <StatsGrid variant="dark" columns={2}>
       <StatsGrid.Header 
         title="Custom Layout" 
         description="Mixing pre-built cards with custom markup."
       />
-      <StatsGridContainer columns={2}>
+      <StatsGridContainer>
         {/* Standard Card */}
         <StatsGridCard 
           stat={{ label: 'Active Sessions', value: 842 }} 

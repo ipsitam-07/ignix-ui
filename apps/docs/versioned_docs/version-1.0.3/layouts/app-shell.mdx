@@ -14,8 +14,6 @@ It offers slots for **brand/logo**, **navigation**, **user profile**, **sidebar*
 
 This makes it ideal for **dashboards, admin panels, and single-page apps**.
 
-## Variants
-
 <AppShellDemo />
 
 <Tabs>
@@ -26,7 +24,7 @@ This makes it ideal for **dashboards, admin panels, and single-page apps**.
   </TabItem>
 
   <TabItem value="manual" label="Manual" className="max-h-[500px] overflow-y-auto">
-    ```tsx
+```tsx
 import React, { useState, useEffect, ReactNode } from "react";
 import clsx from "clsx";
 
@@ -47,15 +45,15 @@ export type AppShellProps = {
   sidebarWidth?: "narrow" | "normal" | "wide";
   sidebar?: ReactNode;
   theme?:
-    | "light"
-    | "dark"
-    | "corporate"
-    | "custom"
-    | "glass"
-    | "modern"
-    | "ocean"
-    | "forest"
-    | "solarized";
+  | "light"
+  | "dark"
+  | "corporate"
+  | "custom"
+  | "glass"
+  | "modern"
+  | "ocean"
+  | "forest"
+  | "solarized";
   className?: string;
   children: ReactNode;
 };
@@ -92,7 +90,7 @@ const AppShell: React.FC<AppShellProps> = ({
   const getSidebarWidthClass = () => widthMap[sidebarWidth] || widthMap.normal;
 
   const renderMenu = (items: SidebarItem[]) => (
-    <ul className="space-y-2 !pl-1">
+    <ul className="space-y-2 pl-1!">
       {items.map((item, i) => (
         <li key={i}>
           <a
@@ -100,19 +98,19 @@ const AppShell: React.FC<AppShellProps> = ({
             className={clsx(
               "flex items-center px-3 py-2 rounded-md transition-colors duration-150",
               {
-                "hover:bg-gray-200 !text-gray-800": theme === "light",
-                "hover:bg-gray-300 !text-gray-700": theme === "corporate",
-                "hover:bg-gray-700 !text-gray-200": theme === "dark",
-                "hover:bg-white/60 !text-gray-700": theme === "glass",
-                "hover:bg-gray-700/80 !text-gray-200": theme === "modern",
-                "hover:bg-teal-600/80 !text-gray-200": theme === "ocean",
-                "hover:bg-green-700/80 !text-gray-200": theme === "forest",
-                "hover:bg-[#e0dab5] !text-gray-700": theme === "solarized",
+                "hover:bg-gray-200 text-gray-800!": theme === "light",
+                "hover:bg-gray-300 text-gray-700!": theme === "corporate",
+                "hover:bg-gray-700 text-gray-200!": theme === "dark",
+                "hover:bg-white/60 text-gray-700!": theme === "glass",
+                "hover:bg-gray-700/80 text-gray-200!": theme === "modern",
+                "hover:bg-teal-600/80 text-gray-200!": theme === "ocean",
+                "hover:bg-green-700/80 text-gray-200!": theme === "forest",
+                "hover:bg-[#e0dab5] text-gray-700!": theme === "solarized",
               }
             )}
           >
             {item.icon && <span>{item.icon}</span>}
-            <span className="!hover:no-underline">{item.label}</span>
+            <span className="hover:no-underline!">{item.label}</span>
           </a>
 
           {item.children && (
@@ -146,7 +144,7 @@ const AppShell: React.FC<AppShellProps> = ({
     >
       {/* Header */}
       <header className="flex items-center justify-between p-4 border-b shadow-sm">
-        {responsive && navigation === "side" && (
+        {responsive && (navigation === "side" || navigation === "drawer") && (
           <button
             className="md:hidden p-2"
             onClick={() => setIsDrawerOpen(!isDrawerOpen)}
@@ -195,13 +193,13 @@ const AppShell: React.FC<AppShellProps> = ({
             {sidebar
               ? sidebar
               : Array.isArray(menu)
-              ? renderMenu(menu)
-              : menu}
+                ? renderMenu(menu)
+                : menu}
           </aside>
         )}
 
         {/* Drawer (mobile) */}
-        {responsive && navigation === "side" && (
+        {responsive && (navigation === "side" || navigation === "drawer") && (
           <div
             className={clsx(
               "fixed inset-0 z-[200] bg-[rgb(0,0,0,0.4)] md:hidden",
@@ -234,8 +232,8 @@ const AppShell: React.FC<AppShellProps> = ({
               {sidebar
                 ? sidebar
                 : Array.isArray(menu)
-                ? renderMenu(menu)
-                : menu}
+                  ? renderMenu(menu)
+                  : menu}
             </div>
           </div>
         )}

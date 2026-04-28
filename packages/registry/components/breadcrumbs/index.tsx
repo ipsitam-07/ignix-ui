@@ -426,6 +426,8 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   items = [],
   variant = "text",
   size: rawSize = "md",
+  bgColor,
+  textColor,
   separatorIcon: SeparatorIcon,
   steps = [],
   currentStep = 0,
@@ -442,7 +444,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   return (
     <motion.nav
       className={cn(
-        breadcrumbsVariants({ size, variant, shape }),
+        breadcrumbsVariants({ size, variant, shape, bgColor, textColor }),
         className
       )}
       initial={{ opacity: 0, y: -20 }}
