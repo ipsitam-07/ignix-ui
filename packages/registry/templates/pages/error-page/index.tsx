@@ -736,7 +736,7 @@ export const ErrorPageHeading: React.FC<ErrorPageHeadingProps> = React.memo(({
     return (
       <motion.div variants={itemAnimation}>
         <Typography
-          variant="h2" 
+          variant="h2"
           className={cn("text-center text-3xl sm:text-4xl lg:text-5xl font-bold mb-4", textColorClass, className)}>
           {children}
         </Typography>
@@ -747,7 +747,7 @@ export const ErrorPageHeading: React.FC<ErrorPageHeadingProps> = React.memo(({
   return (
     <motion.div variants={itemAnimation}>
       <Typography
-        variant="h2" 
+        variant="h2"
         className={cn("text-center text-3xl sm:text-4xl lg:text-5xl font-bold mb-4", textColorClass, className)}>
         {title || "Page Not Found"}
       </Typography>

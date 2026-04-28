@@ -20,12 +20,12 @@ import {
 import { ButtonWithIcon } from '@site/src/components/UI/button-with-icon';
 import { Home, ArrowLeft, RefreshCw, Bug, MessageCircle, AlertTriangle, Wrench, Zap, Rocket, Settings, ShieldAlert } from 'lucide-react';
 
-type ErrorPageVariant = 'default' | 'minimal' | 'gradient' | 'dark' | 'server' | 'forbidden';
+type ErrorPageVariant = 'default' | 'minimal' | 'gradient' | 'dark';
 type AnimationType = 'none' | 'pulse' | 'bounce' | 'glow' | 'shake' | 'rotate';
 type IllustrationPosition = 'left' | 'right' | 'topCenter';
 type ErrorType = '404' | '500' | '403';
 
-const variants: ErrorPageVariant[] = ['default', 'minimal', 'gradient', 'dark', 'server', 'forbidden'];
+const variants: ErrorPageVariant[] = ['default', 'minimal', 'gradient', 'dark'];
 const errorTypes: ErrorType[] = ['404', '500', '403'];
 
 const animationTypes: AnimationType[] = ['none', 'pulse', 'bounce', 'glow', 'shake', 'rotate'];
