@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import Masonry from "./index";
+import { Masonry } from "./index";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("framer-motion", () => {

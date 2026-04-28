@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Masonry from "@site/src/components/UI/masonry";
+import { Masonry } from "@site/src/components/UI/masonry";
 import VariantSelector from "./VariantSelector";
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
@@ -26,7 +26,7 @@ const MasonryDemo = () => {
   ];
 
   const codeString = `
-import Masonry from '@ignix-ui/masonry';
+import { Masonry } from '@ignix-ui/masonry';
 
 <Masonry 
   columns={${columns}}

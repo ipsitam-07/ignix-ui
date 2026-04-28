@@ -126,4 +126,4 @@ const Masonry: React.FC<MasonryProps> = ({
   );
 };
 
-export default Masonry;
+export { Masonry };

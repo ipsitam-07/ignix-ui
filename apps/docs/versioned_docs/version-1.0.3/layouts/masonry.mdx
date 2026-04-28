@@ -6,7 +6,7 @@ description: A Pinterest-style layout component for displaying items of varying 
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
-import Masonry from '@site/src/components/UI/masonry';
+import { Masonry } from '@site/src/components/UI/masonry';
 
 The **Masonry** component creates Pinterest-style layouts that optimize vertical space by arranging items of varying heights into responsive columns.
 
@@ -150,8 +150,7 @@ const Masonry: React.FC<MasonryProps> = ({
   );
 };
 
-export default Masonry;
-
+export { Masonry };
     ```
   </TabItem>
 </Tabs>
