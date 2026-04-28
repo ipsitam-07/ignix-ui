@@ -89,7 +89,8 @@ export async function createViteReactTsconfig(root: string): Promise<void> {
       baseUrl: '.',
       paths: {
         '@/*': ['./src/*'],
-        '@ignix-ui/*': ['./src/components/ui/*', './src/components/templates/*'],
+        '@ignix-ui/ui/*': ['./src/components/ui/*'],
+        '@ignix-ui/templates/*': ['./src/components/templates/*'],
       },
     },
     include: ['src'],
@@ -126,7 +127,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@ignix-ui': path.resolve(__dirname, './src/components/ui'),
+      '@ignix-ui/ui': path.resolve(__dirname, './src/components/ui'),
+      '@ignix-ui/templates': path.resolve(__dirname, './src/components/templates'),
     },
   },
   server: {
