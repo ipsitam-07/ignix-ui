@@ -1,5 +1,5 @@
 import * as React from "react";
-import { motion, type HTMLMotionProps, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { motion, type HTMLMotionProps, useMotionValue, useTransform, useSpring, useReducedMotion } from "framer-motion";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@site/src/utils/cn";
 import { Button } from "../button";
@@ -47,6 +47,16 @@ export interface EmptyStateHelpProps extends Omit<HTMLMotionProps<"div">, "ref">
     linkText?: string;
     href?: string;
     icon?: React.ElementType;
+}
+
+export interface EmptyStateDefaultProps {
+    onCreateProject?: () => void;
+    onImport?: () => void;
+    helpHref?: string;
+}
+
+export interface EmptyStateMinimalProps {
+    onClearFilters?: () => void;
 }
 
 // CVA Variants 
@@ -126,8 +136,10 @@ const iconVariants = {
 interface Particle { id: number; x: number; y: number; tx: number; ty: number; dur: number; del: number; size: number; }
 
 function useParticles(count = 12): Particle[] {
-    return React.useMemo<Particle[]>(
-        () =>
+    const [particles, setParticles] = React.useState<Particle[]>([]);
+
+    React.useEffect(() => {
+        setParticles(
             Array.from({ length: count }, (_, i) => ({
                 id: i,
                 x: Math.random() * 100,
@@ -137,15 +149,16 @@ function useParticles(count = 12): Particle[] {
                 dur: 3.2 + Math.random() * 3.8,
                 del: Math.random() * 5,
                 size: Math.random() > 0.5 ? 2 : 3,
-            })),
-        [count]
-    );
-}
+            }))
+        );
+    }, [count]);
 
-//  Components 
+    return particles;
+}
 
 const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
     ({ className, variant, children, tilt = true, style, ...props }, ref) => {
+        const shouldReduceMotion = useReducedMotion();
         const wrapRef = React.useRef<HTMLDivElement>(null);
 
         const rawX = useMotionValue(0);
@@ -157,7 +170,7 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
 
         const handleMouseMove = React.useCallback(
             (e: React.MouseEvent<HTMLDivElement>) => {
-                if (!tilt || !wrapRef.current) return;
+                if (!tilt || shouldReduceMotion || !wrapRef.current) return;
                 const r = wrapRef.current.getBoundingClientRect();
                 rawX.set((e.clientX - r.left) / r.width - 0.5);
                 rawY.set((e.clientY - r.top) / r.height - 0.5);
@@ -186,9 +199,9 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
                     initial="initial"
                     animate="animate"
                     style={{
-                        rotateX: tilt ? rotateX : 0,
-                        rotateY: tilt ? rotateY : 0,
-                        translateZ: tilt ? translateZ : 0,
+                        rotateX: tilt && !shouldReduceMotion ? rotateX : 0,
+                        rotateY: tilt && !shouldReduceMotion ? rotateY : 0,
+                        translateZ: tilt && !shouldReduceMotion ? translateZ : 0,
                         transformStyle: "preserve-3d",
                         ...style,
                     }}
@@ -261,6 +274,7 @@ const accentTokens = {
 
 const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllustrationProps>(
     ({ className, icon: Icon, illustration, iconSize = 22, accent = "primary", ...props }, ref) => {
+        const shouldReduceMotion = useReducedMotion();
         const tk = accentTokens[accent];
         const particles = useParticles(10);
 
@@ -291,13 +305,13 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                                         width: p.size, height: p.size,
                                         left: `${p.x}%`, top: `${p.y}%`,
                                     }}
-                                    animate={{
+                                    animate={shouldReduceMotion ? { opacity: 0 } : {
                                         y: [0, p.ty],
                                         x: [0, p.tx],
                                         opacity: [0, 0.8, 0.4, 0],
                                         scale: [0.3, 1.4, 1, 0.2],
                                     }}
-                                    transition={{
+                                    transition={shouldReduceMotion ? {} : {
                                         duration: p.dur,
                                         delay: p.del,
                                         repeat: Infinity,
@@ -311,8 +325,8 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                         <motion.div
                             aria-hidden
                             className={cn("absolute inset-0 rounded-full border-2", tk.ring)}
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                            animate={shouldReduceMotion ? {} : { rotate: 360 }}
+                            transition={shouldReduceMotion ? {} : { duration: 15, repeat: Infinity, ease: "linear" }}
                         >
                             <div className={cn("absolute -top-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full", tk.dot)} />
                             <div className={cn("absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full opacity-50", tk.dot)} />
@@ -322,16 +336,16 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                         <motion.div
                             aria-hidden
                             className={cn("absolute inset-[10px] rounded-full border border-dashed opacity-40", tk.ringInner)}
-                            animate={{ rotate: -360 }}
-                            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                            animate={shouldReduceMotion ? {} : { rotate: -360 }}
+                            transition={shouldReduceMotion ? {} : { duration: 25, repeat: Infinity, ease: "linear" }}
                         />
 
                         {/* Inner counter-rotating ring */}
                         <motion.div
                             aria-hidden
                             className={cn("absolute inset-[20px] rounded-full border", tk.ringInner)}
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                            animate={shouldReduceMotion ? {} : { rotate: 360 }}
+                            transition={shouldReduceMotion ? {} : { duration: 10, repeat: Infinity, ease: "linear" }}
                         />
 
                         {/* Icon core */}
@@ -340,13 +354,13 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                                 "absolute inset-[28px] rounded-full border flex items-center justify-center shadow-2xl",
                                 tk.core, tk.float
                             )}
-                            animate={{
+                            animate={shouldReduceMotion ? {} : {
                                 y: [0, -10, 0],
                                 rotateY: [0, 15, 0],
                                 rotateX: [0, -10, 0],
                                 scale: [1, 1.08, 1]
                             }}
-                            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                            transition={shouldReduceMotion ? {} : { duration: 5, repeat: Infinity, ease: "easeInOut" }}
                             style={{ transformStyle: "preserve-3d" }}
                         >
                             {Icon ? (
@@ -480,7 +494,11 @@ EmptyStateHelp.displayName = "EmptyStateHelp";
 
 // Preset compositions
 
-const EmptyStateDefault = (): React.JSX.Element => (
+const EmptyStateDefault = ({
+    onCreateProject,
+    onImport,
+    helpHref = "#"
+}: EmptyStateDefaultProps): React.JSX.Element => (
     <EmptyState>
         <EmptyStateIllustration icon={FileTextIcon} accent="primary" />
         <EmptyStateHeading>No projects yet</EmptyStateHeading>
@@ -488,25 +506,27 @@ const EmptyStateDefault = (): React.JSX.Element => (
             Get started by creating a new project. You can also import an existing one.
         </EmptyStateDesc>
         <EmptyStateActions>
-            <Button variant="default" animationVariant="pulse">
+            <Button variant="default" animationVariant="pulse" onClick={onCreateProject}>
                 <PlusIcon className="mr-2" /> Create project
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={onImport}>
                 <UploadIcon className="mr-2" /> Import
             </Button>
         </EmptyStateActions>
-        <EmptyStateHelp linkText="Read our documentation" />
+        <EmptyStateHelp linkText="Read our documentation" href={helpHref} />
     </EmptyState>
 );
 
-const EmptyStateMinimal = (): React.JSX.Element => (
+const EmptyStateMinimal = ({
+    onClearFilters
+}: EmptyStateMinimalProps): React.JSX.Element => (
     <EmptyState variant="minimal" tilt={false}>
         <EmptyStateIllustration icon={FileTextIcon} accent="teal" />
         <EmptyStateBadge label="0 results" />
         <EmptyStateHeading title="Nothing found" />
         <EmptyStateDesc description="We couldn't find anything matching your search. Try adjusting your filters." />
         <EmptyStateActions>
-            <Button variant="outline">Clear filters</Button>
+            <Button variant="outline" onClick={onClearFilters}>Clear filters</Button>
         </EmptyStateActions>
     </EmptyState>
 );
