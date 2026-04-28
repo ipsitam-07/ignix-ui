@@ -176,7 +176,7 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
                 rawY.set((e.clientY - r.top) / r.height - 0.5);
                 translateZ.set(6);
             },
-            [tilt, rawX, rawY, translateZ]
+            [tilt, shouldReduceMotion, rawX, rawY, translateZ]
         );
 
         const handleMouseLeave = React.useCallback(() => {
@@ -213,14 +213,11 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
                         style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
                     />
 
-                    {/* Light beam — uses primary/10 which now resolves correctly */}
                     <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[inherit]">
                         <div className="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[1px] h-[140%] bg-gradient-to-b from-transparent via-primary/10 dark:via-primary/20 to-transparent blur-[60px]" />
-                        {/* FIX: Replaced bg-primary/5 dark:bg-primary/10 — now resolves because --primary is HSL */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-primary/5 dark:bg-primary/10 blur-[80px] rounded-full" />
                     </div>
 
-                    {/* Background dot pattern — uses currentColor from foreground */}
                     <div
                         aria-hidden
                         className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
