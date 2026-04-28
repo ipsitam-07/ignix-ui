@@ -40,7 +40,7 @@ This documentation describes the supported card types, including Basic, Image, U
         ignix add component card
         ```
       </TabItem>
-      <TabItem value="manual" label="manual" className="max-h-[500px] overflow-y-auto">
+      <TabItem value="manual" label="Manual" className="max-h-[500px] overflow-y-auto">
 
         ```tsx
     import { cn } from "@site/src/utils/cn"
@@ -645,7 +645,7 @@ It supports multiple layouts, media positioning, hover animations, and rich visu
     ```
   </TabItem>
   <TabItem value="manual" label="Manual">
-```bash
+```tsx
 import React, { useState, useEffect, useCallback, type ComponentType } from "react"
 import { ImageIcon, Tag, type LucideProps } from "lucide-react"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -1506,8 +1506,8 @@ The Profile Card component displays user information in a clean, organized forma
     ignix add component UserCard
     ```
   </TabItem>
-  <TabItem value="manual" label="MANUAL">
-  ```bash
+  <TabItem value="manual" label="Manual">
+  ```tsx
 
 import React, { useMemo, memo } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -2357,7 +2357,7 @@ UserCard.displayName = "UserCard";
 ## Basic Usage
 
 ```tsx
-import { UserCard } from '';
+import { UserCard } from '@ignix-ui/usercard';
 import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 
 function BasicUserCard() {
@@ -2518,7 +2518,7 @@ Product Card component presents product information. It supports flexible config
   ```
   </TabItem>
   <TabItem value="manual" label="Manual">
-```bash
+```tsx
 import React, { useState, createContext, useContext, useMemo, useCallback, memo, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Heart, ShoppingCartIcon } from "lucide-react";
 import { cn } from "../../../utils/cn";
@@ -3616,7 +3616,7 @@ function BasicProductCard() {
     ```
   </TabItem>
   <TabItem value="manual" manual="MANUAL">
-  ```bash
+  ```tsx
 import React, { createContext, useContext, useMemo, memo } from "react";
 import { cva } from "class-variance-authority";
 import { FaQuoteLeft } from "react-icons/fa";
