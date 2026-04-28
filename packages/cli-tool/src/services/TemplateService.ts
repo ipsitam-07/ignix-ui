@@ -78,21 +78,27 @@ export class TemplateService {
       const templateDir = path.resolve(templateLayoutDir, name.toLowerCase());
       await fs.ensureDir(templateDir);
 
-      let baseUrl = config.registryUrl?.replace('/registry.json', '') || '';
-      if (!baseUrl || baseUrl === config.registryUrl) {
-        if (!config.registryUrl) {
-          throw new Error('Registry URL not found in config. Please check your `ignix.config.js`.');
-        }
+      let baseUrl = config.templateLayoutUrl || config.templateUrl || '';
 
-        const lastSlashIndex = config.registryUrl.lastIndexOf('/');
-        baseUrl =
-          lastSlashIndex !== -1
-            ? config.registryUrl.substring(0, lastSlashIndex)
-            : config.registryUrl;
+      if (!baseUrl) {
+        baseUrl = config.registryUrl?.replace('/registry.json', '') || '';
+        if (!baseUrl || baseUrl === config.registryUrl) {
+          if (!config.registryUrl) {
+            throw new Error(
+              'Registry URL not found in config. Please check your `ignix.config.js`.'
+            );
+          }
+
+          const lastSlashIndex = config.registryUrl.lastIndexOf('/');
+          baseUrl =
+            lastSlashIndex !== -1
+              ? config.registryUrl.substring(0, lastSlashIndex)
+              : config.registryUrl;
+        }
       }
 
       if (!baseUrl) {
-        throw new Error('Invalid Registry URL in config. Please check your `ignix.config.js`.');
+        throw new Error('Invalid download URL in config. Please check your `ignix.config.js`.');
       }
       logger.info(`[Template] Base URL: ${baseUrl}`);
 

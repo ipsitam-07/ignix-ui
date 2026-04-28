@@ -607,6 +607,52 @@ import { FileTextIcon } from "@radix-ui/react-icons";
 </EmptyState>
 ```
 
+## Presets
+
+For common use cases, we provide pre-configured "presets" that simplify the implementation of standard empty states. These presets accept handlers for actions, allowing for a clean integration with your application logic.
+
+### Default Preset
+
+The `EmptyStateDefault` preset is ideal for "no data" states where users are encouraged to create or import records.
+
+```tsx
+import { EmptyStateDefault } from "@ignix-ui/empty-state";
+
+function ProjectList() {
+  const handleCreate = () => {
+    // Logic to open create modal
+  };
+
+  const handleImport = () => {
+    // Logic to trigger import
+  };
+
+  return (
+    <EmptyStateDefault 
+      onCreateProject={handleCreate}
+      onImport={handleImport}
+      helpHref="/docs/projects"
+    />
+  );
+}
+```
+
+### Minimal Preset
+
+The `EmptyStateMinimal` preset is designed for search results or filtered views where no items match the current criteria.
+
+```tsx
+import { EmptyStateMinimal } from "@ignix-ui/empty-state";
+
+function SearchResults({ onResetFilters }) {
+  return (
+    <EmptyStateMinimal 
+      onClearFilters={onResetFilters}
+    />
+  );
+}
+```
+
 ## Props
 
 ### EmptyState

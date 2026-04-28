@@ -11,18 +11,42 @@ import {
   EmptyStateBadge,
   EmptyStateActions,
   EmptyStateHelp,
+  EmptyStateDefault,
+  EmptyStateMinimal,
 } from '@site/src/components/UI/empty-state';
 import { Button } from '@site/src/components/UI/button';
 import { ArchiveIcon, MagnifyingGlassIcon, UploadIcon, PlusIcon, BellIcon } from '@radix-ui/react-icons';
 
+type DemoMode = 'custom' | 'presets';
 type EmptyStateVariant = 'default' | 'minimal' | 'gradient' | 'card';
+type PresetVariant = 'default' | 'minimal';
 
 const variants: EmptyStateVariant[] = ['default', 'minimal', 'gradient', 'card'];
+const presets: PresetVariant[] = ['default', 'minimal'];
 
 const EmptyStateDemo = () => {
+  const [mode, setMode] = useState<DemoMode>('custom');
   const [variant, setVariant] = useState<EmptyStateVariant>('default');
+  const [preset, setPreset] = useState<PresetVariant>('default');
 
   const generateCodeString = () => {
+    if (mode === 'presets') {
+      if (preset === 'default') {
+        return `import { EmptyStateDefault } from '@ignix-ui/empty-state';
+
+<EmptyStateDefault 
+  onCreateProject={() => console.log("Create project clicked")}
+  onImport={() => console.log("Import clicked")}
+  helpHref="/docs/getting-started"
+/>`;
+      }
+      return `import { EmptyStateMinimal } from '@ignix-ui/empty-state';
+
+<EmptyStateMinimal 
+  onClearFilters={() => console.log("Filters cleared")}
+/>`;
+    }
+
     return `import {
   EmptyState,
   EmptyStateIllustration,
@@ -54,20 +78,64 @@ import { ArchiveIcon, PlusIcon, UploadIcon } from '@radix-ui/react-icons';
 
   return (
     <div className="space-y-6 mb-8">
-      <div className="flex flex-wrap gap-4 justify-start sm:justify-end">
-        <VariantSelector
-          variants={[...variants]}
-          selectedVariant={variant}
-          onSelectVariant={(v) => setVariant(v as EmptyStateVariant)}
-          type="Variant"
-        />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex bg-muted p-1 rounded-lg">
+          <button
+            onClick={() => setMode('custom')}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+              mode === 'custom' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Custom
+          </button>
+          <button
+            onClick={() => setMode('presets')}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+              mode === 'presets' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Presets
+          </button>
+        </div>
+
+        <div className="flex flex-wrap gap-4 justify-start sm:justify-end">
+          {mode === 'custom' ? (
+            <VariantSelector
+              variants={[...variants]}
+              selectedVariant={variant}
+              onSelectVariant={(v) => setVariant(v as EmptyStateVariant)}
+              type="Variant"
+            />
+          ) : (
+            <VariantSelector
+              variants={[...presets]}
+              selectedVariant={preset}
+              onSelectVariant={(v) => setPreset(v as PresetVariant)}
+              type="Preset"
+            />
+          )}
+        </div>
       </div>
 
       <Tabs>
         <TabItem value="preview" label="Preview">
           <div className="border border-border rounded-xl overflow-hidden bg-background transition-colors duration-300">
             <div className="p-8 flex justify-center items-center min-h-[500px]">
-              {variant === 'card' ? (
+              {mode === 'presets' ? (
+                <div className="w-full flex justify-center">
+                  {preset === 'default' ? (
+                    <EmptyStateDefault
+                      onCreateProject={() => alert('Primary action: Create Project')}
+                      onImport={() => alert('Secondary action: Import')}
+                      helpHref="#docs"
+                    />
+                  ) : (
+                    <EmptyStateMinimal
+                      onClearFilters={() => alert('Action: Clear Filters')}
+                    />
+                  )}
+                </div>
+              ) : variant === 'card' ? (
                 <div className="w-full max-w-2xl p-12 rounded-[3rem] bg-gradient-to-b from-primary/5 to-transparent border border-primary/10 shadow-inner">
                   <EmptyState variant="card">
                     <EmptyStateIllustration icon={BellIcon} accent="teal" />
