@@ -24,7 +24,7 @@ The **EmptyState** component provides a flexible, composable interface for displ
   <TabItem value="manual" label="Manual">
 ```tsx
 import * as React from "react";
-import { motion, type HTMLMotionProps, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { motion, type HTMLMotionProps, useMotionValue, useTransform, useSpring, useReducedMotion } from "framer-motion";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../../../utils/cn";
 import { Button } from "../../../components/button";
@@ -72,6 +72,16 @@ export interface EmptyStateHelpProps extends Omit<HTMLMotionProps<"div">, "ref">
     linkText?: string;
     href?: string;
     icon?: React.ElementType;
+}
+
+export interface EmptyStateDefaultProps {
+    onCreateProject?: () => void;
+    onImport?: () => void;
+    helpHref?: string;
+}
+
+export interface EmptyStateMinimalProps {
+    onClearFilters?: () => void;
 }
 
 // CVA Variants 
@@ -151,8 +161,10 @@ const iconVariants = {
 interface Particle { id: number; x: number; y: number; tx: number; ty: number; dur: number; del: number; size: number; }
 
 function useParticles(count = 12): Particle[] {
-    return React.useMemo<Particle[]>(
-        () =>
+    const [particles, setParticles] = React.useState<Particle[]>([]);
+
+    React.useEffect(() => {
+        setParticles(
             Array.from({ length: count }, (_, i) => ({
                 id: i,
                 x: Math.random() * 100,
@@ -162,15 +174,16 @@ function useParticles(count = 12): Particle[] {
                 dur: 3.2 + Math.random() * 3.8,
                 del: Math.random() * 5,
                 size: Math.random() > 0.5 ? 2 : 3,
-            })),
-        [count]
-    );
-}
+            }))
+        );
+    }, [count]);
 
-//  Components 
+    return particles;
+}
 
 const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
     ({ className, variant, children, tilt = true, style, ...props }, ref) => {
+        const shouldReduceMotion = useReducedMotion();
         const wrapRef = React.useRef<HTMLDivElement>(null);
 
         const rawX = useMotionValue(0);
@@ -182,13 +195,13 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
 
         const handleMouseMove = React.useCallback(
             (e: React.MouseEvent<HTMLDivElement>) => {
-                if (!tilt || !wrapRef.current) return;
+                if (!tilt || shouldReduceMotion || !wrapRef.current) return;
                 const r = wrapRef.current.getBoundingClientRect();
                 rawX.set((e.clientX - r.left) / r.width - 0.5);
                 rawY.set((e.clientY - r.top) / r.height - 0.5);
                 translateZ.set(6);
             },
-            [tilt, rawX, rawY, translateZ]
+            [tilt, shouldReduceMotion, rawX, rawY, translateZ]
         );
 
         const handleMouseLeave = React.useCallback(() => {
@@ -211,9 +224,9 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
                     initial="initial"
                     animate="animate"
                     style={{
-                        rotateX: tilt ? rotateX : 0,
-                        rotateY: tilt ? rotateY : 0,
-                        translateZ: tilt ? translateZ : 0,
+                        rotateX: tilt && !shouldReduceMotion ? rotateX : 0,
+                        rotateY: tilt && !shouldReduceMotion ? rotateY : 0,
+                        translateZ: tilt && !shouldReduceMotion ? translateZ : 0,
                         transformStyle: "preserve-3d",
                         ...style,
                     }}
@@ -225,14 +238,11 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
                         style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
                     />
 
-                    {/* Light beam — uses primary/10 which now resolves correctly */}
                     <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[inherit]">
                         <div className="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[1px] h-[140%] bg-gradient-to-b from-transparent via-primary/10 dark:via-primary/20 to-transparent blur-[60px]" />
-                        {/* FIX: Replaced bg-primary/5 dark:bg-primary/10 — now resolves because --primary is HSL */}
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-primary/5 dark:bg-primary/10 blur-[80px] rounded-full" />
                     </div>
 
-                    {/* Background dot pattern — uses currentColor from foreground */}
                     <div
                         aria-hidden
                         className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
@@ -286,6 +296,7 @@ const accentTokens = {
 
 const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllustrationProps>(
     ({ className, icon: Icon, illustration, iconSize = 22, accent = "primary", ...props }, ref) => {
+        const shouldReduceMotion = useReducedMotion();
         const tk = accentTokens[accent];
         const particles = useParticles(10);
 
@@ -316,13 +327,13 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                                         width: p.size, height: p.size,
                                         left: `${p.x}%`, top: `${p.y}%`,
                                     }}
-                                    animate={{
+                                    animate={shouldReduceMotion ? { opacity: 0 } : {
                                         y: [0, p.ty],
                                         x: [0, p.tx],
                                         opacity: [0, 0.8, 0.4, 0],
                                         scale: [0.3, 1.4, 1, 0.2],
                                     }}
-                                    transition={{
+                                    transition={shouldReduceMotion ? {} : {
                                         duration: p.dur,
                                         delay: p.del,
                                         repeat: Infinity,
@@ -336,8 +347,8 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                         <motion.div
                             aria-hidden
                             className={cn("absolute inset-0 rounded-full border-2", tk.ring)}
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                            animate={shouldReduceMotion ? {} : { rotate: 360 }}
+                            transition={shouldReduceMotion ? {} : { duration: 15, repeat: Infinity, ease: "linear" }}
                         >
                             <div className={cn("absolute -top-[5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full", tk.dot)} />
                             <div className={cn("absolute -bottom-[5px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full opacity-50", tk.dot)} />
@@ -347,16 +358,16 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                         <motion.div
                             aria-hidden
                             className={cn("absolute inset-[10px] rounded-full border border-dashed opacity-40", tk.ringInner)}
-                            animate={{ rotate: -360 }}
-                            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                            animate={shouldReduceMotion ? {} : { rotate: -360 }}
+                            transition={shouldReduceMotion ? {} : { duration: 25, repeat: Infinity, ease: "linear" }}
                         />
 
                         {/* Inner counter-rotating ring */}
                         <motion.div
                             aria-hidden
                             className={cn("absolute inset-[20px] rounded-full border", tk.ringInner)}
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                            animate={shouldReduceMotion ? {} : { rotate: 360 }}
+                            transition={shouldReduceMotion ? {} : { duration: 10, repeat: Infinity, ease: "linear" }}
                         />
 
                         {/* Icon core */}
@@ -365,13 +376,13 @@ const EmptyStateIllustration = React.forwardRef<HTMLDivElement, EmptyStateIllust
                                 "absolute inset-[28px] rounded-full border flex items-center justify-center shadow-2xl",
                                 tk.core, tk.float
                             )}
-                            animate={{
+                            animate={shouldReduceMotion ? {} : {
                                 y: [0, -10, 0],
                                 rotateY: [0, 15, 0],
                                 rotateX: [0, -10, 0],
                                 scale: [1, 1.08, 1]
                             }}
-                            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                            transition={shouldReduceMotion ? {} : { duration: 5, repeat: Infinity, ease: "easeInOut" }}
                             style={{ transformStyle: "preserve-3d" }}
                         >
                             {Icon ? (
@@ -505,7 +516,11 @@ EmptyStateHelp.displayName = "EmptyStateHelp";
 
 // Preset compositions
 
-const EmptyStateDefault = (): React.JSX.Element => (
+const EmptyStateDefault = ({
+    onCreateProject,
+    onImport,
+    helpHref = "#"
+}: EmptyStateDefaultProps): React.JSX.Element => (
     <EmptyState>
         <EmptyStateIllustration icon={FileTextIcon} accent="primary" />
         <EmptyStateHeading>No projects yet</EmptyStateHeading>
@@ -513,25 +528,27 @@ const EmptyStateDefault = (): React.JSX.Element => (
             Get started by creating a new project. You can also import an existing one.
         </EmptyStateDesc>
         <EmptyStateActions>
-            <Button variant="default" animationVariant="pulse">
+            <Button variant="default" animationVariant="pulse" onClick={onCreateProject}>
                 <PlusIcon className="mr-2" /> Create project
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={onImport}>
                 <UploadIcon className="mr-2" /> Import
             </Button>
         </EmptyStateActions>
-        <EmptyStateHelp linkText="Read our documentation" />
+        <EmptyStateHelp linkText="Read our documentation" href={helpHref} />
     </EmptyState>
 );
 
-const EmptyStateMinimal = (): React.JSX.Element => (
+const EmptyStateMinimal = ({
+    onClearFilters
+}: EmptyStateMinimalProps): React.JSX.Element => (
     <EmptyState variant="minimal" tilt={false}>
         <EmptyStateIllustration icon={FileTextIcon} accent="teal" />
         <EmptyStateBadge label="0 results" />
         <EmptyStateHeading title="Nothing found" />
         <EmptyStateDesc description="We couldn't find anything matching your search. Try adjusting your filters." />
         <EmptyStateActions>
-            <Button variant="outline">Clear filters</Button>
+            <Button variant="outline" onClick={onClearFilters}>Clear filters</Button>
         </EmptyStateActions>
     </EmptyState>
 );
@@ -604,14 +621,14 @@ import { FileTextIcon } from "@radix-ui/react-icons";
 | :--- | :--- | :--- | :--- |
 | `icon` | `ElementType` | `FileTextIcon` | Radix icon to display |
 | `illustration` | `ReactNode \| string` | - | Custom illustration or image URL. Overrides `icon` |
-| `iconSize` | `number` | `48` | Size of the icon in pixels |
+| `iconSize` | `number` | `22` | Size of the icon in pixels |
 | `accent` | `'primary' \| 'teal' \| 'amber'` | `'primary'` | Accent color for the illustration and background gradient |
 
 ### EmptyStateBadge
 | Prop | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `label` | `string` | - | Badge text |
-| `dot` | `boolean` | `false` | Displays a dot before the label |
+| `dot` | `boolean` | `true` | Displays a dot before the label |
 
 ### EmptyStateHeading
 | Prop | Type | Default | Description |
