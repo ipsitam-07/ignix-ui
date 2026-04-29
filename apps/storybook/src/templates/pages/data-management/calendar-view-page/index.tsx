@@ -1,4 +1,11 @@
-import { useState, useCallback, useEffect, useRef, type ReactNode } from "react";
+import {
+    useState,
+    useCallback,
+    useEffect,
+    useRef,
+    type ReactNode,
+} from "react";
+import ReactDOM from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     ChevronLeftIcon,
@@ -68,6 +75,7 @@ export interface CalendarViewProps {
     theme?: "light" | "dark";
     labels?: CalendarViewLabels;
     className?: string;
+    modalContainer?: HTMLElement | null;
 }
 
 // ─── Color map ────────────────────────────────────────────────────────────────
@@ -76,10 +84,30 @@ export const EVENT_COLORS: Record<
     EventType,
     { bg: string; text: string; border: string; accent: string }
 > = {
-    meeting: { bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-200", accent: "bg-blue-500" },
-    deadline: { bg: "bg-orange-100", text: "text-orange-700", border: "border-orange-200", accent: "bg-orange-500" },
-    review: { bg: "bg-purple-100", text: "text-purple-700", border: "border-purple-200", accent: "bg-purple-500" },
-    personal: { bg: "bg-green-100", text: "text-green-700", border: "border-green-200", accent: "bg-green-500" },
+    meeting: {
+        bg: "bg-blue-100",
+        text: "text-blue-700",
+        border: "border-blue-200",
+        accent: "bg-blue-500",
+    },
+    deadline: {
+        bg: "bg-orange-100",
+        text: "text-orange-700",
+        border: "border-orange-200",
+        accent: "bg-orange-500",
+    },
+    review: {
+        bg: "bg-purple-100",
+        text: "text-purple-700",
+        border: "border-purple-200",
+        accent: "bg-purple-500",
+    },
+    personal: {
+        bg: "bg-green-100",
+        text: "text-green-700",
+        border: "border-green-200",
+        accent: "bg-green-500",
+    },
 };
 
 const DEFAULT_LABELS: Required<CalendarViewLabels> = {
@@ -145,7 +173,10 @@ function isSameDay(a: Date, b: Date): boolean {
 }
 
 function isSameMonth(a: Date, b: Date): boolean {
-    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
+    return (
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth()
+    );
 }
 
 const MONTH_NAMES = [
@@ -156,7 +187,10 @@ const MONTH_SHORT = [
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
-const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const DAY_NAMES = [
+    "Sunday", "Monday", "Tuesday", "Wednesday",
+    "Thursday", "Friday", "Saturday",
+];
 const DAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function fmtMonthYear(d: Date): string {
@@ -197,7 +231,9 @@ function fmtTimeCompact(d: Date): string {
     const m = d.getMinutes();
     const ampm = h >= 12 ? "pm" : "am";
     const hour = h % 12 === 0 ? 12 : h % 12;
-    return m === 0 ? `${hour}${ampm}` : `${hour}:${m.toString().padStart(2, "0")}${ampm}`;
+    return m === 0
+        ? `${hour}${ampm}`
+        : `${hour}:${m.toString().padStart(2, "0")}${ampm}`;
 }
 
 function fmtHourLabel(hour: number): string {
@@ -206,7 +242,14 @@ function fmtHourLabel(hour: number): string {
     return hour < 12 ? `${hour} AM` : `${hour - 12} PM`;
 }
 
-// ─── Controlled state hook ────────────────────────────────────────────────────
+/** Returns true when an event should be treated as all-day. */
+function isAllDayEvent(event: CalendarEvent): boolean {
+    return (
+        event.date.getHours() === 0 &&
+        event.date.getMinutes() === 0 &&
+        !event.endDate
+    );
+}
 
 function useControlled<T>(
     controlled: T | undefined,
@@ -216,27 +259,31 @@ function useControlled<T>(
     const isControlled = controlled !== undefined;
     const [internal, setInternal] = useState<T>(defaultValue);
     const value = isControlled ? (controlled as T) : internal;
+
+    const onChangeRef = useRef(onChange);
+    useEffect(() => {
+        onChangeRef.current = onChange;
+    });
+
     const setValue = useCallback(
         (next: T) => {
             if (!isControlled) setInternal(next);
-            onChange?.(next);
+            onChangeRef.current?.(next);
         },
-        [isControlled, onChange],
+        [isControlled],
     );
+
     return [value, setValue];
 }
-
-// ─── Inline Modal ─────────────────────────────────────────────────────────────
 
 interface ModalProps {
     open: boolean;
     onClose: () => void;
     children: ReactNode;
+    container?: HTMLElement | null;
 }
 
-function Modal({ open, onClose, children }: ModalProps) {
-    const overlayRef = useRef<HTMLDivElement>(null);
-
+function Modal({ open, onClose, children, container }: ModalProps) {
     useEffect(() => {
         if (!open) return;
         const onKey = (e: KeyboardEvent) => {
@@ -246,12 +293,16 @@ function Modal({ open, onClose, children }: ModalProps) {
         return () => document.removeEventListener("keydown", onKey);
     }, [open, onClose]);
 
-    return (
+    const target =
+        container ?? (typeof document !== "undefined" ? document.body : null);
+
+    if (!target) return null;
+
+    return ReactDOM.createPortal(
         <AnimatePresence>
             {open && (
                 <>
                     <motion.div
-                        ref={overlayRef}
                         key="modal-overlay"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -277,7 +328,8 @@ function Modal({ open, onClose, children }: ModalProps) {
                     </motion.div>
                 </>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        target,
     );
 }
 
@@ -293,6 +345,7 @@ interface EventModalProps {
 
 function EventModal({ event, labels, onClose, onEdit, onDelete }: EventModalProps) {
     const colors = EVENT_COLORS[event.type];
+    const allDay = isAllDayEvent(event);
     return (
         <>
             <div className={cn("h-1.5 w-full", colors.accent)} />
@@ -306,17 +359,27 @@ function EventModal({ event, labels, onClose, onEdit, onDelete }: EventModalProp
                             <ClockIcon className="h-3.5 w-3.5 shrink-0" />
                             <span>
                                 {fmtFullDate(event.date)}
-                                {event.date.getHours() !== 0 && (
+                                {!allDay && (
                                     <>
                                         <span className="mx-1">·</span>
                                         {fmtTime(event.date)}
                                         {event.endDate && ` – ${fmtTime(event.endDate)}`}
                                     </>
                                 )}
+                                {allDay && (
+                                    <span className="ml-1.5 text-[11px] uppercase tracking-wide font-medium text-muted-foreground/70">
+                                        All day
+                                    </span>
+                                )}
                             </span>
                         </div>
                     </div>
-                    <span className={cn("capitalize border shrink-0 text-[11px] rounded-md px-2 py-1", colors.bg, colors.text, colors.border)}>
+                    <span
+                        className={cn(
+                            "capitalize border shrink-0 text-[11px] rounded-md px-2 py-1",
+                            colors.bg, colors.text, colors.border,
+                        )}
+                    >
                         {event.type}
                     </span>
                 </div>
@@ -328,7 +391,13 @@ function EventModal({ event, labels, onClose, onEdit, onDelete }: EventModalProp
                         </DetailRow>
                     )}
                     {event.location && (
-                        <DetailRow icon={event.location.toLowerCase().includes("zoom") ? <VideoIcon className="h-4 w-4" /> : <DrawingPinIcon className="h-4 w-4" />}>
+                        <DetailRow
+                            icon={
+                                event.location.toLowerCase().includes("zoom")
+                                    ? <VideoIcon className="h-4 w-4" />
+                                    : <DrawingPinIcon className="h-4 w-4" />
+                            }
+                        >
                             {event.location}
                         </DetailRow>
                     )}
@@ -340,7 +409,10 @@ function EventModal({ event, labels, onClose, onEdit, onDelete }: EventModalProp
                     {event.tags && event.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1.5 pt-1">
                             {event.tags.map((tag) => (
-                                <span key={tag} className="px-2 py-0.5 bg-muted text-muted-foreground text-[11px] font-medium rounded-md">
+                                <span
+                                    key={tag}
+                                    className="px-2 py-0.5 bg-muted text-muted-foreground text-[11px] font-medium rounded-md"
+                                >
                                     {tag}
                                 </span>
                             ))}
@@ -351,7 +423,8 @@ function EventModal({ event, labels, onClose, onEdit, onDelete }: EventModalProp
 
             <div className="px-6 py-4 bg-muted/30 border-t border-border flex justify-between items-center">
                 <Button
-                    variant="ghost" size="sm"
+                    variant="ghost"
+                    size="sm"
                     className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5 h-8"
                     onClick={() => { onDelete?.(event); onClose(); }}
                 >
@@ -406,16 +479,25 @@ function LoadingSkeleton() {
 
 // ─── Month View ───────────────────────────────────────────────────────────────
 
-function MonthView({ currentDate, events, selectedDate, today, onSelectDate, onEventClick }: {
-    currentDate: Date; events: CalendarEvent[]; selectedDate: Date; today: Date;
-    onSelectDate: (d: Date) => void; onEventClick: (e: CalendarEvent) => void;
+function MonthView({
+    currentDate, events, selectedDate, today, onSelectDate, onEventClick,
+}: {
+    currentDate: Date;
+    events: CalendarEvent[];
+    selectedDate: Date;
+    today: Date;
+    onSelectDate: (d: Date) => void;
+    onEventClick: (e: CalendarEvent) => void;
 }) {
     const monthStart = startOfMonth(currentDate);
     const startDate = startOfWeek(monthStart);
     const endDate = endOfWeek(endOfMonth(monthStart));
     const days: Date[] = [];
     let day = startDate;
-    while (day <= endDate) { days.push(day); day = addDays(day, 1); }
+    while (day <= endDate) {
+        days.push(day);
+        day = addDays(day, 1);
+    }
     const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const MAX_VISIBLE = 3;
 
@@ -423,10 +505,20 @@ function MonthView({ currentDate, events, selectedDate, today, onSelectDate, onE
         <div className="flex flex-col h-full bg-card">
             <div className="grid grid-cols-7 border-b border-border bg-muted/20 shrink-0">
                 {WEEK_DAYS.map((d) => (
-                    <div key={d} className="py-2 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">{d}</div>
+                    <div
+                        key={d}
+                        className="py-2 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                    >
+                        {d}
+                    </div>
                 ))}
             </div>
-            <div className="flex-1 grid grid-cols-7 overflow-hidden bg-border gap-[1px]" style={{ gridTemplateRows: `repeat(${Math.ceil(days.length / 7)}, 120px)` }}>
+            <div
+                className="flex-1 grid grid-cols-7 overflow-hidden bg-border gap-[1px]"
+                style={{
+                    gridTemplateRows: `repeat(${Math.ceil(days.length / 7)}, 120px)`,
+                }}
+            >
                 {days.map((d) => {
                     const isCurrentMonth = isSameMonth(d, monthStart);
                     const isToday = isSameDay(d, today);
@@ -435,26 +527,52 @@ function MonthView({ currentDate, events, selectedDate, today, onSelectDate, onE
                     const displayed = dayEvents.slice(0, MAX_VISIBLE);
                     const overflow = dayEvents.length - MAX_VISIBLE;
                     return (
-                        <div key={d.toISOString()} onClick={() => onSelectDate(d)}
-                            className={cn("bg-card relative flex flex-col p-1.5 cursor-pointer transition-colors overflow-hidden hover:bg-primary/[0.03]",
-                                !isCurrentMonth && "bg-muted/25", isSelected && "ring-1 ring-inset ring-primary z-10")}>
-                            <div className="mb-1">
-                                <span className={cn("text-sm font-medium w-7 h-7 inline-flex items-center justify-center rounded-full transition-colors",
-                                    isToday ? "bg-primary text-primary-foreground shadow-sm" : isCurrentMonth ? "text-foreground" : "text-muted-foreground/40")}>
+                        <div
+                            key={d.toISOString()}
+                            onClick={() => onSelectDate(d)}
+                            className={cn(
+                                "bg-card relative flex flex-col p-1.5 cursor-pointer transition-colors overflow-hidden hover:bg-primary/[0.03] min-h-0",
+                                !isCurrentMonth && "bg-muted/25",
+                                isSelected && "ring-1 ring-inset ring-primary z-10",
+                            )}
+                        >
+                            <div className="mb-1 shrink-0">
+                                <span
+                                    className={cn(
+                                        "text-sm font-medium w-7 h-7 inline-flex items-center justify-center rounded-full transition-colors",
+                                        isToday
+                                            ? "bg-primary text-primary-foreground shadow-sm"
+                                            : isCurrentMonth
+                                                ? "text-foreground"
+                                                : "text-muted-foreground/40",
+                                    )}
+                                >
                                     {d.getDate()}
                                 </span>
                             </div>
-                            <div className="flex-1 flex flex-col gap-0.5 overflow-hidden w-full">
+                            <div className="flex-1 flex flex-col gap-0.5 overflow-hidden w-full min-h-0">
                                 {displayed.map((event) => (
-                                    <motion.div key={event.id} onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
-                                        whileHover={{ scale: 1.02 }} transition={{ duration: 0.1 }}
-                                        className={cn("text-[10px] px-1.5 py-0.5 rounded-[4px] truncate cursor-pointer font-medium",
-                                            EVENT_COLORS[event.type].bg, EVENT_COLORS[event.type].text)}>
-                                        {event.date.getHours() !== 0 ? `${fmtTimeCompact(event.date)} ` : ""}{event.title}
+                                    <motion.div
+                                        key={event.id}
+                                        onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
+                                        whileHover={{ scale: 1.02 }}
+                                        transition={{ duration: 0.1 }}
+                                        className={cn(
+                                            "text-[10px] px-1.5 py-0.5 rounded-[4px] truncate cursor-pointer font-medium",
+                                            EVENT_COLORS[event.type].bg,
+                                            EVENT_COLORS[event.type].text,
+                                        )}
+                                    >
+                                        {!isAllDayEvent(event)
+                                            ? `${fmtTimeCompact(event.date)} `
+                                            : ""}
+                                        {event.title}
                                     </motion.div>
                                 ))}
                                 {overflow > 0 && (
-                                    <div className="text-[10px] font-medium text-muted-foreground px-1 hover:text-foreground transition-colors cursor-pointer">+{overflow} more</div>
+                                    <div className="text-[10px] font-medium text-muted-foreground px-1 hover:text-foreground transition-colors cursor-pointer">
+                                        +{overflow} more
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -465,10 +583,61 @@ function MonthView({ currentDate, events, selectedDate, today, onSelectDate, onE
     );
 }
 
+interface PositionedEvent {
+    event: CalendarEvent;
+    column: number;
+    totalColumns: number;
+    top: number;
+    height: number;
+}
+
+function layoutTimedEvents(events: CalendarEvent[]): PositionedEvent[] {
+    const sorted = [...events].sort(
+        (a, b) =>
+            a.date.getHours() * 60 + a.date.getMinutes() -
+            (b.date.getHours() * 60 + b.date.getMinutes()),
+    );
+
+    const columnEnds: number[] = [];
+
+    const assignments: { event: CalendarEvent; column: number; top: number; height: number }[] =
+        sorted.map((event) => {
+            const startMin = event.date.getHours() * 60 + event.date.getMinutes();
+            const endMin = event.endDate
+                ? event.endDate.getHours() * 60 + event.endDate.getMinutes()
+                : startMin + 45;
+
+            let col = columnEnds.findIndex((end) => end <= startMin);
+            if (col === -1) {
+                col = columnEnds.length;
+                columnEnds.push(endMin);
+            } else {
+                columnEnds[col] = endMin;
+            }
+
+            return {
+                event,
+                column: col,
+                top: startMin,
+                height: Math.max(endMin - startMin, 24),
+            };
+        });
+
+    const totalColumns = columnEnds.length || 1;
+
+    return assignments.map((a) => ({ ...a, totalColumns }));
+}
+
 // ─── Week View ────────────────────────────────────────────────────────────────
 
-function WeekView({ currentDate, events, today, onEventClick }: {
-    currentDate: Date; events: CalendarEvent[]; today: Date; onEventClick: (e: CalendarEvent) => void;
+function WeekView({
+    currentDate, events, today, onEventClick, onSelectDate,
+}: {
+    currentDate: Date;
+    events: CalendarEvent[];
+    today: Date;
+    onEventClick: (e: CalendarEvent) => void;
+    onSelectDate: (d: Date) => void;
 }) {
     const startDate = startOfWeek(currentDate);
     const days = Array.from({ length: 7 }).map((_, i) => addDays(startDate, i));
@@ -483,53 +652,114 @@ function WeekView({ currentDate, events, today, onEventClick }: {
                     {days.map((d) => {
                         const isToday = isSameDay(d, today);
                         return (
-                            <div key={d.toISOString()} className={cn("py-3 text-center border-r border-border last:border-0", isToday && "bg-primary/5")}>
-                                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">{fmtWeekdayShort(d)}</div>
-                                <div className={cn("text-lg font-semibold w-9 h-9 mx-auto inline-flex items-center justify-center rounded-full",
-                                    isToday ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground")}>
+                            <button
+                                key={d.toISOString()}
+                                type="button"
+                                onClick={() => onSelectDate(d)}
+                                className={cn(
+                                    "py-3 text-center border-r border-border last:border-0 w-full",
+                                    "hover:bg-primary/[0.04] transition-colors",
+                                    isToday && "bg-primary/5",
+                                )}
+                            >
+                                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                                    {fmtWeekdayShort(d)}
+                                </div>
+                                <div
+                                    className={cn(
+                                        "text-lg font-semibold w-9 h-9 mx-auto inline-flex items-center justify-center rounded-full",
+                                        isToday
+                                            ? "bg-primary text-primary-foreground shadow-sm"
+                                            : "text-foreground",
+                                    )}
+                                >
                                     {d.getDate()}
                                 </div>
-                            </div>
+                            </button>
                         );
                     })}
                 </div>
             </div>
+            <AllDayStrip days={days} events={events} onEventClick={onEventClick} />
+
             <div className="flex-1 overflow-y-auto">
                 <div className="flex min-h-[1440px]">
                     <div className="w-16 border-r border-border shrink-0 bg-card z-10">
                         {hours.map((hour) => (
-                            <div key={hour} className="h-[60px] border-b border-border/40 text-right pr-2.5 py-1">
-                                <span className="text-[10px] font-medium text-muted-foreground/70">{fmtHourLabel(hour)}</span>
+                            <div
+                                key={hour}
+                                className="h-[60px] border-b border-border/40 text-right pr-2.5 py-1"
+                            >
+                                <span className="text-[10px] font-medium text-muted-foreground/70">
+                                    {fmtHourLabel(hour)}
+                                </span>
                             </div>
                         ))}
                     </div>
+
                     <div className="flex-1 grid grid-cols-7 relative">
+                        {/* Hour grid lines */}
                         <div className="absolute inset-0 flex flex-col pointer-events-none">
-                            {hours.map((hour) => <div key={hour} className="h-[60px] border-b border-border/40 w-full" />)}
+                            {hours.map((hour) => (
+                                <div key={hour} className="h-[60px] border-b border-border/40 w-full" />
+                            ))}
                         </div>
-                        {days.some((d) => isSameDay(d, today)) && (
-                            <motion.div className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
-                                style={{ top: `${todayMinutes}px` }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-                                <div className="h-[2px] bg-destructive flex-1 relative">
-                                    <div className="absolute w-2.5 h-2.5 rounded-full bg-destructive -left-1 -top-[4px]" />
-                                </div>
-                            </motion.div>
-                        )}
+
                         {days.map((d) => {
-                            const dayEvents = events.filter((e) => isSameDay(e.date, d));
+                            const isToday = isSameDay(d, today);
+                            const timedEvts = events.filter(
+                                (e) => isSameDay(e.date, d) && !isAllDayEvent(e),
+                            );
+                            const positioned = layoutTimedEvents(timedEvts);
+
                             return (
-                                <div key={d.toISOString()} className="border-r border-border/40 last:border-0 relative">
-                                    {dayEvents.map((event) => {
-                                        const top = event.date.getHours() * 60 + event.date.getMinutes();
-                                        const durationMins = event.endDate
-                                            ? event.endDate.getHours() * 60 + event.endDate.getMinutes() - top : 45;
+                                <div
+                                    key={d.toISOString()}
+                                    className="border-r border-border/40 last:border-0 relative"
+                                >
+                                    {isToday && (
+                                        <motion.div
+                                            className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
+                                            style={{ top: `${todayMinutes}px` }}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ delay: 0.3 }}
+                                        >
+                                            <div className="h-[2px] bg-destructive flex-1 relative">
+                                                <div className="absolute w-2.5 h-2.5 rounded-full bg-destructive -left-1 -top-[4px]" />
+                                            </div>
+                                        </motion.div>
+                                    )}
+
+                                    {positioned.map(({ event, column, totalColumns, top, height }) => {
+                                        const widthPct = 100 / totalColumns;
+                                        const leftPct = column * widthPct;
                                         return (
-                                            <motion.div key={event.id} style={{ top: `${top}px`, height: `${Math.max(durationMins, 24)}px` }}
-                                                onClick={() => onEventClick(event)} whileHover={{ scale: 1.02, zIndex: 10 }} transition={{ duration: 0.1 }}
-                                                className={cn("absolute left-1 right-1 rounded-[5px] px-1.5 py-1 cursor-pointer overflow-hidden border",
-                                                    EVENT_COLORS[event.type].bg, EVENT_COLORS[event.type].text, EVENT_COLORS[event.type].border)}>
-                                                <div className="text-[10px] font-semibold truncate leading-tight">{event.title}</div>
-                                                <div className="text-[9px] opacity-75 truncate">{fmtTime(event.date)}</div>
+                                            <motion.div
+                                                key={event.id}
+                                                style={{
+                                                    top: `${top}px`,
+                                                    height: `${height}px`,
+                                                    left: `calc(${leftPct}% + 2px)`,
+                                                    width: `calc(${widthPct}% - 4px)`,
+                                                    position: "absolute",
+                                                }}
+                                                onClick={() => onEventClick(event)}
+                                                whileHover={{ scale: 1.02, zIndex: 10 }}
+                                                transition={{ duration: 0.1 }}
+                                                className={cn(
+                                                    "rounded-[5px] px-1.5 py-1 cursor-pointer overflow-hidden border",
+                                                    EVENT_COLORS[event.type].bg,
+                                                    EVENT_COLORS[event.type].text,
+                                                    EVENT_COLORS[event.type].border,
+                                                )}
+                                            >
+                                                <div className="text-[10px] font-semibold truncate leading-tight">
+                                                    {event.title}
+                                                </div>
+                                                <div className="text-[9px] opacity-75 truncate">
+                                                    {fmtTime(event.date)}
+                                                </div>
                                             </motion.div>
                                         );
                                     })}
@@ -543,73 +773,201 @@ function WeekView({ currentDate, events, today, onEventClick }: {
     );
 }
 
-// ─── Day View ─────────────────────────────────────────────────────────────────
 
-function DayView({ currentDate, events, today, onEventClick }: {
-    currentDate: Date; events: CalendarEvent[]; today: Date; onEventClick: (e: CalendarEvent) => void;
+function AllDayStrip({
+    days,
+    events,
+    onEventClick,
+}: {
+    days: Date[];
+    events: CalendarEvent[];
+    onEventClick: (e: CalendarEvent) => void;
 }) {
-    const dayEvents = events.filter((e) => isSameDay(e.date, currentDate));
+    const hasAnyAllDay = days.some((d) =>
+        events.some((e) => isSameDay(e.date, d) && isAllDayEvent(e)),
+    );
+
+    if (!hasAnyAllDay) return null;
+
+    return (
+        <div className="flex border-b border-border shrink-0 bg-muted/10">
+            <div className="w-16 border-r border-border shrink-0 flex items-center justify-end pr-2.5">
+                <span className="text-[9px] font-medium text-muted-foreground/60 uppercase tracking-wider leading-tight text-right">
+                    All
+                    <br />
+                    day
+                </span>
+            </div>
+            <div
+                className="flex-1 grid py-1 gap-y-0.5"
+                style={{ gridTemplateColumns: `repeat(${days.length}, 1fr)` }}
+            >
+                {days.map((d) => {
+                    const allDayEvts = events.filter(
+                        (e) => isSameDay(e.date, d) && isAllDayEvent(e),
+                    );
+                    return (
+                        <div
+                            key={d.toISOString()}
+                            className="px-0.5 flex flex-col gap-0.5 min-h-[24px]"
+                        >
+                            {allDayEvts.map((event) => (
+                                <motion.div
+                                    key={event.id}
+                                    onClick={() => onEventClick(event)}
+                                    whileHover={{ scale: 1.02 }}
+                                    transition={{ duration: 0.1 }}
+                                    className={cn(
+                                        "text-[10px] px-1.5 py-0.5 rounded-[4px] truncate cursor-pointer font-medium border",
+                                        EVENT_COLORS[event.type].bg,
+                                        EVENT_COLORS[event.type].text,
+                                        EVENT_COLORS[event.type].border,
+                                    )}
+                                >
+                                    {event.title}
+                                </motion.div>
+                            ))}
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+function DayView({
+    currentDate, events, today, onEventClick,
+}: {
+    currentDate: Date;
+    events: CalendarEvent[];
+    today: Date;
+    onEventClick: (e: CalendarEvent) => void;
+}) {
+    const allDayEvts = events.filter(
+        (e) => isSameDay(e.date, currentDate) && isAllDayEvent(e),
+    );
+    const timedEvts = events.filter(
+        (e) => isSameDay(e.date, currentDate) && !isAllDayEvent(e),
+    );
+    const positioned = layoutTimedEvents(timedEvts);
+
     const hours = Array.from({ length: 24 }).map((_, i) => i);
     const todayMinutes = today.getHours() * 60 + today.getMinutes();
     const isToday = isSameDay(currentDate, today);
+    const totalEventCount = allDayEvts.length + timedEvts.length;
 
     return (
         <div className="flex flex-col h-full bg-card overflow-hidden">
             <div className="flex border-b border-border bg-muted/20 shrink-0 px-6 py-3 items-center gap-3">
-                <div className={cn("text-2xl font-bold w-11 h-11 inline-flex items-center justify-center rounded-full",
-                    isToday ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground")}>
+                <div
+                    className={cn(
+                        "text-2xl font-bold w-11 h-11 inline-flex items-center justify-center rounded-full",
+                        isToday
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-foreground",
+                    )}
+                >
                     {currentDate.getDate()}
                 </div>
                 <div>
-                    <div className="text-sm font-semibold text-foreground">{fmtWeekdayLong(currentDate)}</div>
-                    <div className="text-xs text-muted-foreground">{MONTH_NAMES[currentDate.getMonth()]} {currentDate.getFullYear()}</div>
+                    <div className="text-sm font-semibold text-foreground">
+                        {fmtWeekdayLong(currentDate)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                        {MONTH_NAMES[currentDate.getMonth()]} {currentDate.getFullYear()}
+                    </div>
                 </div>
                 <div className="ml-auto text-sm text-muted-foreground">
-                    {dayEvents.length === 0 ? "No events" : `${dayEvents.length} event${dayEvents.length > 1 ? "s" : ""}`}
+                    {totalEventCount === 0
+                        ? "No events"
+                        : `${totalEventCount} event${totalEventCount > 1 ? "s" : ""}`}
                 </div>
             </div>
+
+            <AllDayStrip
+                days={[currentDate]}
+                events={events}
+                onEventClick={onEventClick}
+            />
+
             <div className="flex-1 overflow-y-auto">
                 <div className="flex min-h-[1440px]">
                     <div className="w-16 border-r border-border shrink-0 bg-card">
                         {hours.map((hour) => (
-                            <div key={hour} className="h-[60px] border-b border-border/40 text-right pr-2.5 py-1">
-                                <span className="text-[10px] font-medium text-muted-foreground/70">{fmtHourLabel(hour)}</span>
+                            <div
+                                key={hour}
+                                className="h-[60px] border-b border-border/40 text-right pr-2.5 py-1"
+                            >
+                                <span className="text-[10px] font-medium text-muted-foreground/70">
+                                    {fmtHourLabel(hour)}
+                                </span>
                             </div>
                         ))}
                     </div>
+
                     <div className="flex-1 relative">
                         <div className="absolute inset-0 flex flex-col pointer-events-none">
-                            {hours.map((hour) => <div key={hour} className="h-[60px] border-b border-border/40 w-full" />)}
+                            {hours.map((hour) => (
+                                <div key={hour} className="h-[60px] border-b border-border/40 w-full" />
+                            ))}
                         </div>
+
                         {isToday && (
-                            <motion.div className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
-                                style={{ top: `${todayMinutes}px` }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+                            <motion.div
+                                className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
+                                style={{ top: `${todayMinutes}px` }}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.3 }}
+                            >
                                 <div className="h-[2px] bg-destructive flex-1 relative">
                                     <div className="absolute w-2.5 h-2.5 rounded-full bg-destructive -left-1 -top-[4px]" />
                                 </div>
                             </motion.div>
                         )}
-                        {dayEvents.length === 0 ? (
+
+                        {timedEvts.length === 0 && allDayEvts.length === 0 ? (
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center pointer-events-none">
                                 <CalendarIcon className="h-8 w-8 text-muted-foreground/30" />
-                                <p className="text-sm font-medium text-muted-foreground/50">No events scheduled</p>
+                                <p className="text-sm font-medium text-muted-foreground/50">
+                                    No events scheduled
+                                </p>
                             </div>
-                        ) : dayEvents.map((event) => {
-                            const top = event.date.getHours() * 60 + event.date.getMinutes();
-                            const durationMins = event.endDate
-                                ? event.endDate.getHours() * 60 + event.endDate.getMinutes() - top : 60;
-                            return (
-                                <motion.div key={event.id} style={{ top: `${top}px`, height: `${Math.max(durationMins, 28)}px` }}
-                                    onClick={() => onEventClick(event)} whileHover={{ scale: 1.01, zIndex: 10 }} transition={{ duration: 0.1 }}
-                                    className={cn("absolute left-3 right-4 rounded-lg px-3 py-1.5 cursor-pointer overflow-hidden border",
-                                        EVENT_COLORS[event.type].bg, EVENT_COLORS[event.type].text, EVENT_COLORS[event.type].border)}>
-                                    <div className="text-[11px] font-semibold truncate">{event.title}</div>
-                                    <div className="text-[10px] opacity-70 truncate">
-                                        {fmtTime(event.date)}{event.endDate && ` – ${fmtTime(event.endDate)}`}
-                                    </div>
-                                </motion.div>
-                            );
-                        })}
+                        ) : (
+                            positioned.map(({ event, column, totalColumns, top, height }) => {
+                                const widthPct = 100 / totalColumns;
+                                const leftPct = column * widthPct;
+                                return (
+                                    <motion.div
+                                        key={event.id}
+                                        style={{
+                                            top: `${top}px`,
+                                            height: `${height}px`,
+                                            left: `calc(${leftPct}% + 8px)`,
+                                            width: `calc(${widthPct}% - 20px)`,
+                                            position: "absolute",
+                                        }}
+                                        onClick={() => onEventClick(event)}
+                                        whileHover={{ scale: 1.01, zIndex: 10 }}
+                                        transition={{ duration: 0.1 }}
+                                        className={cn(
+                                            "rounded-lg px-3 py-1.5 cursor-pointer overflow-hidden border",
+                                            EVENT_COLORS[event.type].bg,
+                                            EVENT_COLORS[event.type].text,
+                                            EVENT_COLORS[event.type].border,
+                                        )}
+                                    >
+                                        <div className="text-[11px] font-semibold truncate">
+                                            {event.title}
+                                        </div>
+                                        <div className="text-[10px] opacity-70 truncate">
+                                            {fmtTime(event.date)}
+                                            {event.endDate && ` – ${fmtTime(event.endDate)}`}
+                                        </div>
+                                    </motion.div>
+                                );
+                            })
+                        )}
                     </div>
                 </div>
             </div>
@@ -621,13 +979,28 @@ function DayView({ currentDate, events, today, onEventClick }: {
 
 export function CalendarView(props: CalendarViewProps) {
     const {
-        events = [], loading = false,
-        currentDate: currentDateProp, defaultDate, onNavigate,
-        selectedDate: selectedDateProp, defaultSelectedDate, onDateSelect,
-        view: viewProp, defaultView = "month", onViewChange,
-        selectedEvent: selectedEventProp, onEventClick, onEventClose,
-        onEventAdd, onEventEdit, onEventDelete,
-        today = new Date(), theme, labels: labelsProp, className,
+        events = [],
+        loading = false,
+        currentDate: currentDateProp,
+        defaultDate,
+        onNavigate,
+        selectedDate: selectedDateProp,
+        defaultSelectedDate,
+        onDateSelect,
+        view: viewProp,
+        defaultView = "month",
+        onViewChange,
+        selectedEvent: selectedEventProp,
+        onEventClick,
+        onEventClose,
+        onEventAdd,
+        onEventEdit,
+        onEventDelete,
+        today = new Date(),
+        theme,
+        labels: labelsProp,
+        className,
+        modalContainer,
     } = props;
 
     const labels = { ...DEFAULT_LABELS, ...labelsProp };
@@ -657,7 +1030,10 @@ export function CalendarView(props: CalendarViewProps) {
         else if (view === "week") setCurrentDate(addDays(currentDate, 7));
         else setCurrentDate(addDays(currentDate, 1));
     };
-    const handleToday = () => { setCurrentDate(today); setSelectedDate(today); };
+    const handleToday = () => {
+        setCurrentDate(today);
+        setSelectedDate(today);
+    };
 
     const headerLabel = () => {
         if (view === "month") return fmtMonthYear(currentDate);
@@ -670,49 +1046,132 @@ export function CalendarView(props: CalendarViewProps) {
     };
 
     return (
-        <div className={cn(theme === "dark" && "dark", "min-h-screen flex flex-col font-sans bg-background text-foreground overflow-hidden", className)}>
+        <div
+            className={cn(
+                theme === "dark" && "dark",
+                "min-h-screen flex flex-col font-sans bg-background text-foreground overflow-hidden",
+                className,
+            )}
+        >
             <header className="h-16 border-b border-border flex items-center justify-between px-6 shrink-0 bg-card/80 backdrop-blur-sm">
                 <div className="flex items-center gap-3">
-                    <h1 className="text-xl font-semibold tracking-tight min-w-[200px]">{headerLabel()}</h1>
+                    <h1 className="text-xl font-semibold tracking-tight min-w-[200px]">
+                        {headerLabel()}
+                    </h1>
                     <div className="flex items-center gap-1">
-                        <Button variant="outline" size="icon" onClick={handlePrev} className="h-8 w-8 text-muted-foreground hover:text-foreground"><ChevronLeftIcon className="h-4 w-4" /></Button>
-                        <Button variant="outline" size="sm" onClick={handleToday} className="h-8 px-3 text-xs font-medium text-muted-foreground hover:text-foreground">{labels.todayText}</Button>
-                        <Button variant="outline" size="icon" onClick={handleNext} className="h-8 w-8 text-muted-foreground hover:text-foreground"><ChevronRightIcon className="h-4 w-4" /></Button>
+                        <Button
+                            variant="outline" size="icon"
+                            onClick={handlePrev}
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        >
+                            <ChevronLeftIcon className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline" size="sm"
+                            onClick={handleToday}
+                            className="h-8 px-3 text-xs font-medium text-muted-foreground hover:text-foreground"
+                        >
+                            {labels.todayText}
+                        </Button>
+                        <Button
+                            variant="outline" size="icon"
+                            onClick={handleNext}
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        >
+                            <ChevronRightIcon className="h-4 w-4" />
+                        </Button>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="flex p-1 bg-muted rounded-md">
                         {(["month", "week", "day"] as CalendarViewType[]).map((v) => (
-                            <button key={v} onClick={() => setView(v)}
-                                className={cn("px-3 py-1 text-xs font-medium rounded-sm transition-all capitalize",
-                                    view === v ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
-                                {v === "month" ? labels.monthLabel : v === "week" ? labels.weekLabel : labels.dayLabel}
+                            <button
+                                key={v}
+                                onClick={() => setView(v)}
+                                className={cn(
+                                    "px-3 py-1 text-xs font-medium rounded-sm transition-all capitalize",
+                                    view === v
+                                        ? "bg-background text-foreground shadow-sm"
+                                        : "text-muted-foreground hover:text-foreground",
+                                )}
+                            >
+                                {v === "month"
+                                    ? labels.monthLabel
+                                    : v === "week"
+                                        ? labels.weekLabel
+                                        : labels.dayLabel}
                             </button>
                         ))}
                     </div>
-                    <Button size="sm" className="h-8 gap-1.5 shadow-sm bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => onEventAdd?.(selectedDate)}>
-                        <PlusIcon className="h-3.5 w-3.5" />{labels.addEventText}
+                    <Button
+                        size="sm"
+                        className="h-8 gap-1.5 shadow-sm bg-primary hover:bg-primary/90 text-primary-foreground"
+                        onClick={() => onEventAdd?.(selectedDate)}
+                    >
+                        <PlusIcon className="h-3.5 w-3.5" />
+                        {labels.addEventText}
                     </Button>
                 </div>
             </header>
 
             <main className="flex-1 overflow-hidden relative flex flex-col">
-                {loading ? <LoadingSkeleton /> : (
+                {loading ? (
+                    <LoadingSkeleton />
+                ) : (
                     <AnimatePresence mode="wait">
-                        <motion.div key={view + currentDate.toISOString()}
-                            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                            transition={{ duration: 0.18, ease: "easeOut" }} className="flex-1 overflow-hidden flex flex-col h-full">
-                            {view === "month" && <MonthView currentDate={currentDate} events={events} selectedDate={selectedDate} today={today} onSelectDate={setSelectedDate} onEventClick={handleEventClick} />}
-                            {view === "week" && <WeekView currentDate={currentDate} events={events} today={today} onEventClick={handleEventClick} />}
-                            {view === "day" && <DayView currentDate={currentDate} events={events} today={today} onEventClick={handleEventClick} />}
+                        <motion.div
+                            key={view + currentDate.toISOString()}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.18, ease: "easeOut" }}
+                            className="flex-1 overflow-hidden flex flex-col h-full"
+                        >
+                            {view === "month" && (
+                                <MonthView
+                                    currentDate={currentDate}
+                                    events={events}
+                                    selectedDate={selectedDate}
+                                    today={today}
+                                    onSelectDate={setSelectedDate}
+                                    onEventClick={handleEventClick}
+                                />
+                            )}
+                            {view === "week" && (
+                                <WeekView
+                                    currentDate={currentDate}
+                                    events={events}
+                                    today={today}
+                                    onEventClick={handleEventClick}
+                                    onSelectDate={setSelectedDate}
+                                />
+                            )}
+                            {view === "day" && (
+                                <DayView
+                                    currentDate={currentDate}
+                                    events={events}
+                                    today={today}
+                                    onEventClick={handleEventClick}
+                                />
+                            )}
                         </motion.div>
                     </AnimatePresence>
                 )}
             </main>
 
-            <Modal open={!!selectedEvent} onClose={handleEventClose}>
+            <Modal
+                open={!!selectedEvent}
+                onClose={handleEventClose}
+                container={modalContainer}
+            >
                 {selectedEvent && (
-                    <EventModal event={selectedEvent} labels={labels} onClose={handleEventClose} onEdit={onEventEdit} onDelete={onEventDelete} />
+                    <EventModal
+                        event={selectedEvent}
+                        labels={labels}
+                        onClose={handleEventClose}
+                        onEdit={onEventEdit}
+                        onDelete={onEventDelete}
+                    />
                 )}
             </Modal>
         </div>
