@@ -94,7 +94,7 @@ const ErrorPageDemo = () => {
     } else if (showIllustration && errorType === '500') {
       code += `\n  <ErrorPageIllustration\n    position="${illustrationPosition}"\n    illustration="/img/500-1.svg"\n    className="w-90 h-90 mx-auto"\n  />`;
     } else if (showIllustration && errorType === '403') {
-      code += `\n  <ErrorPageIllustration\n    position="${illustrationPosition}"\n    illustration="/img/403.png"\n    className="w-90 h-90 mx-auto"\n  />`;
+      code += `\n  <ErrorPageIllustration\n    position="${illustrationPosition}"\n    illustration="/img/403.svg"\n    className="w-90 h-90 mx-auto"\n  />`;
     }
 
     code += `\n  <ErrorPageContent>`;
