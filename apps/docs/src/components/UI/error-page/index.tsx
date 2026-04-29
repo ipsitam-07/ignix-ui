@@ -480,7 +480,7 @@ export const ErrorPageErrorCode: React.FC<ErrorPageErrorCodeProps> = React.memo(
 
   const textColorClass = React.useMemo(() => {
     return isDark || hasBackgroundImage ? "text-white" : "text-primary";
-  }, [isDark, hasBackgroundImage, animationType]);
+  }, [isDark, hasBackgroundImage]);
 
   const illustrationContent = React.useMemo(() =>
     illustration ? renderIllustration(illustration) : null,
@@ -1033,7 +1033,6 @@ export const ErrorPageErrorReference: React.FC<ErrorPageErrorReferenceProps> = R
               icon={<Copy />}
               iconPosition="left"
               onClick={handleCopy}
-            // className={cn("shrink-0",(isDark || hasBackgroundImage) && "border-slate-700 text-white hover:bg-slate-800")}
             >
               {copyButtonText}
             </ButtonWithIcon>

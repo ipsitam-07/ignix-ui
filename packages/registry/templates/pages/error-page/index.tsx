@@ -480,7 +480,7 @@ export const ErrorPageErrorCode: React.FC<ErrorPageErrorCodeProps> = React.memo(
 
   const textColorClass = React.useMemo(() => {
     return isDark || hasBackgroundImage ? "text-white" : "text-primary";
-  }, [isDark, hasBackgroundImage, animationType]);
+  }, [isDark, hasBackgroundImage]);
 
   const illustrationContent = React.useMemo(() =>
     illustration ? renderIllustration(illustration) : null,
@@ -706,7 +706,7 @@ export const ErrorPageHeading: React.FC<ErrorPageHeadingProps> = React.memo(({
     return (
       <motion.div variants={itemAnimation}>
         <Typography
-          variant="h2" 
+          variant="h2"
           className={cn("text-center text-3xl sm:text-4xl lg:text-5xl font-bold mb-4", textColorClass, className)}>
           {children}
         </Typography>
@@ -717,7 +717,7 @@ export const ErrorPageHeading: React.FC<ErrorPageHeadingProps> = React.memo(({
   return (
     <motion.div variants={itemAnimation}>
       <Typography
-        variant="h2" 
+        variant="h2"
         className={cn("text-center text-3xl sm:text-4xl lg:text-5xl font-bold mb-4", textColorClass, className)}>
         {title || "Page Not Found"}
       </Typography>
@@ -1033,7 +1033,6 @@ export const ErrorPageErrorReference: React.FC<ErrorPageErrorReferenceProps> = R
               icon={<Copy />}
               iconPosition="left"
               onClick={handleCopy}
-            // className={cn("shrink-0",(isDark || hasBackgroundImage) && "border-slate-700 text-white hover:bg-slate-800")}
             >
               {copyButtonText}
             </ButtonWithIcon>
