@@ -1719,7 +1719,7 @@
       "description": "A Data table component that provides a flexible and interactive way to display tabular data with features like sorting, filtering, pagination, and customizable columns.",
       "dependencies": [
         "class-variance-authority",
-        "@radix-ui/react-icons", 
+        "@radix-ui/react-icons",
         "framer-motion",
         "@radix-ui/react-dropdown-menu"
       ],
@@ -1729,6 +1729,23 @@
       "files": {
         "main": {
           "path": "templates/pages/data-table/index.tsx",
+          "type": "template"
+        }
+      }
+    },
+    "calendar-view-page": {
+      "name": "calendar-view-page",
+      "description": "A fully functional, animated Calendar Page template that supports month, week, and day views.",
+      "dependencies": [
+        "@radix-ui/react-icons",
+        "framer-motion"
+      ],
+      "componentDependencies": [
+        "button"
+      ],
+      "files": {
+        "main": {
+          "path": "templates/pages/calendar-view-page/index.tsx",
           "type": "template"
         }
       }
