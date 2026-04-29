@@ -428,6 +428,14 @@ export function MegaMenuMultiColumnDropdown({
     }, 120);
   }, [clearOpenTimeout, onClose]);
 
+  /** Clear all pending timers on unmount to prevent memory leaks or test errors. */
+  React.useEffect(() => {
+    return () => {
+      clearOpenTimeout();
+      clearCloseTimeout();
+    };
+  }, [clearOpenTimeout, clearCloseTimeout]);
+
   /** Sync focus to DOM element by index. */
   React.useEffect(() => {
     if (!isOpen || focusedIndex < 0) return;
