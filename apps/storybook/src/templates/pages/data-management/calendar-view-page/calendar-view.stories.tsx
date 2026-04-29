@@ -53,7 +53,7 @@ function withHoursMinutes(d: Date, h: number, m: number): Date {
     return r;
 }
 
-export function generateSampleEvents(baseYear = 2026, baseMonth = 3): CalendarEvent[] {
+function generateSampleEvents(baseYear = 2026, baseMonth = 3): CalendarEvent[] {
     const base = new Date(baseYear, baseMonth, 1);
     return [
         { id: "1", title: "Q2 Planning Sync", date: withHoursMinutes(addDays(base, 1), 10, 30), endDate: withHoursMinutes(addDays(base, 1), 12, 0), type: "meeting", description: "Discussing roadmaps and OKRs for the upcoming quarter with the entire product org.", location: "Zoom", attendees: ["Sarah J.", "Mike T.", "Alex K."], tags: ["Planning", "Q2", "Product"] },
@@ -142,15 +142,25 @@ function CalendarShell({ defaultView }: { defaultView: CalendarViewType }) {
 function ControlledCalendarShell() {
     const [view, setView] = useState<CalendarViewType>("month");
     const [currentDate, setCurrentDate] = useState(MOCK_TODAY);
+    const [selectedDate, setSelectedDate] = useState(MOCK_TODAY);
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
     return (
-        <CalendarView events={SAMPLE_EVENTS} view={view} onViewChange={setView}
-            currentDate={currentDate} onNavigate={setCurrentDate}
-            selectedEvent={selectedEvent} onEventClick={setSelectedEvent} onEventClose={() => setSelectedEvent(null)}
+        <CalendarView
+            events={SAMPLE_EVENTS}
+            view={view}
+            onViewChange={setView}
+            currentDate={currentDate}
+            onNavigate={setCurrentDate}
+            selectedDate={selectedDate}
+            onDateSelect={setSelectedDate}
+            selectedEvent={selectedEvent}
+            onEventClick={setSelectedEvent}
+            onEventClose={() => setSelectedEvent(null)}
             today={MOCK_TODAY}
             onEventAdd={(date) => console.log("Add event on", date)}
             onEventEdit={(event) => { console.log("Edit", event); setSelectedEvent(null); }}
-            onEventDelete={(event) => { console.log("Delete", event); setSelectedEvent(null); }} />
+            onEventDelete={(event) => { console.log("Delete", event); setSelectedEvent(null); }}
+        />
     );
 }

@@ -1,18 +1,18 @@
 import { useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    ChevronLeft,
-    ChevronRight,
-    Clock,
-    MapPin,
-    AlignLeft,
-    Users,
-    Video,
-    Edit2,
-    Trash2,
-    Plus,
-    CalendarOff,
-} from "lucide-react";
+    ChevronLeftIcon,
+    ChevronRightIcon,
+    ClockIcon,
+    DrawingPinIcon,
+    TextAlignLeftIcon,
+    PersonIcon,
+    VideoIcon,
+    Pencil2Icon,
+    TrashIcon,
+    PlusIcon,
+    CalendarIcon,
+} from "@radix-ui/react-icons";
 import { cn } from "../../../../../utils/cn";
 import { Button } from "../../../../components/button";
 
@@ -303,7 +303,7 @@ function EventModal({ event, labels, onClose, onEdit, onDelete }: EventModalProp
                             {event.title}
                         </h2>
                         <div className="flex items-center gap-1.5 mt-1.5 text-sm text-muted-foreground">
-                            <Clock className="h-3.5 w-3.5 shrink-0" />
+                            <ClockIcon className="h-3.5 w-3.5 shrink-0" />
                             <span>
                                 {fmtFullDate(event.date)}
                                 {event.date.getHours() !== 0 && (
@@ -323,17 +323,17 @@ function EventModal({ event, labels, onClose, onEdit, onDelete }: EventModalProp
 
                 <div className="space-y-3.5">
                     {event.description && (
-                        <DetailRow icon={<AlignLeft className="h-4 w-4" />}>
+                        <DetailRow icon={<TextAlignLeftIcon className="h-4 w-4" />}>
                             <p className="leading-relaxed">{event.description}</p>
                         </DetailRow>
                     )}
                     {event.location && (
-                        <DetailRow icon={event.location.toLowerCase().includes("zoom") ? <Video className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}>
+                        <DetailRow icon={event.location.toLowerCase().includes("zoom") ? <VideoIcon className="h-4 w-4" /> : <DrawingPinIcon className="h-4 w-4" />}>
                             {event.location}
                         </DetailRow>
                     )}
                     {event.attendees && event.attendees.length > 0 && (
-                        <DetailRow icon={<Users className="h-4 w-4" />}>
+                        <DetailRow icon={<PersonIcon className="h-4 w-4" />}>
                             {event.attendees.join(", ")}
                         </DetailRow>
                     )}
@@ -355,7 +355,7 @@ function EventModal({ event, labels, onClose, onEdit, onDelete }: EventModalProp
                     className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5 h-8"
                     onClick={() => { onDelete?.(event); onClose(); }}
                 >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <TrashIcon className="h-3.5 w-3.5" />
                     {labels.deleteText}
                 </Button>
                 <div className="flex gap-2">
@@ -367,7 +367,7 @@ function EventModal({ event, labels, onClose, onEdit, onDelete }: EventModalProp
                         className="gap-1.5 h-8 bg-primary hover:bg-primary/90 text-primary-foreground"
                         onClick={() => { onEdit?.(event); onClose(); }}
                     >
-                        <Edit2 className="h-3.5 w-3.5" />
+                        <Pencil2Icon className="h-3.5 w-3.5" />
                         {labels.editText}
                     </Button>
                 </div>
@@ -591,7 +591,7 @@ function DayView({ currentDate, events, today, onEventClick }: {
                         )}
                         {dayEvents.length === 0 ? (
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center pointer-events-none">
-                                <CalendarOff className="h-8 w-8 text-muted-foreground/30" />
+                                <CalendarIcon className="h-8 w-8 text-muted-foreground/30" />
                                 <p className="text-sm font-medium text-muted-foreground/50">No events scheduled</p>
                             </div>
                         ) : dayEvents.map((event) => {
@@ -675,9 +675,9 @@ export function CalendarView(props: CalendarViewProps) {
                 <div className="flex items-center gap-3">
                     <h1 className="text-xl font-semibold tracking-tight min-w-[200px]">{headerLabel()}</h1>
                     <div className="flex items-center gap-1">
-                        <Button variant="outline" size="icon" onClick={handlePrev} className="h-8 w-8 text-muted-foreground hover:text-foreground"><ChevronLeft className="h-4 w-4" /></Button>
+                        <Button variant="outline" size="icon" onClick={handlePrev} className="h-8 w-8 text-muted-foreground hover:text-foreground"><ChevronLeftIcon className="h-4 w-4" /></Button>
                         <Button variant="outline" size="sm" onClick={handleToday} className="h-8 px-3 text-xs font-medium text-muted-foreground hover:text-foreground">{labels.todayText}</Button>
-                        <Button variant="outline" size="icon" onClick={handleNext} className="h-8 w-8 text-muted-foreground hover:text-foreground"><ChevronRight className="h-4 w-4" /></Button>
+                        <Button variant="outline" size="icon" onClick={handleNext} className="h-8 w-8 text-muted-foreground hover:text-foreground"><ChevronRightIcon className="h-4 w-4" /></Button>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -691,7 +691,7 @@ export function CalendarView(props: CalendarViewProps) {
                         ))}
                     </div>
                     <Button size="sm" className="h-8 gap-1.5 shadow-sm bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => onEventAdd?.(selectedDate)}>
-                        <Plus className="h-3.5 w-3.5" />{labels.addEventText}
+                        <PlusIcon className="h-3.5 w-3.5" />{labels.addEventText}
                     </Button>
                 </div>
             </header>
