@@ -40,9 +40,11 @@ const ErrorPageDemo = () => {
   const [showSearch, setShowSearch] = useState<boolean>(true);
   const [showIllustration, setShowIllustration] = useState<boolean>(false);
   const [showBackgroundImage, setShowBackgroundImage] = useState<boolean>(false);
-
+  const resolvedAnimationType =
+    errorType === '500' ? 'glow' : errorType === '403' ? 'none' : animationType;
   const img404 = useBaseUrl('/img/404-1.svg');
   const img500 = useBaseUrl('/img/500-1.svg');
+  const img403 = useBaseUrl('/img/403.svg');
   const customBg = "https://images.unsplash.com/photo-1557683316-973673baf926?w=1600&h=900&fit=crop&q=90";
   const errorReferenceId = React.useMemo(() => {
     return `ERR-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
@@ -83,6 +85,8 @@ const ErrorPageDemo = () => {
     ErrorPageErrorReference,
   } from '@ignix-ui/errorpage';\n`
     code += `import { ButtonWithIcon } from '@ignix-ui/buttonwithicon';\n`
+    code += `import { Home, ArrowLeft, RefreshCw, Bug, MessageCircle, AlertTriangle, Wrench, Zap, Rocket, Settings, ShieldAlert } from 'lucide-react';\n`
+    code += `\nconst handleCopyReferenceId = (referenceId: string) => {\n  navigator.clipboard?.writeText(referenceId);\n};\n`
     code += `\n<ErrorPage\n  variant="${variant}"\n  icon={${errorType === '403' ? 'ShieldAlert' : 'Settings'}}${showBackgroundImage ? `\n  backgroundImage="${customBg}"` : ''}\n>`;
 
     if (showIllustration && errorType === '404') {
@@ -94,10 +98,9 @@ const ErrorPageDemo = () => {
     }
 
     code += `\n  <ErrorPageContent>`;
-
     if (!showIllustration) {
       code += `\n    <ErrorPageIcons\n      icons={[AlertTriangle, Wrench, Zap, Rocket]}\n    >`;
-      code += `\n      <ErrorPageErrorCode\n        errorCode="${errorType}"\n        animationType="${errorType === '500' || errorType === '403' ? 'glow' : animationType}"\n      />`;
+      code += `\n      <ErrorPageErrorCode\n        errorCode="${errorType}"\n        animationType="${resolvedAnimationType}"\n      />`;
       code += `\n    </ErrorPageIcons>`;
     }
 
@@ -234,7 +237,7 @@ const ErrorPageDemo = () => {
                 {showIllustration && errorType === '403' && (
                   <ErrorPageIllustration
                     position={illustrationPosition}
-                    illustration={img500}
+                    illustration={img403}
                     className="w-90 h-90 mx-auto"
                   />
                 )}
@@ -245,7 +248,7 @@ const ErrorPageDemo = () => {
                     >
                       <ErrorPageErrorCode
                         errorCode={errorType}
-                        animationType={animationType}
+                        animationType={resolvedAnimationType}
                       />
                     </ErrorPageIcons>)
                   }
