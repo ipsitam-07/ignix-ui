@@ -51,6 +51,12 @@ export interface CalendarViewLabels {
     deleteText?: string;
     editText?: string;
     cancelText?: string;
+    allDayText?: string;
+    noEventsText?: string;
+    noEventsScheduledText?: string;
+    moreLabel?: string;
+    eventLabel?: string;
+    eventsLabel?: string;
 }
 
 export interface CalendarViewProps {
@@ -122,6 +128,12 @@ const DEFAULT_LABELS: Required<CalendarViewLabels> = {
     deleteText: "Delete",
     editText: "Edit",
     cancelText: "Cancel",
+    allDayText: "All day",
+    noEventsText: "No events",
+    noEventsScheduledText: "No events scheduled",
+    moreLabel: "more",
+    eventLabel: "event",
+    eventsLabel: "events",
 };
 
 // ─── Native date helpers ──────────────────────────────────────────────────────
@@ -137,9 +149,22 @@ export function addDays(d: Date, n: number): Date {
 }
 
 function addMonths(d: Date, n: number): Date {
-    const r = cloneDate(d);
-    r.setMonth(r.getMonth() + n);
-    return r;
+    const target = new Date(d.getFullYear(), d.getMonth() + n, 1);
+    const lastDay = new Date(
+        target.getFullYear(),
+        target.getMonth() + 1,
+        0,
+    ).getDate();
+
+    target.setDate(Math.min(d.getDate(), lastDay));
+    target.setHours(
+        d.getHours(),
+        d.getMinutes(),
+        d.getSeconds(),
+        d.getMilliseconds(),
+    );
+
+    return target;
 }
 
 function subMonths(d: Date, n: number): Date {
@@ -552,7 +577,7 @@ function EventModal({ event, labels, onClose, onEdit, onDelete }: EventModalProp
                                 )}
                                 {allDay && (
                                     <span className="ml-1.5 text-[11px] uppercase tracking-wide font-medium text-muted-foreground/70">
-                                        All day
+                                        {labels.allDayText}
                                     </span>
                                 )}
                             </span>
@@ -665,7 +690,7 @@ function LoadingSkeleton() {
 
 function MonthView({
     currentDate, events, selectedDate, today, onSelectDate, onEventClick,
-    drag, onDragStart,
+    drag, onDragStart, labels,
 }: {
     currentDate: Date;
     events: CalendarEvent[];
@@ -675,6 +700,7 @@ function MonthView({
     onEventClick: (e: CalendarEvent) => void;
     drag: DragState | null;
     onDragStart: (event: CalendarEvent, e: React.PointerEvent) => void;
+    labels: Required<CalendarViewLabels>;
 }) {
     const monthStart = startOfMonth(currentDate);
     const startDate = startOfWeek(monthStart);
@@ -788,7 +814,7 @@ function MonthView({
                                 })}
                                 {overflow > 0 && (
                                     <div className="text-[10px] font-medium text-muted-foreground px-1 hover:text-foreground transition-colors cursor-pointer">
-                                        +{overflow} more
+                                        +{overflow} {labels.moreLabel}
                                     </div>
                                 )}
                             </div>
@@ -849,7 +875,7 @@ function layoutTimedEvents(events: CalendarEvent[]): PositionedEvent[] {
 
 function WeekView({
     currentDate, events, today, onEventClick, onSelectDate,
-    drag, onDragStart,
+    drag, onDragStart, labels,
 }: {
     currentDate: Date;
     events: CalendarEvent[];
@@ -858,6 +884,7 @@ function WeekView({
     onSelectDate: (d: Date) => void;
     drag: DragState | null;
     onDragStart: (event: CalendarEvent, e: React.PointerEvent) => void;
+    labels: Required<CalendarViewLabels>;
 }) {
     const startDate = startOfWeek(currentDate);
     const days = Array.from({ length: 7 }).map((_, i) => addDays(startDate, i));
@@ -902,7 +929,7 @@ function WeekView({
                     })}
                 </div>
             </div>
-            <AllDayStrip days={days} events={events} onEventClick={onEventClick} />
+            <AllDayStrip days={days} events={events} onEventClick={onEventClick} labels={labels} />
 
             <div className="flex-1 overflow-y-auto">
                 <div className="flex min-h-[1440px]">
@@ -1021,10 +1048,12 @@ function AllDayStrip({
     days,
     events,
     onEventClick,
+    labels,
 }: {
     days: Date[];
     events: CalendarEvent[];
     onEventClick: (e: CalendarEvent) => void;
+    labels: Required<CalendarViewLabels>;
 }) {
     const hasAnyAllDay = days.some((d) =>
         events.some((e) => isSameDay(e.date, d) && isAllDayEvent(e)),
@@ -1036,7 +1065,7 @@ function AllDayStrip({
         <div className="flex border-b border-border shrink-0 bg-muted/10">
             <div className="w-16 border-r border-border shrink-0 flex items-center justify-end pr-2.5">
                 <span className="text-[9px] font-medium text-muted-foreground/60 uppercase tracking-wider leading-tight text-right">
-                    All day
+                    {labels.allDayText}
                 </span>
             </div>
             <div
@@ -1078,7 +1107,7 @@ function AllDayStrip({
 
 function DayView({
     currentDate, events, today, onEventClick,
-    drag, onDragStart,
+    drag, onDragStart, labels,
 }: {
     currentDate: Date;
     events: CalendarEvent[];
@@ -1086,6 +1115,7 @@ function DayView({
     onEventClick: (e: CalendarEvent) => void;
     drag: DragState | null;
     onDragStart: (event: CalendarEvent, e: React.PointerEvent) => void;
+    labels: Required<CalendarViewLabels>;
 }) {
     const allDayEvts = events.filter(
         (e) => isSameDay(e.date, currentDate) && isAllDayEvent(e),
@@ -1124,8 +1154,8 @@ function DayView({
                 </div>
                 <div className="ml-auto text-sm text-muted-foreground">
                     {totalEventCount === 0
-                        ? "No events"
-                        : `${totalEventCount} event${totalEventCount > 1 ? "s" : ""}`}
+                        ? labels.noEventsText
+                        : `${totalEventCount} ${totalEventCount === 1 ? labels.eventLabel : labels.eventsLabel}`}
                 </div>
             </div>
 
@@ -1133,6 +1163,7 @@ function DayView({
                 days={[currentDate]}
                 events={events}
                 onEventClick={onEventClick}
+                labels={labels}
             />
 
             <div className="flex-1 overflow-y-auto">
@@ -1194,7 +1225,10 @@ function DayView({
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center pointer-events-none">
                                 <CalendarIcon className="h-8 w-8 text-muted-foreground/30" />
                                 <p className="text-sm font-medium text-muted-foreground/50">
-                                    No events scheduled
+                                    {labels.noEventsScheduledText}
+                                </p>
+                                <p className="text-xs text-muted-foreground/40 max-w-[200px]">
+                                    {labels.emptyDescription}
                                 </p>
                             </div>
                         ) : (
@@ -1425,6 +1459,7 @@ export function CalendarView(props: CalendarViewProps) {
                                     onEventClick={handleEventClick}
                                     drag={drag}
                                     onDragStart={startDrag}
+                                    labels={labels}
                                 />
                             )}
                             {view === "week" && (
@@ -1436,6 +1471,7 @@ export function CalendarView(props: CalendarViewProps) {
                                     onSelectDate={handleDayDrillDown}
                                     drag={drag}
                                     onDragStart={startDrag}
+                                    labels={labels}
                                 />
                             )}
                             {view === "day" && (
@@ -1446,6 +1482,7 @@ export function CalendarView(props: CalendarViewProps) {
                                     onEventClick={handleEventClick}
                                     drag={drag}
                                     onDragStart={startDrag}
+                                    labels={labels}
                                 />
                             )}
                         </motion.div>

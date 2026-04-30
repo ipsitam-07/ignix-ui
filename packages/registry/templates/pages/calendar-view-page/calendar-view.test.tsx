@@ -452,7 +452,7 @@ describe("Week view", () => {
                 events={timedOnly}
             />,
         );
-        expect(screen.queryByText(/^All$/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/^All day$/i)).not.toBeInTheDocument();
     });
 
     it("clicking a day header drills down to day view", async () => {

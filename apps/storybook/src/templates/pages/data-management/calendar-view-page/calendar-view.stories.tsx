@@ -185,7 +185,11 @@ function ControlledCalendarShell() {
             onEventDrop={handleEventDrop}
             onEventAdd={(date) => console.log("Add event on", date)}
             onEventEdit={(event) => { console.log("Edit", event); setSelectedEvent(null); }}
-            onEventDelete={(event) => { console.log("Delete", event); setSelectedEvent(null); }}
+            onEventDelete={(event) => {
+                console.log("Delete", event);
+                setEvents(prev => prev.filter((e) => e.id !== event.id));
+                setSelectedEvent(null);
+            }}
         />
     );
 }
