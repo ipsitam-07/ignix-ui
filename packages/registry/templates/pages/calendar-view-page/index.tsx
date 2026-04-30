@@ -20,7 +20,7 @@ import {
     PlusIcon,
     CalendarIcon,
 } from "@radix-ui/react-icons";
-import { cn } from "packages/utils/cn";
+import { cn } from "../../../utils/cn";
 import { Button } from "@ignix-ui/button";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -516,7 +516,7 @@ function MonthView({
             <div
                 className="flex-1 grid grid-cols-7 overflow-hidden bg-border gap-[1px]"
                 style={{
-                    gridTemplateRows: `repeat(${Math.ceil(days.length / 7)}, 120px)`,
+                    gridTemplateRows: `repeat(${Math.ceil(days.length / 7)}, minmax(100px, 1fr))`,
                 }}
             >
                 {days.map((d) => {
@@ -793,9 +793,7 @@ function AllDayStrip({
         <div className="flex border-b border-border shrink-0 bg-muted/10">
             <div className="w-16 border-r border-border shrink-0 flex items-center justify-end pr-2.5">
                 <span className="text-[9px] font-medium text-muted-foreground/60 uppercase tracking-wider leading-tight text-right">
-                    All
-                    <br />
-                    day
+                    All day
                 </span>
             </div>
             <div
