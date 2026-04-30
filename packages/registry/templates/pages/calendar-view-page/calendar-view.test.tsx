@@ -729,3 +729,130 @@ describe("Date selection", () => {
         expect(cells.length).toBeGreaterThan(0);
     });
 });
+
+// 14. DRAG & DROP
+
+describe("Drag & drop", () => {
+    it("renders event chips with cursor-grab class in month view", () => {
+        const { container } = render(
+            <CalendarView defaultDate={FEB_2026} events={MOCK_EVENTS} onEventDrop={vi.fn()} />,
+        );
+        const chips = container.querySelectorAll(".cursor-grab");
+        expect(chips.length).toBeGreaterThan(0);
+    });
+
+    it("renders data-drag-date attributes on day cells in month view", () => {
+        const { container } = render(
+            <CalendarView defaultDate={FEB_2026} events={MOCK_EVENTS} onEventDrop={vi.fn()} />,
+        );
+        const dragTargets = container.querySelectorAll("[data-drag-date]");
+        expect(dragTargets.length).toBeGreaterThanOrEqual(28);
+    });
+
+    it("does not fire onEventDrop when no drag occurs", async () => {
+        const onEventDrop = vi.fn();
+        render(
+            <CalendarView defaultDate={FEB_2026} events={MOCK_EVENTS} onEventDrop={onEventDrop} />,
+        );
+        expect(onEventDrop).not.toHaveBeenCalled();
+    });
+
+    it("applies opacity-30 on the event chip after pointerDown", () => {
+        const { container } = render(
+            <CalendarView defaultDate={FEB_2026} events={MOCK_EVENTS} onEventDrop={vi.fn()} />,
+        );
+        const chip = container.querySelector("[class*='cursor-grab']") as HTMLElement;
+        expect(chip).toBeTruthy();
+        fireEvent.pointerDown(chip, { clientX: 100, clientY: 100, button: 0 });
+        expect(chip.className).toContain("opacity-30");
+        fireEvent.pointerUp(document);
+    });
+
+    it("does not call onEventDrop when pointerUp happens without moving to a new date", () => {
+        const onEventDrop = vi.fn();
+        const { container } = render(
+            <CalendarView defaultDate={FEB_2026} events={MOCK_EVENTS} onEventDrop={onEventDrop} />,
+        );
+        const chip = container.querySelector("[class*='cursor-grab']") as HTMLElement;
+        fireEvent.pointerDown(chip, { clientX: 100, clientY: 100, button: 0 });
+        fireEvent.pointerUp(document);
+        expect(onEventDrop).not.toHaveBeenCalled();
+    });
+
+    it("removes opacity-30 from the event chip after pointerUp (drag end)", () => {
+        render(
+            <CalendarView defaultDate={FEB_2026} events={MOCK_EVENTS} onEventDrop={vi.fn()} />,
+        );
+        const chip = screen.getByText(/Team Standup/).closest("[class*='cursor-grab']") as HTMLElement;
+        fireEvent.pointerDown(chip, { clientX: 100, clientY: 100, button: 0 });
+        expect(chip.className).toContain("opacity-30");
+        fireEvent.pointerUp(document);
+        expect(chip.className).not.toContain("opacity-30");
+    });
+
+    it("renders data-drag-date and data-drag-grid attributes in week view", async () => {
+        const { container } = render(
+            <CalendarView
+                defaultDate={new Date(2026, 1, 10)}
+                defaultView="week"
+                events={MOCK_EVENTS}
+                onEventDrop={vi.fn()}
+            />,
+        );
+        const timeGridCells = container.querySelectorAll("[data-drag-grid='time']");
+        expect(timeGridCells.length).toBe(7);
+    });
+
+    it("renders data-drag-date and data-drag-grid attributes in day view", () => {
+        const { container } = render(
+            <CalendarView
+                defaultDate={new Date(2026, 1, 10)}
+                defaultView="day"
+                events={MOCK_EVENTS}
+                onEventDrop={vi.fn()}
+            />,
+        );
+        const timeGrid = container.querySelector("[data-drag-grid='time']");
+        expect(timeGrid).not.toBeNull();
+        expect(timeGrid!.getAttribute("data-drag-date")).toBeTruthy();
+    });
+
+    it("event chips in week view have touch-none for drag handling", () => {
+        const { container } = render(
+            <CalendarView
+                defaultDate={new Date(2026, 1, 10)}
+                defaultView="week"
+                events={MOCK_EVENTS}
+                onEventDrop={vi.fn()}
+            />,
+        );
+        const chips = container.querySelectorAll(".touch-none");
+        expect(chips.length).toBeGreaterThan(0);
+    });
+
+    it("event chips in day view have cursor-grab class", () => {
+        const { container } = render(
+            <CalendarView
+                defaultDate={new Date(2026, 1, 10)}
+                defaultView="day"
+                events={MOCK_EVENTS}
+                onEventDrop={vi.fn()}
+            />,
+        );
+        const chips = container.querySelectorAll(".cursor-grab");
+        expect(chips.length).toBeGreaterThan(0);
+    });
+
+    it("accepts onEventDrop prop without errors", () => {
+        const onEventDrop = vi.fn();
+        expect(() =>
+            render(
+                <CalendarView
+                    defaultDate={FEB_2026}
+                    events={MOCK_EVENTS}
+                    onEventDrop={onEventDrop}
+                />,
+            ),
+        ).not.toThrow();
+    });
+});
