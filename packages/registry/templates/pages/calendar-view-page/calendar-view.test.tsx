@@ -114,17 +114,14 @@ describe("Rendering", () => {
 describe("Month navigation", () => {
     it("navigates to the previous month on chevron-left click", async () => {
         render(<CalendarView defaultDate={FEB_2026} />);
-        const [prevBtn] = screen.getAllByRole("button", { name: "" }); // ChevronLeft is first icon button
+        const prevBtn = screen.getByRole("button", { name: /previous date range/i });
         await userEvent.click(prevBtn);
         expect(screen.getByText("January 2026")).toBeInTheDocument();
     });
 
     it("navigates to the next month on chevron-right click", async () => {
         render(<CalendarView defaultDate={FEB_2026} />);
-        const buttons = screen.getAllByRole("button");
-        const nextBtn = buttons.find((b) => b.querySelector('[data-icon="chevron-right"]') ||
-            b.innerHTML.includes("ChevronRight") ||
-            b.getAttribute("aria-label") === "next") ?? buttons[2];
+        const nextBtn = screen.getByRole("button", { name: /next date range/i });
         await userEvent.click(nextBtn);
         expect(screen.getByText("March 2026")).toBeInTheDocument();
     });

@@ -702,11 +702,22 @@ function MonthView({
                             key={d.toISOString()}
                             data-drag-date={d.toISOString()}
                             onClick={() => onSelectDate(d)}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Select ${fmtMonthDayYear(d)}`}
+                            aria-current={isToday ? "date" : undefined}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    onSelectDate(d);
+                                }
+                            }}
                             className={cn(
                                 "bg-card relative flex flex-col p-1.5 cursor-pointer transition-colors overflow-hidden hover:bg-primary/[0.03] min-h-0",
                                 !isCurrentMonth && "bg-muted/25",
                                 isSelected && "ring-1 ring-inset ring-primary z-10",
                                 isDragOver && "bg-primary/10 ring-2 ring-inset ring-primary/40",
+                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset"
                             )}
                         >
                             <div className="mb-1 shrink-0">
@@ -729,6 +740,16 @@ function MonthView({
                                     return (
                                         <motion.div
                                             key={event.id}
+                                            role="button"
+                                            tabIndex={0}
+                                            aria-label={`View event: ${event.title}`}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter" || e.key === " ") {
+                                                    e.stopPropagation();
+                                                    e.preventDefault();
+                                                    onEventClick(event);
+                                                }
+                                            }}
                                             onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
                                             onPointerDown={(e) => onDragStart(event, e)}
                                             whileHover={!drag ? { scale: 1.02 } : undefined}
@@ -738,6 +759,7 @@ function MonthView({
                                                 isDragging ? "opacity-30 cursor-grabbing" : "cursor-grab",
                                                 EVENT_COLORS[event.type].bg,
                                                 EVENT_COLORS[event.type].text,
+                                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
                                             )}
                                         >
                                             {!isAllDayEvent(event)
@@ -837,9 +859,11 @@ function WeekView({
                                 key={d.toISOString()}
                                 type="button"
                                 onClick={() => onSelectDate(d)}
+                                aria-label={`Select ${fmtMonthDayYear(d)}`}
+                                aria-current={isToday ? "date" : undefined}
                                 className={cn(
                                     "py-3 text-center border-r border-border last:border-0 w-full",
-                                    "hover:bg-primary/[0.04] transition-colors",
+                                    "hover:bg-primary/[0.04] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary",
                                     isToday && "bg-primary/5",
                                 )}
                             >
@@ -1164,6 +1188,15 @@ function DayView({
                                 return (
                                     <motion.div
                                         key={event.id}
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-label={`View event: ${event.title}`}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter" || e.key === " ") {
+                                                e.preventDefault();
+                                                onEventClick(event);
+                                            }
+                                        }}
                                         style={{
                                             top: `${top}px`,
                                             height: `${height}px`,
@@ -1181,6 +1214,7 @@ function DayView({
                                             EVENT_COLORS[event.type].bg,
                                             EVENT_COLORS[event.type].text,
                                             EVENT_COLORS[event.type].border,
+                                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
                                         )}
                                     >
                                         <div className="text-[11px] font-semibold truncate">
@@ -1295,6 +1329,7 @@ export function CalendarView(props: CalendarViewProps) {
                         <Button
                             variant="outline" size="icon"
                             onClick={handlePrev}
+                            aria-label="Previous date range"
                             className="h-8 w-8 text-muted-foreground hover:text-foreground"
                         >
                             <ChevronLeftIcon className="h-4 w-4" />
@@ -1309,6 +1344,7 @@ export function CalendarView(props: CalendarViewProps) {
                         <Button
                             variant="outline" size="icon"
                             onClick={handleNext}
+                            aria-label="Next date range"
                             className="h-8 w-8 text-muted-foreground hover:text-foreground"
                         >
                             <ChevronRightIcon className="h-4 w-4" />
@@ -1321,8 +1357,10 @@ export function CalendarView(props: CalendarViewProps) {
                             <button
                                 key={v}
                                 onClick={() => setView(v)}
+                                aria-label={`${v} view`}
+                                aria-pressed={view === v}
                                 className={cn(
-                                    "px-3 py-1 text-xs font-medium rounded-sm transition-all capitalize",
+                                    "px-3 py-1 text-xs font-medium rounded-sm transition-all capitalize focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                                     view === v
                                         ? "bg-background text-foreground shadow-sm"
                                         : "text-muted-foreground hover:text-foreground",
