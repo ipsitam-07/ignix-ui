@@ -458,13 +458,15 @@ describe("Week view", () => {
         expect(screen.queryByText(/^All$/i)).not.toBeInTheDocument();
     });
 
-    it("clicking a day header updates selectedDate (fix #7)", async () => {
+    it("clicking a day header drills down to day view", async () => {
         const onDateSelect = vi.fn();
+        const onViewChange = vi.fn();
         render(
             <CalendarView
                 defaultDate={new Date(2026, 1, 10)}
                 defaultView="week"
                 onDateSelect={onDateSelect}
+                onViewChange={onViewChange}
             />,
         );
         const dayBtn = screen.getByRole("button", { name: /10/ });
@@ -474,6 +476,7 @@ describe("Week view", () => {
         );
         const date: Date = onDateSelect.mock.calls[0][0];
         expect(date.getDate()).toBe(10);
+        expect(onViewChange).toHaveBeenCalledWith("day");
     });
 
     it("week view navigates by 7 days on prev/next", async () => {

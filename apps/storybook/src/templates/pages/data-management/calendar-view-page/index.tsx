@@ -1236,6 +1236,11 @@ export function CalendarView(props: CalendarViewProps) {
         setCurrentDate(today);
         setSelectedDate(today);
     };
+    const handleDayDrillDown = (d: Date) => {
+        setSelectedDate(d);
+        setCurrentDate(d);
+        setView("day");
+    };
 
     const headerLabel = () => {
         if (view === "month") return fmtMonthYear(currentDate);
@@ -1347,7 +1352,7 @@ export function CalendarView(props: CalendarViewProps) {
                                     events={events}
                                     today={today}
                                     onEventClick={handleEventClick}
-                                    onSelectDate={setSelectedDate}
+                                    onSelectDate={handleDayDrillDown}
                                     drag={drag}
                                     onDragStart={startDrag}
                                 />
