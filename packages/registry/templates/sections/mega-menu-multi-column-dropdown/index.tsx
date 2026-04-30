@@ -409,6 +409,7 @@ export function MegaMenuMultiColumnDropdown({
   }, []);
 
   const openMenu = React.useCallback(() => {
+    clearOpenTimeout();
     clearCloseTimeout();
     openTimeoutRef.current = setTimeout(() => {
       setIsOpen(true);
@@ -419,6 +420,7 @@ export function MegaMenuMultiColumnDropdown({
   }, [clearCloseTimeout, onOpen]);
 
   const closeMenu = React.useCallback(() => {
+    clearCloseTimeout();
     clearOpenTimeout();
     closeTimeoutRef.current = setTimeout(() => {
       setIsOpen(false);

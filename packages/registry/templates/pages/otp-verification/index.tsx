@@ -141,6 +141,7 @@ const OTPVerificationPageContent: React.FC<OTPVerificationProps> = ({
   const [cooldown, setCooldown] = useState<number>(0);
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   const values = useRef<string[]>(Array(length).fill(""));
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [contact, setContact] = useState<string>(contactDetail);
   const handleNavigateTo = useCallback(() => {
@@ -192,6 +193,9 @@ const OTPVerificationPageContent: React.FC<OTPVerificationProps> = ({
 
   useEffect(() => {
     inputsRef.current[0]?.focus();
+    return () => {
+      if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
+    };
   }, []);
 
   // Update contact and editValue when contactDetail prop changes
@@ -524,11 +528,13 @@ const OTPVerificationPageContent: React.FC<OTPVerificationProps> = ({
       return;
     }
     // Use setTimeout to avoid race condition with select dropdown
-    setTimeout((): void => {
+    if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
+    blurTimeoutRef.current = setTimeout((): void => {
       const finalValue: string = contactType === "phone" 
         ? `${countryCode} ${editValue}` 
         : editValue;
       finalizeEdit(contactType, finalValue);
+      blurTimeoutRef.current = null;
     }, 100);
   }, [contactType, countryCode, editValue, finalizeEdit]);
 

@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Sparkles, Loader2, FileText, File, FileImage, Video, Music, Archive, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
 import { cn } from '../../../utils/cn';
@@ -844,6 +844,15 @@ const useFileUpload = ({
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const activeIntervalsRef = useRef<Set<ReturnType<typeof setInterval>>>(new Set());
+    const uploadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        return () => {
+            activeIntervalsRef.current.forEach(clearInterval);
+            if (uploadTimeoutRef.current) clearTimeout(uploadTimeoutRef.current);
+        };
+    }, []);
 
     const simulateUploadProgress = useCallback((fileId: string) => {
         let progress = 0;
@@ -852,6 +861,7 @@ const useFileUpload = ({
             if (progress >= 100) {
                 progress = 100;
                 clearInterval(interval);
+                activeIntervalsRef.current.delete(interval);
                 setFiles(prev => prev.map(f =>
                     f.id === fileId ? { ...f, uploading: false, uploadProgress: 100 } : f
                 ));
@@ -861,7 +871,11 @@ const useFileUpload = ({
                 ));
             }
         }, 200);
-        return () => clearInterval(interval);
+        activeIntervalsRef.current.add(interval);
+        return () => {
+            clearInterval(interval);
+            activeIntervalsRef.current.delete(interval);
+        };
     }, []);
 
     const handleFiles = useCallback(async (selectedFiles: FileList | File[]) => {
@@ -925,7 +939,11 @@ const useFileUpload = ({
             if (simulateUpload) {
                 setIsUploading(true);
                 validFiles.forEach(file => simulateUploadProgress(file.id));
-                setTimeout(() => setIsUploading(false), 3000);
+                if (uploadTimeoutRef.current) clearTimeout(uploadTimeoutRef.current);
+                uploadTimeoutRef.current = setTimeout(() => {
+                    setIsUploading(false);
+                    uploadTimeoutRef.current = null;
+                }, 3000);
             }
         }
     }, [files, originalFiles, multiple, maxFiles, maxSize, accept, customValidate, simulateUpload, simulateUploadProgress, onFilesChange]);
