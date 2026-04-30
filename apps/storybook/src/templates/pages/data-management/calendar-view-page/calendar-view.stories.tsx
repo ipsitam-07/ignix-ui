@@ -19,8 +19,8 @@ export type StoryObj<T> = {
 
 type Story = StoryObj<typeof CalendarView>;
 
-const MOCK_TODAY = new Date(2026, 3, 15);
-const SAMPLE_EVENTS = generateSampleEvents(2026, 3);
+const MOCK_TODAY = new Date();
+const SAMPLE_EVENTS = generateSampleEvents(MOCK_TODAY.getFullYear(), MOCK_TODAY.getMonth());
 
 const meta: Meta<typeof CalendarView> = {
     title: "Templates/Pages/DataManagement/CalendarView",
