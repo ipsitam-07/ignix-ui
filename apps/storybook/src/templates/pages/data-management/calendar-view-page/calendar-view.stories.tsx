@@ -130,9 +130,22 @@ export const DarkTheme: Story = {
 
 
 function CalendarShell({ defaultView }: { defaultView: CalendarViewType }) {
+    const [events, setEvents] = useState<CalendarEvent[]>(SAMPLE_EVENTS);
+
+    const handleEventDrop = (event: CalendarEvent, newDate: Date, newEndDate?: Date) => {
+        setEvents((prev) =>
+            prev.map((e) =>
+                e.id === event.id
+                    ? { ...e, date: newDate, endDate: newEndDate ?? e.endDate }
+                    : e,
+            ),
+        );
+    };
+
     return (
-        <CalendarView events={SAMPLE_EVENTS} defaultDate={MOCK_TODAY} defaultSelectedDate={MOCK_TODAY}
+        <CalendarView events={events} defaultDate={MOCK_TODAY} defaultSelectedDate={MOCK_TODAY}
             defaultView={defaultView} today={MOCK_TODAY}
+            onEventDrop={handleEventDrop}
             onEventAdd={(date) => console.log("Add event on", date)}
             onEventEdit={(event) => console.log("Edit", event)}
             onEventDelete={(event) => console.log("Delete", event)} />
@@ -144,10 +157,21 @@ function ControlledCalendarShell() {
     const [currentDate, setCurrentDate] = useState(MOCK_TODAY);
     const [selectedDate, setSelectedDate] = useState(MOCK_TODAY);
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+    const [events, setEvents] = useState<CalendarEvent[]>(SAMPLE_EVENTS);
+
+    const handleEventDrop = (event: CalendarEvent, newDate: Date, newEndDate?: Date) => {
+        setEvents((prev) =>
+            prev.map((e) =>
+                e.id === event.id
+                    ? { ...e, date: newDate, endDate: newEndDate ?? e.endDate }
+                    : e,
+            ),
+        );
+    };
 
     return (
         <CalendarView
-            events={SAMPLE_EVENTS}
+            events={events}
             view={view}
             onViewChange={setView}
             currentDate={currentDate}
@@ -158,6 +182,7 @@ function ControlledCalendarShell() {
             onEventClick={setSelectedEvent}
             onEventClose={() => setSelectedEvent(null)}
             today={MOCK_TODAY}
+            onEventDrop={handleEventDrop}
             onEventAdd={(date) => console.log("Add event on", date)}
             onEventEdit={(event) => { console.log("Edit", event); setSelectedEvent(null); }}
             onEventDelete={(event) => { console.log("Delete", event); setSelectedEvent(null); }}

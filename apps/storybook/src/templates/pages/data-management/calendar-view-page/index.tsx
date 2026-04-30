@@ -71,6 +71,7 @@ export interface CalendarViewProps {
     onEventAdd?: (date: Date) => void;
     onEventEdit?: (event: CalendarEvent) => void;
     onEventDelete?: (event: CalendarEvent) => void;
+    onEventDrop?: (event: CalendarEvent, newDate: Date, newEndDate?: Date) => void;
     today?: Date;
     theme?: "light" | "dark";
     labels?: CalendarViewLabels;
@@ -274,6 +275,146 @@ function useControlled<T>(
     );
 
     return [value, setValue];
+}
+
+// ─── Drag & Drop ──────────────────────────────────────────────────────────────
+
+interface DragState {
+    event: CalendarEvent;
+    offsetX: number;
+    offsetY: number;
+    ghostX: number;
+    ghostY: number;
+    dropDate: Date | null;
+    dropMinutes: number | null;
+}
+
+const SNAP_MINUTES = 15;
+const PX_PER_MINUTE = 1;
+
+function snapMinutes(m: number): number {
+    return Math.round(m / SNAP_MINUTES) * SNAP_MINUTES;
+}
+
+function useEventDrag(
+    onEventDrop?: CalendarViewProps["onEventDrop"],
+) {
+    const [drag, setDrag] = useState<DragState | null>(null);
+    const dragRef = useRef<DragState | null>(null);
+
+    const startDrag = useCallback(
+        (event: CalendarEvent, e: React.PointerEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+            const state: DragState = {
+                event,
+                offsetX: e.clientX - rect.left,
+                offsetY: e.clientY - rect.top,
+                ghostX: e.clientX,
+                ghostY: e.clientY,
+                dropDate: null,
+                dropMinutes: null,
+            };
+            dragRef.current = state;
+            setDrag(state);
+        },
+        [],
+    );
+
+    useEffect(() => {
+        if (!drag) return;
+
+        const onMove = (e: PointerEvent) => {
+            const prev = dragRef.current;
+            if (!prev) return;
+            const els = document.elementsFromPoint(e.clientX, e.clientY);
+            let dropDate: Date | null = null;
+            let dropMinutes: number | null = null;
+            for (const el of els) {
+                const dateAttr = (el as HTMLElement).dataset?.dragDate;
+                if (dateAttr) {
+                    dropDate = new Date(dateAttr);
+                    const gridAttr = (el as HTMLElement).dataset?.dragGrid;
+                    if (gridAttr === "time") {
+                        const rect = el.getBoundingClientRect();
+                        const yInGrid = e.clientY - rect.top;
+                        dropMinutes = snapMinutes(Math.max(0, Math.min(1439, Math.round(yInGrid / PX_PER_MINUTE))));
+                    }
+                    break;
+                }
+            }
+            const next: DragState = {
+                ...prev,
+                ghostX: e.clientX,
+                ghostY: e.clientY,
+                dropDate,
+                dropMinutes,
+            };
+            dragRef.current = next;
+            setDrag(next);
+        };
+
+        const onUp = () => {
+            const final = dragRef.current;
+            if (final?.dropDate && onEventDrop) {
+                const evt = final.event;
+                const duration = evt.endDate
+                    ? evt.endDate.getTime() - evt.date.getTime()
+                    : 0;
+                const newDate = cloneDate(final.dropDate);
+                if (final.dropMinutes !== null) {
+                    newDate.setHours(Math.floor(final.dropMinutes / 60), final.dropMinutes % 60, 0, 0);
+                } else {
+                    newDate.setHours(evt.date.getHours(), evt.date.getMinutes(), 0, 0);
+                }
+                const newEnd = duration > 0 ? new Date(newDate.getTime() + duration) : undefined;
+                if (!isSameDay(newDate, evt.date) || (final.dropMinutes !== null && (newDate.getHours() !== evt.date.getHours() || newDate.getMinutes() !== evt.date.getMinutes()))) {
+                    onEventDrop(evt, newDate, newEnd);
+                }
+            }
+            dragRef.current = null;
+            setDrag(null);
+        };
+
+        document.addEventListener("pointermove", onMove);
+        document.addEventListener("pointerup", onUp);
+        return () => {
+            document.removeEventListener("pointermove", onMove);
+            document.removeEventListener("pointerup", onUp);
+        };
+    }, [drag !== null, onEventDrop]);
+
+    return { drag, startDrag };
+}
+
+function DragGhost({ drag }: { drag: DragState }) {
+    const colors = EVENT_COLORS[drag.event.type];
+    return ReactDOM.createPortal(
+        <div
+            className="fixed z-[200] pointer-events-none select-none"
+            style={{
+                left: drag.ghostX - drag.offsetX,
+                top: drag.ghostY - drag.offsetY,
+                width: 180,
+            }}
+        >
+            <div
+                className={cn(
+                    "rounded-md px-2.5 py-1.5 text-[11px] font-semibold shadow-xl border-2 opacity-90",
+                    colors.bg, colors.text, colors.border,
+                )}
+            >
+                {drag.event.title}
+                {drag.dropMinutes !== null && (
+                    <span className="block text-[9px] opacity-70 mt-0.5">
+                        {fmtHourLabel(Math.floor(drag.dropMinutes / 60))}
+                    </span>
+                )}
+            </div>
+        </div>,
+        document.body,
+    );
 }
 
 interface ModalProps {
@@ -481,6 +622,7 @@ function LoadingSkeleton() {
 
 function MonthView({
     currentDate, events, selectedDate, today, onSelectDate, onEventClick,
+    drag, onDragStart,
 }: {
     currentDate: Date;
     events: CalendarEvent[];
@@ -488,6 +630,8 @@ function MonthView({
     today: Date;
     onSelectDate: (d: Date) => void;
     onEventClick: (e: CalendarEvent) => void;
+    drag: DragState | null;
+    onDragStart: (event: CalendarEvent, e: React.PointerEvent) => void;
 }) {
     const monthStart = startOfMonth(currentDate);
     const startDate = startOfWeek(monthStart);
@@ -523,17 +667,20 @@ function MonthView({
                     const isCurrentMonth = isSameMonth(d, monthStart);
                     const isToday = isSameDay(d, today);
                     const isSelected = isSameDay(d, selectedDate);
+                    const isDragOver = drag !== null && drag.dropDate !== null && isSameDay(d, drag.dropDate);
                     const dayEvents = events.filter((e) => isSameDay(e.date, d));
                     const displayed = dayEvents.slice(0, MAX_VISIBLE);
                     const overflow = dayEvents.length - MAX_VISIBLE;
                     return (
                         <div
                             key={d.toISOString()}
+                            data-drag-date={d.toISOString()}
                             onClick={() => onSelectDate(d)}
                             className={cn(
                                 "bg-card relative flex flex-col p-1.5 cursor-pointer transition-colors overflow-hidden hover:bg-primary/[0.03] min-h-0",
                                 !isCurrentMonth && "bg-muted/25",
                                 isSelected && "ring-1 ring-inset ring-primary z-10",
+                                isDragOver && "bg-primary/10 ring-2 ring-inset ring-primary/40",
                             )}
                         >
                             <div className="mb-1 shrink-0">
@@ -551,24 +698,29 @@ function MonthView({
                                 </span>
                             </div>
                             <div className="flex-1 flex flex-col gap-0.5 overflow-hidden w-full min-h-0">
-                                {displayed.map((event) => (
-                                    <motion.div
-                                        key={event.id}
-                                        onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
-                                        whileHover={{ scale: 1.02 }}
-                                        transition={{ duration: 0.1 }}
-                                        className={cn(
-                                            "text-[10px] px-1.5 py-0.5 rounded-[4px] truncate cursor-pointer font-medium",
-                                            EVENT_COLORS[event.type].bg,
-                                            EVENT_COLORS[event.type].text,
-                                        )}
-                                    >
-                                        {!isAllDayEvent(event)
-                                            ? `${fmtTimeCompact(event.date)} `
-                                            : ""}
-                                        {event.title}
-                                    </motion.div>
-                                ))}
+                                {displayed.map((event) => {
+                                    const isDragging = drag !== null && drag.event.id === event.id;
+                                    return (
+                                        <motion.div
+                                            key={event.id}
+                                            onClick={(e) => { e.stopPropagation(); onEventClick(event); }}
+                                            onPointerDown={(e) => onDragStart(event, e)}
+                                            whileHover={!drag ? { scale: 1.02 } : undefined}
+                                            transition={{ duration: 0.1 }}
+                                            className={cn(
+                                                "text-[10px] px-1.5 py-0.5 rounded-[4px] truncate font-medium touch-none select-none",
+                                                isDragging ? "opacity-30 cursor-grabbing" : "cursor-grab",
+                                                EVENT_COLORS[event.type].bg,
+                                                EVENT_COLORS[event.type].text,
+                                            )}
+                                        >
+                                            {!isAllDayEvent(event)
+                                                ? `${fmtTimeCompact(event.date)} `
+                                                : ""}
+                                            {event.title}
+                                        </motion.div>
+                                    );
+                                })}
                                 {overflow > 0 && (
                                     <div className="text-[10px] font-medium text-muted-foreground px-1 hover:text-foreground transition-colors cursor-pointer">
                                         +{overflow} more
@@ -632,12 +784,15 @@ function layoutTimedEvents(events: CalendarEvent[]): PositionedEvent[] {
 
 function WeekView({
     currentDate, events, today, onEventClick, onSelectDate,
+    drag, onDragStart,
 }: {
     currentDate: Date;
     events: CalendarEvent[];
     today: Date;
     onEventClick: (e: CalendarEvent) => void;
     onSelectDate: (d: Date) => void;
+    drag: DragState | null;
+    onDragStart: (event: CalendarEvent, e: React.PointerEvent) => void;
 }) {
     const startDate = startOfWeek(currentDate);
     const days = Array.from({ length: 7 }).map((_, i) => addDays(startDate, i));
@@ -711,10 +866,13 @@ function WeekView({
                                 (e) => isSameDay(e.date, d) && !isAllDayEvent(e),
                             );
                             const positioned = layoutTimedEvents(timedEvts);
+                            const showDropPreview = drag !== null && drag.dropDate !== null && drag.dropMinutes !== null && isSameDay(d, drag.dropDate);
 
                             return (
                                 <div
                                     key={d.toISOString()}
+                                    data-drag-date={d.toISOString()}
+                                    data-drag-grid="time"
                                     className="border-r border-border/40 last:border-0 relative"
                                 >
                                     {isToday && (
@@ -731,9 +889,25 @@ function WeekView({
                                         </motion.div>
                                     )}
 
+                                    {/* Drop preview indicator */}
+                                    {showDropPreview && (
+                                        <div
+                                            className="absolute left-1 right-1 rounded-md border-2 border-dashed border-primary/50 bg-primary/10 z-30 pointer-events-none flex items-center px-2"
+                                            style={{
+                                                top: `${drag!.dropMinutes!}px`,
+                                                height: `${Math.max(drag!.event.endDate ? (drag!.event.endDate.getTime() - drag!.event.date.getTime()) / 60000 : 45, 24)}px`,
+                                            }}
+                                        >
+                                            <span className="text-[10px] font-semibold text-primary/70">
+                                                {fmtHourLabel(Math.floor(drag!.dropMinutes! / 60))}
+                                            </span>
+                                        </div>
+                                    )}
+
                                     {positioned.map(({ event, column, totalColumns, top, height }) => {
                                         const widthPct = 100 / totalColumns;
                                         const leftPct = column * widthPct;
+                                        const isDragging = drag !== null && drag.event.id === event.id;
                                         return (
                                             <motion.div
                                                 key={event.id}
@@ -745,10 +919,12 @@ function WeekView({
                                                     position: "absolute",
                                                 }}
                                                 onClick={() => onEventClick(event)}
-                                                whileHover={{ scale: 1.02, zIndex: 10 }}
+                                                onPointerDown={(e) => onDragStart(event, e)}
+                                                whileHover={!drag ? { scale: 1.02, zIndex: 10 } : undefined}
                                                 transition={{ duration: 0.1 }}
                                                 className={cn(
-                                                    "rounded-[5px] px-1.5 py-1 cursor-pointer overflow-hidden border",
+                                                    "rounded-[5px] px-1.5 py-1 overflow-hidden border touch-none select-none",
+                                                    isDragging ? "opacity-30 cursor-grabbing" : "cursor-grab",
                                                     EVENT_COLORS[event.type].bg,
                                                     EVENT_COLORS[event.type].text,
                                                     EVENT_COLORS[event.type].border,
@@ -835,11 +1011,14 @@ function AllDayStrip({
 
 function DayView({
     currentDate, events, today, onEventClick,
+    drag, onDragStart,
 }: {
     currentDate: Date;
     events: CalendarEvent[];
     today: Date;
     onEventClick: (e: CalendarEvent) => void;
+    drag: DragState | null;
+    onDragStart: (event: CalendarEvent, e: React.PointerEvent) => void;
 }) {
     const allDayEvts = events.filter(
         (e) => isSameDay(e.date, currentDate) && isAllDayEvent(e),
@@ -853,6 +1032,7 @@ function DayView({
     const todayMinutes = today.getHours() * 60 + today.getMinutes();
     const isToday = isSameDay(currentDate, today);
     const totalEventCount = allDayEvts.length + timedEvts.length;
+    const showDropPreview = drag !== null && drag.dropDate !== null && drag.dropMinutes !== null && isSameDay(currentDate, drag.dropDate);
 
     return (
         <div className="flex flex-col h-full bg-card overflow-hidden">
@@ -903,7 +1083,11 @@ function DayView({
                         ))}
                     </div>
 
-                    <div className="flex-1 relative">
+                    <div
+                        className="flex-1 relative"
+                        data-drag-date={currentDate.toISOString()}
+                        data-drag-grid="time"
+                    >
                         <div className="absolute inset-0 flex flex-col pointer-events-none">
                             {hours.map((hour) => (
                                 <div key={hour} className="h-[60px] border-b border-border/40 w-full" />
@@ -924,6 +1108,21 @@ function DayView({
                             </motion.div>
                         )}
 
+                        {/* Drop preview indicator */}
+                        {showDropPreview && (
+                            <div
+                                className="absolute left-2 right-2 rounded-md border-2 border-dashed border-primary/50 bg-primary/10 z-30 pointer-events-none flex items-center px-3"
+                                style={{
+                                    top: `${drag!.dropMinutes!}px`,
+                                    height: `${Math.max(drag!.event.endDate ? (drag!.event.endDate.getTime() - drag!.event.date.getTime()) / 60000 : 45, 24)}px`,
+                                }}
+                            >
+                                <span className="text-[10px] font-semibold text-primary/70">
+                                    {fmtHourLabel(Math.floor(drag!.dropMinutes! / 60))}
+                                </span>
+                            </div>
+                        )}
+
                         {timedEvts.length === 0 && allDayEvts.length === 0 ? (
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center pointer-events-none">
                                 <CalendarIcon className="h-8 w-8 text-muted-foreground/30" />
@@ -935,6 +1134,7 @@ function DayView({
                             positioned.map(({ event, column, totalColumns, top, height }) => {
                                 const widthPct = 100 / totalColumns;
                                 const leftPct = column * widthPct;
+                                const isDragging = drag !== null && drag.event.id === event.id;
                                 return (
                                     <motion.div
                                         key={event.id}
@@ -946,10 +1146,12 @@ function DayView({
                                             position: "absolute",
                                         }}
                                         onClick={() => onEventClick(event)}
-                                        whileHover={{ scale: 1.01, zIndex: 10 }}
+                                        onPointerDown={(e) => onDragStart(event, e)}
+                                        whileHover={!drag ? { scale: 1.01, zIndex: 10 } : undefined}
                                         transition={{ duration: 0.1 }}
                                         className={cn(
-                                            "rounded-lg px-3 py-1.5 cursor-pointer overflow-hidden border",
+                                            "rounded-lg px-3 py-1.5 overflow-hidden border touch-none select-none",
+                                            isDragging ? "opacity-30 cursor-grabbing" : "cursor-grab",
                                             EVENT_COLORS[event.type].bg,
                                             EVENT_COLORS[event.type].text,
                                             EVENT_COLORS[event.type].border,
@@ -994,6 +1196,7 @@ export function CalendarView(props: CalendarViewProps) {
         onEventAdd,
         onEventEdit,
         onEventDelete,
+        onEventDrop,
         today = new Date(),
         theme,
         labels: labelsProp,
@@ -1005,6 +1208,7 @@ export function CalendarView(props: CalendarViewProps) {
     const [currentDate, setCurrentDate] = useControlled(currentDateProp, defaultDate ?? today, onNavigate);
     const [selectedDate, setSelectedDate] = useControlled(selectedDateProp, defaultSelectedDate ?? today, onDateSelect);
     const [view, setView] = useControlled(viewProp, defaultView, onViewChange);
+    const { drag, startDrag } = useEventDrag(onEventDrop);
 
     const isEventControlled = selectedEventProp !== undefined;
     const [internalSelectedEvent, setInternalSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -1133,6 +1337,8 @@ export function CalendarView(props: CalendarViewProps) {
                                     today={today}
                                     onSelectDate={setSelectedDate}
                                     onEventClick={handleEventClick}
+                                    drag={drag}
+                                    onDragStart={startDrag}
                                 />
                             )}
                             {view === "week" && (
@@ -1142,6 +1348,8 @@ export function CalendarView(props: CalendarViewProps) {
                                     today={today}
                                     onEventClick={handleEventClick}
                                     onSelectDate={setSelectedDate}
+                                    drag={drag}
+                                    onDragStart={startDrag}
                                 />
                             )}
                             {view === "day" && (
@@ -1150,12 +1358,16 @@ export function CalendarView(props: CalendarViewProps) {
                                     events={events}
                                     today={today}
                                     onEventClick={handleEventClick}
+                                    drag={drag}
+                                    onDragStart={startDrag}
                                 />
                             )}
                         </motion.div>
                     </AnimatePresence>
                 )}
             </main>
+
+            {drag && <DragGhost drag={drag} />}
 
             <Modal
                 open={!!selectedEvent}
