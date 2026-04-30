@@ -493,9 +493,9 @@ function EventModal({ event, labels, onClose, onEdit, onDelete }: EventModalProp
             <div className="p-6">
                 <div className="flex justify-between items-start mb-5">
                     <div className="min-w-0 pr-3">
-                        <h2 className="text-lg font-semibold tracking-tight text-foreground leading-snug">
+                        <div role="heading" aria-level={2} className="text-lg font-semibold tracking-tight text-foreground leading-snug m-0">
                             {event.title}
-                        </h2>
+                        </div>
                         <div className="flex items-center gap-1.5 mt-1.5 text-sm text-muted-foreground">
                             <ClockIcon className="h-3.5 w-3.5 shrink-0" />
                             <span>
@@ -1262,9 +1262,9 @@ export function CalendarView(props: CalendarViewProps) {
         >
             <header className="h-16 border-b border-border flex items-center justify-between px-6 shrink-0 bg-card/80 backdrop-blur-sm">
                 <div className="flex items-center gap-3">
-                    <h1 className="text-xl font-semibold tracking-tight min-w-[200px]">
+                    <div role="heading" aria-level={1} className="text-xl font-semibold tracking-tight min-w-[200px] m-0">
                         {headerLabel()}
-                    </h1>
+                    </div>
                     <div className="flex items-center gap-1">
                         <Button
                             variant="outline" size="icon"
@@ -1340,7 +1340,7 @@ export function CalendarView(props: CalendarViewProps) {
                                     events={events}
                                     selectedDate={selectedDate}
                                     today={today}
-                                    onSelectDate={setSelectedDate}
+                                    onSelectDate={handleDayDrillDown}
                                     onEventClick={handleEventClick}
                                     drag={drag}
                                     onDragStart={startDrag}

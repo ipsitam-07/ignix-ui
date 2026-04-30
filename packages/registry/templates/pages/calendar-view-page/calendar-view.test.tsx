@@ -725,11 +725,11 @@ describe("Date selection", () => {
         expect(date.getMonth()).toBe(1);
     });
 
-    it("selected cell gets a ring highlight in month view", async () => {
-        const { container } = render(<CalendarView defaultDate={FEB_2026} />);
+    it("drills down to day view when a day cell is clicked in month view", async () => {
+        const onViewChange = vi.fn();
+        render(<CalendarView defaultDate={FEB_2026} onViewChange={onViewChange} />);
         await userEvent.click(screen.getByText("11"));
-        const cells = container.querySelectorAll(".ring-1");
-        expect(cells.length).toBeGreaterThan(0);
+        expect(onViewChange).toHaveBeenCalledWith("day");
     });
 });
 
