@@ -256,6 +256,16 @@ const CalendarDemoInner = () => {
         });
     };
 
+    // Handle Escape key to close modal
+    React.useEffect(() => {
+        if (!isEditing) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setIsEditing(false);
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isEditing]);
+
     const codeToDisplay = loading || emptyState ? BASIC_CODE : DRAG_DROP_CODE;
 
     const renderPreview = () => {
@@ -279,10 +289,19 @@ const CalendarDemoInner = () => {
                 />
 
                 {isEditing && editingEvent && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/50 backdrop-blur-sm p-4">
-                        <div className="bg-card w-full max-w-md rounded-xl border border-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div 
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-background/50 backdrop-blur-sm p-4"
+                        onClick={() => setIsEditing(false)}
+                    >
+                        <div 
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="edit-modal-title"
+                            className="bg-card w-full max-w-md rounded-xl border border-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <div className="p-4 border-b border-border bg-muted/30">
-                                <h3 className="text-lg font-semibold text-foreground">
+                                <h3 id="edit-modal-title" className="text-lg font-semibold text-foreground">
                                     {events.some(e => e.id === editingEvent.id) ? "Edit Event" : "New Event"}
                                 </h3>
                             </div>

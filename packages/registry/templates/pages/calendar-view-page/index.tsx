@@ -425,10 +425,49 @@ interface ModalProps {
 }
 
 function Modal({ open, onClose, children, container }: ModalProps) {
+    const modalRef = useRef<HTMLDivElement>(null);
+    const previousFocus = useRef<HTMLElement | null>(null);
+
+    useEffect(() => {
+        if (open) {
+            previousFocus.current = document.activeElement as HTMLElement;
+            const timer = setTimeout(() => {
+                const focusable = modalRef.current?.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                if (focusable && focusable.length > 0) {
+                    (focusable[0] as HTMLElement).focus();
+                }
+            }, 50);
+            return () => clearTimeout(timer);
+        } else if (previousFocus.current) {
+            previousFocus.current.focus();
+        }
+    }, [open]);
+
     useEffect(() => {
         if (!open) return;
         const onKey = (e: KeyboardEvent) => {
             if (e.key === "Escape") onClose();
+
+            // Tab trapping
+            if (e.key === "Tab") {
+                const focusable = modalRef.current?.querySelectorAll(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                if (!focusable || focusable.length === 0) return;
+
+                const first = focusable[0] as HTMLElement;
+                const last = focusable[focusable.length - 1] as HTMLElement;
+
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
         };
         document.addEventListener("keydown", onKey);
         return () => document.removeEventListener("keydown", onKey);
@@ -461,6 +500,10 @@ function Modal({ open, onClose, children, container }: ModalProps) {
                         className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none px-4"
                     >
                         <div
+                            ref={modalRef}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="modal-title"
                             className="pointer-events-auto w-full max-w-md bg-card border border-border rounded-xl shadow-2xl overflow-hidden"
                             onClick={(e) => e.stopPropagation()}
                         >
@@ -493,7 +536,7 @@ function EventModal({ event, labels, onClose, onEdit, onDelete }: EventModalProp
             <div className="p-6">
                 <div className="flex justify-between items-start mb-5">
                     <div className="min-w-0 pr-3">
-                        <div role="heading" aria-level={2} className="text-lg font-semibold tracking-tight text-foreground leading-snug m-0">
+                        <div id="modal-title" role="heading" aria-level={2} className="text-lg font-semibold tracking-tight text-foreground leading-snug m-0">
                             {event.title}
                         </div>
                         <div className="flex items-center gap-1.5 mt-1.5 text-sm text-muted-foreground">
