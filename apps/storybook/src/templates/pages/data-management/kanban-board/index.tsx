@@ -1430,7 +1430,7 @@ function BoardInner() {
 
                 <div className="flex-1 min-w-[200px]" />
 
-                <div className="relative">
+                <div className="relative overflow-visible pt-3">
                     <Input
                         value={state.search}
                         onChange={handleSearchChange}
