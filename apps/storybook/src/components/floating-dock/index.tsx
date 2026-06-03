@@ -7,9 +7,13 @@ import {
     type MotionValue,
 } from "framer-motion";
 import { useRef, useState, useCallback, useEffect, useMemo } from "react";
+import type React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { cn } from "../../../utils/cn";
+
+const ReorderItem = Reorder.Item as React.ComponentType<Parameters<typeof Reorder.Item>[0]>;
+const ReorderGroup = Reorder.Group as React.ComponentType<Parameters<typeof Reorder.Group>[0]>;
 
 
 const dockVariants = cva("flex mx-auto w-fit", {
@@ -350,7 +354,7 @@ function ReorderableItem({
             {item.separator && (
                 <DockSeparator orientation={orientation} variant={variant} />
             )}
-            <Reorder.Item
+            <ReorderItem
                 as="div"
                 value={itemId}
                 onDragStart={() => setIsDragging(true)}
@@ -369,7 +373,7 @@ function ReorderableItem({
                     baseIconSize={baseIconSize}
                     maxIconSize={maxIconSize}
                 />
-            </Reorder.Item>
+            </ReorderItem>
         </>
     );
 }
@@ -510,16 +514,17 @@ export function FloatingDock({
         [mousePos, o]
     );
 
-    const handleReorder = (newIds: string[]) => {
-        setOrderedIds(newIds);
+    const handleReorder = (newIds: unknown[]) => {
+        const stringIds = newIds.filter((id): id is string => typeof id === "string");
+        setOrderedIds(stringIds);
         if (storageKey) {
             try {
-                localStorage.setItem(storageKey, JSON.stringify(newIds));
+                localStorage.setItem(storageKey, JSON.stringify(stringIds));
             } catch (e) {
                 console.warn("Could not save dock order to storage");
             }
         }
-        const reordered = newIds.map((id) => itemMap.get(id)!).filter(Boolean);
+        const reordered = stringIds.map((id) => itemMap.get(id)!).filter(Boolean);
         onReorder?.(reordered);
     };
 
@@ -559,7 +564,7 @@ export function FloatingDock({
     }
 
     return (
-        <Reorder.Group
+        <ReorderGroup
             axis={o === "horizontal" ? "x" : "y"}
             values={orderedIds}
             onReorder={handleReorder}
@@ -588,6 +593,6 @@ export function FloatingDock({
                     />
                 );
             })}
-        </Reorder.Group>
+        </ReorderGroup>
     );
 }
